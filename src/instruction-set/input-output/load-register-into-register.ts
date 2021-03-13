@@ -5,7 +5,7 @@ import { registers } from "../../registers";
 export const registerToRegisterInstructions: Instruction[] = [];
 
 function getLoadRR2ByteDefinition(rCode: RegisterCode, rCode2: RegisterCode) {
-  return (0b01 << 6) + (rCode << 3) + rCode2;
+  return (1 << 6) + (rCode << 3) + rCode2;
 }
 
 // ****************

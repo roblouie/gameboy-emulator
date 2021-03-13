@@ -12,9 +12,23 @@ Gameboy cpu registers are as follows:
 |  H  |  L  |
 +-----+-----+
 
+15           0
++------------+
+|     PC     |
++------------+
+|     SP     |
++------------+
+
 Register A is the accumulator and stores the results of arithmetic and logic operations.
 
 Registers besides A and F are auxiliary to the accumulator, or as pairs (BC, DE, HL) can be used as data pointers.
+
+PC: Program Counter
+16 bit register that holds the address of the program to be executed next. Incremented by the byte count of the
+instruction.
+
+SP: Stack Pointer
+16 bit register that holds the starting address of the stack
 
 Register F stores flags as follows:
 
@@ -29,7 +43,7 @@ H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
 
-const registersBuffer = new ArrayBuffer(8);
+const registersBuffer = new ArrayBuffer(12);
 const registersView = new DataView(registersBuffer);
 
 export const registers = {
@@ -109,6 +123,32 @@ export const registers = {
   },
   set HL(twoBytes: number) {
     registersView.setUint16(4, twoBytes, true);
+  },
+
+  get programCounter() {
+    return registersView.getUint16(8, true);
+  },
+  set programCounter(twoBytes: number) {
+    registersView.setUint16(8, twoBytes, true);
+  },
+  get PC() {
+    return this.programCounter;
+  },
+  set PC(twoBytes: number) {
+    this.programCounter = twoBytes;
+  },
+
+  get stackPointer() {
+    return registersView.getUint16(10, true);
+  },
+  set stackPointer(twoBytes: number) {
+    registersView.setUint16(10, twoBytes, true);
+  },
+  get SP() {
+    return this.stackPointer;
+  },
+  set SP(twoBytes: number) {
+    this.stackPointer = twoBytes;
   },
 
   // Helper methods for F register with friendly names and documented names

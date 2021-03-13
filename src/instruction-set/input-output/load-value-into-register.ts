@@ -1,6 +1,7 @@
 import { RegisterCode } from "./register-code.enum";
 import { Instruction } from "../instruction.model";
 import { registers } from "../../registers";
+import { memory } from "../../memory";
 
 export const valueToRegisterInstructions: Instruction[] = [];
 
@@ -16,8 +17,8 @@ const loadAN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.A),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.A = n;
+  operation() {
+    registers.A = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadAN);
@@ -27,8 +28,8 @@ const loadBN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.B),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.B = n;
+  operation() {
+    registers.B = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadBN);
@@ -38,8 +39,8 @@ const loadCN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.C),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.C = n;
+  operation() {
+    registers.C = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadCN);
@@ -49,8 +50,8 @@ const loadDN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.D),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.D = n;
+  operation() {
+    registers.D = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadDN);
@@ -60,8 +61,8 @@ const loadEN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.E),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.E = n;
+  operation() {
+    registers.E = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadEN);
@@ -71,8 +72,8 @@ const loadHN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.H),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.H = n;
+  operation() {
+    registers.H = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadHN);
@@ -82,8 +83,8 @@ const loadLN: Instruction = {
   byteDefinition: getLoadRNByteDefinition(RegisterCode.L),
   cycleTime: 2,
   byteLength: 2,
-  operation(n: number) {
-    registers.L = n;
+  operation() {
+    registers.L = memory.readByte(registers.programCounter + 1);
   }
 }
 valueToRegisterInstructions.push(loadLN);
