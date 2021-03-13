@@ -111,7 +111,7 @@ export const registers = {
     registersView.setUint16(4, twoBytes, true);
   },
 
-  // Helper methods for F register
+  // Helper methods for F register with friendly names and documented names
   flags: {
     get isResultZero() {
       return (registers.F >> 7) === 1;
@@ -122,6 +122,12 @@ export const registers = {
       } else {
         registers.F &= ~(1 << 7);
       }
+    },
+    get Z() {
+      return this.isResultZero;
+    },
+    set Z(newValue: boolean) {
+      this.isResultZero = newValue;
     },
 
     get isSubtraction() {
@@ -134,6 +140,12 @@ export const registers = {
         registers.F &= ~(1 << 6);
       }
     },
+    get N() {
+      return this.isSubtraction;
+    },
+    set N(newValue: boolean) {
+      this.isSubtraction = newValue;
+    },
 
     get isHalfCarry() {
       return ((registers.F >> 5) & 1) === 1;
@@ -145,6 +157,12 @@ export const registers = {
         registers.F &= ~(1 << 5);
       }
     },
+    get H() {
+      return this.isHalfCarry;
+    },
+    set H(newValue: boolean) {
+      this.isHalfCarry = newValue;
+    },
 
     get isCarry() {
       return ((registers.F >> 4) & 1) === 1;
@@ -155,6 +173,12 @@ export const registers = {
       } else {
         registers.F &= ~(1 << 4);
       }
+    },
+    get C() {
+      return this.isCarry
+    },
+    set C(newValue: boolean) {
+      this.isCarry = newValue
     }
   }
 }
