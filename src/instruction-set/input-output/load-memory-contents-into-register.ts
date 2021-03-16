@@ -89,21 +89,38 @@ const loadLHL: Instruction = {
 }
 memoryContentsToRegisterInstructions.push(loadLHL);
 
-
-function getLoadHLRByteDefinition(code: RegisterCode) {
-  return (0b1110 << 3) + code;
-}
-
 // ****************
-// * Load R, (HL)
+// * Load A, (RR)
 // ****************
-const loadHLA: Instruction = {
-  command: 'LD (HL), A',
-  byteDefinition: getLoadHLRByteDefinition(RegisterCode.A),
+const loadABC: Instruction = {
+  command: 'LD A, (BC)',
+  byteDefinition: 0b1010,
   cycleTime: 2,
   byteLength: 1,
   operation() {
-    memory.writeByte(registers.HL, registers.A);
+    registers.A = memory.readByte(registers.BC);
   }
 }
-memoryContentsToRegisterInstructions.push(loadHLA);
+memoryContentsToRegisterInstructions.push(loadABC);
+
+const loadADE: Instruction = {
+  command: 'LD A, (DE)',
+  byteDefinition: 0b11010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    registers.A = memory.readByte(registers.DE);
+  }
+}
+memoryContentsToRegisterInstructions.push(loadADE);
+
+const loadAC: Instruction = {
+  command: 'LD A, (C)',
+  byteDefinition: 0b11110010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    registers.A = memory.readByte(0xFF00 + registers.C);
+  }
+}
+memoryContentsToRegisterInstructions.push(loadAC);

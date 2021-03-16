@@ -13,7 +13,9 @@ function getLoadRNByteDefinition(rCode: RegisterCode) {
 // * Load R, N
 // ****************
 const loadAN: Instruction = {
-  command: 'LD A, N',
+  get command() {
+    return `LD A, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.A),
   cycleTime: 2,
   byteLength: 2,
@@ -24,7 +26,9 @@ const loadAN: Instruction = {
 valueToRegisterInstructions.push(loadAN);
 
 const loadBN: Instruction = {
-  command: 'LD B, N',
+  get command() {
+    return `LD B, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.B),
   cycleTime: 2,
   byteLength: 2,
@@ -35,7 +39,9 @@ const loadBN: Instruction = {
 valueToRegisterInstructions.push(loadBN);
 
 const loadCN: Instruction = {
-  command: 'LD C, N',
+  get command() {
+    return `LD C, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.C),
   cycleTime: 2,
   byteLength: 2,
@@ -46,7 +52,9 @@ const loadCN: Instruction = {
 valueToRegisterInstructions.push(loadCN);
 
 const loadDN: Instruction = {
-  command: 'LD D, N',
+  get command() {
+    return `LD D, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.D),
   cycleTime: 2,
   byteLength: 2,
@@ -57,7 +65,9 @@ const loadDN: Instruction = {
 valueToRegisterInstructions.push(loadDN);
 
 const loadEN: Instruction = {
-  command: 'LD E, N',
+  get command() {
+    return `LD E, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.E),
   cycleTime: 2,
   byteLength: 2,
@@ -68,7 +78,9 @@ const loadEN: Instruction = {
 valueToRegisterInstructions.push(loadEN);
 
 const loadHN: Instruction = {
-  command: 'LD H, N',
+  get command() {
+    return `LD H, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.H),
   cycleTime: 2,
   byteLength: 2,
@@ -79,7 +91,9 @@ const loadHN: Instruction = {
 valueToRegisterInstructions.push(loadHN);
 
 const loadLN: Instruction = {
-  command: 'LD L, N',
+  get command() {
+    return `LD L, ${memory.readByte(registers.programCounter + 1)}`;
+  },
   byteDefinition: getLoadRNByteDefinition(RegisterCode.L),
   cycleTime: 2,
   byteLength: 2,
