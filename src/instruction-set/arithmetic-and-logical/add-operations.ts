@@ -1,6 +1,7 @@
 import { Instruction } from "../instruction.model";
 import { RegisterCode } from "../../registers/register-code.enum";
 import { registers } from "../../registers/registers";
+import { memory } from "../../memory";
 
 export const addOperations: Instruction[] = [];
 
@@ -46,3 +47,101 @@ const addAB: Instruction = {
   }
 }
 addOperations.push(addAB);
+
+const addAC: Instruction = {
+  get command() {
+    return `ADD A, C`;
+  },
+  byteDefinition: getAddARByteDefinition(RegisterCode.C),
+  cycleTime: 1,
+  byteLength: 1,
+  operation() {
+    registers.A = addAndSetFlags(registers.A, registers.C);
+  }
+}
+addOperations.push(addAC);
+
+const addAD: Instruction = {
+  get command() {
+    return `ADD A, D`;
+  },
+  byteDefinition: getAddARByteDefinition(RegisterCode.D),
+  cycleTime: 1,
+  byteLength: 1,
+  operation() {
+    registers.A = addAndSetFlags(registers.A, registers.D);
+  }
+}
+addOperations.push(addAD);
+
+const addAE: Instruction = {
+  get command() {
+    return `ADD A, E`;
+  },
+  byteDefinition: getAddARByteDefinition(RegisterCode.E),
+  cycleTime: 1,
+  byteLength: 1,
+  operation() {
+    registers.A = addAndSetFlags(registers.A, registers.E);
+  }
+}
+addOperations.push(addAE);
+
+const addAH: Instruction = {
+  get command() {
+    return `ADD A, H`;
+  },
+  byteDefinition: getAddARByteDefinition(RegisterCode.H),
+  cycleTime: 1,
+  byteLength: 1,
+  operation() {
+    registers.A = addAndSetFlags(registers.A, registers.H);
+  }
+}
+addOperations.push(addAH);
+
+const addAL: Instruction = {
+  get command() {
+    return `ADD A, L`;
+  },
+  byteDefinition: getAddARByteDefinition(RegisterCode.L),
+  cycleTime: 1,
+  byteLength: 1,
+  operation() {
+    registers.A = addAndSetFlags(registers.A, registers.L);
+  }
+}
+addOperations.push(addAL);
+
+
+// ****************
+// * Add A, n
+// ****************
+const addAN: Instruction = {
+  get command() {
+    return `ADD A, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
+  },
+  byteDefinition: 0b11000110,
+  cycleTime: 2,
+  byteLength: 2,
+  operation() {
+    registers.A = addAndSetFlags(registers.A, memory.readByte(registers.programCounter + 1));
+  }
+}
+addOperations.push(addAN);
+
+
+// ****************
+// * Add A, (HL)
+// ****************
+const addAHL: Instruction = {
+  command: 'ADD A, (HL)',
+  byteDefinition: 0b10_000_110,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    const value = memory.readByte(registers.HL);
+    registers.A = addAndSetFlags(registers.A, value);
+  }
+}
+addOperations.push(addAHL);
