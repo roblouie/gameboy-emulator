@@ -1,6 +1,6 @@
-import { RegisterCode } from "./register-code.enum";
+import { RegisterCode } from "../../registers/register-code.enum";
 import { Instruction } from "../instruction.model";
-import { registers } from "../../registers";
+import { registers } from "../../registers/registers";
 
 export const registerToRegisterInstructions: Instruction[] = [];
 
@@ -574,4 +574,16 @@ const loadLL: Instruction = {
 }
 registerToRegisterInstructions.push(loadLL);
 
-
+// ****************
+// * Load SP, HL
+// ****************
+const loadSPHL: Instruction = {
+  command: 'LD SP, HL',
+  byteDefinition: 0b11111001,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    registers.SP = registers.HL;
+  }
+}
+registerToRegisterInstructions.push(loadSPHL);

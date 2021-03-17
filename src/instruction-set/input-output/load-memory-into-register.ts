@@ -1,6 +1,6 @@
-import { RegisterCode } from "./register-code.enum";
+import { RegisterCode } from "../../registers/register-code.enum";
 import { Instruction } from "../instruction.model";
-import { registers } from "../../registers";
+import { registers } from "../../registers/registers";
 import { memory } from "../../memory";
 
 export const memoryContentsToRegisterInstructions: Instruction[] = [];
@@ -120,7 +120,75 @@ const loadAC: Instruction = {
   cycleTime: 2,
   byteLength: 1,
   operation() {
-    registers.A = memory.readByte(0xFF00 + registers.C);
+    registers.A = memory.readByte(0xff00 + registers.C);
   }
 }
 memoryContentsToRegisterInstructions.push(loadAC);
+
+
+// ****************
+// * Load A, (n)
+// ****************
+const loadAn: Instruction = {
+  get command() {
+    return `LD A, (0x${memory.readByte(registers.programCounter + 1).toString(16)})`;
+  },
+  byteDefinition: 0b11110000,
+  cycleTime: 3,
+  byteLength: 2,
+  operation() {
+    registers.A = memory.readByte(0xff00 + memory.readByte(registers.programCounter + 1));
+  }
+}
+memoryContentsToRegisterInstructions.push(loadAn);
+
+
+// ****************
+// * Load A, (nn)
+// ****************
+const loadAnn: Instruction = {
+  get command() {
+    const firstByte = memory.readByte(registers.programCounter + 1).toString(16);
+    const secondByte = memory.readByte(registers.programCounter + 2).toString(16);
+    return `LD A, (0x${firstByte + secondByte})`;
+  },
+  byteDefinition: 0b11111010,
+  cycleTime: 4,
+  byteLength: 3,
+  operation() {
+    const memoryAddress = memory.readWord(registers.programCounter + 1);
+    registers.A = memory.readByte(memoryAddress);
+  }
+}
+memoryContentsToRegisterInstructions.push(loadAnn);
+
+
+// ****************
+// * Load A, (HLI)
+// ****************
+const loadAHLI: Instruction = {
+  command: 'LD A, (HLI)',
+  byteDefinition: 0b101010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    registers.A = memory.readByte(registers.HL);
+    registers.HL++;
+  }
+}
+memoryContentsToRegisterInstructions.push(loadAHLI);
+
+// ****************
+// * Load A, (HLD)
+// ****************
+const loadAHLD: Instruction = {
+  command: 'LD A, (HLD)',
+  byteDefinition: 0b111010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    registers.A = memory.readByte(registers.HL);
+    registers.HL--;
+  }
+}
+memoryContentsToRegisterInstructions.push(loadAHLD);

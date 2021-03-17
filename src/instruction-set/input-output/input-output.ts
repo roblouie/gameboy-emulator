@@ -1,5 +1,5 @@
 import { Instruction } from "../instruction.model";
-import { memoryContentsToRegisterInstructions } from "./load-memory-contents-into-register";
+import { memoryContentsToRegisterInstructions } from "./load-memory-into-register";
 import { registerToMemoryInstructions } from "./load-register-into-memory";
 import { registerToRegisterInstructions } from "./load-register-into-register";
 import { valueToMemoryInstructions } from "./load-value-into-memory";

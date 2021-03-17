@@ -1,7 +1,7 @@
 import { memory } from "../../memory";
-import { registers } from "../../registers";
+import { registers } from "../../registers/registers";
 import { Instruction } from "../instruction.model";
-import { RegisterCode } from "./register-code.enum";
+import { RegisterCode } from "../../registers/register-code.enum";
 
 export const registerToMemoryInstructions: Instruction[] = [];
 
@@ -10,7 +10,7 @@ function getLoadHLRByteDefinition(code: RegisterCode) {
 }
 
 // ****************
-// * Load R, (HL)
+// * Load (HL), R
 // ****************
 const loadHLA: Instruction = {
   command: 'LD (HL), A',
@@ -88,3 +88,107 @@ const loadHLL: Instruction = {
   }
 }
 registerToMemoryInstructions.push(loadHLL);
+
+// ****************
+// * Load (C), A
+// ****************
+const loadCA: Instruction = {
+  command: 'LD (C), A',
+  byteDefinition: 0b11100010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    memory.writeByte(0xff00 + registers.C, registers.A);
+  }
+}
+registerToMemoryInstructions.push(loadCA);
+
+
+// ****************
+// * Load (n), A
+// ****************
+const loadNA: Instruction = {
+  command: 'LD (n), A',
+  byteDefinition: 0b11100000,
+  cycleTime: 3,
+  byteLength: 2,
+  operation() {
+    const baseAddress = memory.readByte(registers.programCounter + 1);
+    memory.writeByte(0xff00 + baseAddress, registers.A);
+  }
+}
+registerToMemoryInstructions.push(loadNA);
+
+
+// ****************
+// * Load (nn), A
+// ****************
+const loadNNA: Instruction = {
+  command: 'LD (nn), A',
+  byteDefinition: 0b11101010,
+  cycleTime: 4,
+  byteLength: 3,
+  operation() {
+    const memoryAddress = memory.readWord(registers.programCounter + 1);
+    memory.writeByte(memoryAddress, registers.A);
+  }
+}
+registerToMemoryInstructions.push(loadNNA);
+
+
+// ****************
+// * Load (RR), A
+// ****************
+const loadBCA: Instruction = {
+  command: 'LD (BC), A',
+  byteDefinition: 0b10,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    memory.writeWord(registers.BC, registers.A);
+  }
+}
+registerToMemoryInstructions.push(loadBCA);
+
+const loadDEA: Instruction = {
+  command: 'LD (DE), A',
+  byteDefinition: 0b10010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    memory.writeWord(registers.DE, registers.A);
+  }
+}
+registerToMemoryInstructions.push(loadDEA);
+
+
+// ****************
+// * Load (HLI), A
+// ****************
+const loadHLIA: Instruction = {
+  command: 'LD (HLI), A',
+  byteDefinition: 0b100010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    memory.writeByte(registers.HL, registers.A);
+    registers.HL++;
+  }
+}
+registerToMemoryInstructions.push(loadHLIA);
+
+
+// ****************
+// * Load (HLD), A
+// ****************
+const loadHLID: Instruction = {
+  command: 'LD (HLD), A',
+  byteDefinition: 0b110010,
+  cycleTime: 2,
+  byteLength: 1,
+  operation() {
+    memory.writeByte(registers.HL, registers.A);
+    registers.HL--;
+  }
+}
+registerToMemoryInstructions.push(loadHLID);

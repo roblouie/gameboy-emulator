@@ -1,5 +1,5 @@
 import { GameRom } from "./game-rom/game-rom.model";
-import { inputOutputInstructions } from "./instruction-set/input-output/input-output";
+import { operations } from "./instruction-set/operations";
 
 let context: CanvasRenderingContext2D;
 
@@ -9,7 +9,7 @@ window.addEventListener('load', () => {
 
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
   context = canvas.getContext('2d') as CanvasRenderingContext2D;
-  console.log(inputOutputInstructions.length);
+  console.log(operations.length);
 });
 
 
