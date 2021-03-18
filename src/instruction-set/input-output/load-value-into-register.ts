@@ -2,7 +2,7 @@ import { RegisterCode } from "../../registers/register-code.enum";
 import { Instruction } from "../instruction.model";
 import { registers } from "../../registers/registers";
 import { memory } from "../../memory";
-import { RegisterPairCodeDd } from "../../registers/register-pair-code-dd.enum";
+import { RegisterPairCodeSP } from "../../registers/register-pair-code-sp.enum";
 
 export const valueToRegisterInstructions: Instruction[] = [];
 
@@ -13,7 +13,7 @@ function getLoadRNByteDefinition(rCode: RegisterCode) {
   return (rCode << 3) + 0b110;
 }
 
-const loadAN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD A, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -23,10 +23,9 @@ const loadAN: Instruction = {
   operation() {
     registers.A = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadAN);
+});
 
-const loadBN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD B, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -36,10 +35,9 @@ const loadBN: Instruction = {
   operation() {
     registers.B = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadBN);
+});
 
-const loadCN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD C, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -49,10 +47,9 @@ const loadCN: Instruction = {
   operation() {
     registers.C = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadCN);
+});
 
-const loadDN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD D, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -62,10 +59,9 @@ const loadDN: Instruction = {
   operation() {
     registers.D = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadDN);
+});
 
-const loadEN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD E, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -75,10 +71,9 @@ const loadEN: Instruction = {
   operation() {
     registers.E = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadEN);
+});
 
-const loadHN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD H, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -88,10 +83,9 @@ const loadHN: Instruction = {
   operation() {
     registers.H = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadHN);
+});
 
-const loadLN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD L, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
@@ -101,64 +95,59 @@ const loadLN: Instruction = {
   operation() {
     registers.L = memory.readByte(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadLN);
+});
 
 // ****************
 // * Load dd, nn
 // ****************
-function getLoadDDNNByteDefinition(rpCode: RegisterPairCodeDd) {
+function getLoadDDNNByteDefinition(rpCode: RegisterPairCodeSP) {
   return (rpCode << 5) + 1;
 }
 
-const loadBCNN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD BC, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
   },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeDd.BC),
+  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.BC),
   cycleTime: 3,
   byteLength: 3,
   operation() {
     registers.BC = memory.readWord(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadBCNN);
+});
 
-const loadDENN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD DE, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
   },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeDd.DE),
+  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.DE),
   cycleTime: 3,
   byteLength: 3,
   operation() {
     registers.DE = memory.readWord(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadDENN);
+});
 
-const loadHLNN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD HL, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
   },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeDd.HL),
+  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.HL),
   cycleTime: 3,
   byteLength: 3,
   operation() {
     registers.HL = memory.readWord(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadHLNN);
+});
 
-const loadSPNN: Instruction = {
+valueToRegisterInstructions.push({
   get command() {
     return `LD SP, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
   },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeDd.SP),
+  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.SP),
   cycleTime: 3,
   byteLength: 3,
   operation() {
     registers.SP = memory.readWord(registers.programCounter + 1);
   }
-}
-valueToRegisterInstructions.push(loadSPNN);
+});

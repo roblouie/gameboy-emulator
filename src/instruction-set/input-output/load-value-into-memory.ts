@@ -4,15 +4,15 @@ import { Instruction } from "../instruction.model";
 
 export const valueToMemoryInstructions: Instruction[] = [];
 
-const loadHLn: Instruction = {
+valueToMemoryInstructions.push({
     get command() {
       return `LD (HL), 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
     },
-    byteDefinition: 0b110110, 
+    byteDefinition: 0b110110,
     cycleTime: 3, 
     byteLength: 2, 
     operation() {
-      registers.HL = memory.readByte(registers.programCounter + 1);
+      const value = memory.readByte(registers.programCounter + 1);
+      memory.writeByte(registers.HL, value);
     }
-}
-valueToMemoryInstructions.push(loadHLn);
+});

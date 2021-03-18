@@ -13,7 +13,7 @@ test.each([
   registers.flags.isSubtraction,
   registers.flags.isHalfCarry,
   registers.flags.isCarry,
-])('flags properly set and clear their respective bit', flag => {
+])('flag helpers properly set and clear their respective bit', flag => {
   expect(flag).toBe(false);
 
   flag = true;
@@ -21,4 +21,19 @@ test.each([
 
   flag = false;
   expect(flag).toBe(false);
+});
+
+test.each([
+  registers.flags.Z,
+  registers.flags.N,
+  registers.flags.H,
+  registers.flags.CY,
+])('flags properly set and clear their respective bit', flag => {
+  expect(flag).toBe(0);
+
+  flag = 1;
+  expect(flag).toBe(1);
+
+  flag = 0;
+  expect(flag).toBe(0);
 });

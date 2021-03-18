@@ -11,7 +11,7 @@ function getLoadRR2ByteDefinition(rCode: RegisterCode, rCode2: RegisterCode) {
 // ****************
 // * Load A, R2
 // ****************
-const loadAA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.A),
   cycleTime: 1,
@@ -19,10 +19,9 @@ const loadAA: Instruction = {
   operation() {
     registers.A = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadAA);
+});
 
-const loadAB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.B),
   cycleTime: 1,
@@ -30,10 +29,9 @@ const loadAB: Instruction = {
   operation() {
     registers.A = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadAB);
+});
 
-const loadAC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.C),
   cycleTime: 1,
@@ -41,10 +39,9 @@ const loadAC: Instruction = {
   operation() {
     registers.A = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadAC);
+});
 
-const loadAD: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.D),
   cycleTime: 1,
@@ -52,10 +49,9 @@ const loadAD: Instruction = {
   operation() {
     registers.A = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadAD);
+});
 
-const loadAE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.E),
   cycleTime: 1,
@@ -63,10 +59,9 @@ const loadAE: Instruction = {
   operation() {
     registers.A = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadAE);
+});
 
-const loadAH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.H),
   cycleTime: 1,
@@ -74,10 +69,9 @@ const loadAH: Instruction = {
   operation() {
     registers.A = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadAH);
+});
 
-const loadAL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD A, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.A, RegisterCode.L),
   cycleTime: 1,
@@ -85,14 +79,13 @@ const loadAL: Instruction = {
   operation() {
     registers.A = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadAL);
+});
 
 
 // ****************
 // * Load B, R2
 // ****************
-const loadBA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.A),
   cycleTime: 1,
@@ -100,10 +93,9 @@ const loadBA: Instruction = {
   operation() {
     registers.B = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadBA);
+});
 
-const loadBB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.B),
   cycleTime: 1,
@@ -111,10 +103,9 @@ const loadBB: Instruction = {
   operation() {
     registers.B = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadBB);
+});
 
-const loadBC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.C),
   cycleTime: 1,
@@ -122,10 +113,9 @@ const loadBC: Instruction = {
   operation() {
     registers.B = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadBC);
+});
 
-const loadBD: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.D),
   cycleTime: 1,
@@ -133,10 +123,9 @@ const loadBD: Instruction = {
   operation() {
     registers.B = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadBD);
+});
 
-const loadBE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.E),
   cycleTime: 1,
@@ -144,10 +133,9 @@ const loadBE: Instruction = {
   operation() {
     registers.B = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadBE);
+});
 
-const loadBH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.H),
   cycleTime: 1,
@@ -155,10 +143,9 @@ const loadBH: Instruction = {
   operation() {
     registers.B = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadBH);
+});
 
-const loadBL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD B, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.B, RegisterCode.L),
   cycleTime: 1,
@@ -166,14 +153,13 @@ const loadBL: Instruction = {
   operation() {
     registers.B = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadBL);
+});
 
 
 // ****************
 // * Load C, R2
 // ****************
-const loadCA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.A),
   cycleTime: 1,
@@ -181,10 +167,9 @@ const loadCA: Instruction = {
   operation() {
     registers.C = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadCA);
+});
 
-const loadCB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.B),
   cycleTime: 1,
@@ -192,10 +177,9 @@ const loadCB: Instruction = {
   operation() {
     registers.C = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadCB);
+});
 
-const loadCC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.C),
   cycleTime: 1,
@@ -203,10 +187,9 @@ const loadCC: Instruction = {
   operation() {
     registers.C = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadCC);
+});
 
-const loadCD: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.D),
   cycleTime: 1,
@@ -214,10 +197,9 @@ const loadCD: Instruction = {
   operation() {
     registers.C = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadCD);
+});
 
-const loadCE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.E),
   cycleTime: 1,
@@ -225,10 +207,9 @@ const loadCE: Instruction = {
   operation() {
     registers.C = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadCE);
+});
 
-const loadCH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.H),
   cycleTime: 1,
@@ -236,10 +217,9 @@ const loadCH: Instruction = {
   operation() {
     registers.C = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadCH);
+});
 
-const loadCL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD C, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.C, RegisterCode.L),
   cycleTime: 1,
@@ -247,14 +227,13 @@ const loadCL: Instruction = {
   operation() {
     registers.C = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadCL);
+});
 
 
 // ****************
 // * Load D, R2
 // ****************
-const loadDA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.A),
   cycleTime: 1,
@@ -262,10 +241,9 @@ const loadDA: Instruction = {
   operation() {
     registers.D = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadDA);
+});
 
-const loadDB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.B),
   cycleTime: 1,
@@ -273,10 +251,9 @@ const loadDB: Instruction = {
   operation() {
     registers.D = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadDB);
+});
 
-const loadDC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.C),
   cycleTime: 1,
@@ -284,10 +261,9 @@ const loadDC: Instruction = {
   operation() {
     registers.D = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadDC);
+});
 
-const loadDD: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.D),
   cycleTime: 1,
@@ -295,10 +271,9 @@ const loadDD: Instruction = {
   operation() {
     registers.D = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadDD);
+});
 
-const loadDE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.E),
   cycleTime: 1,
@@ -306,10 +281,9 @@ const loadDE: Instruction = {
   operation() {
     registers.D = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadDE);
+});
 
-const loadDH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.H),
   cycleTime: 1,
@@ -317,10 +291,9 @@ const loadDH: Instruction = {
   operation() {
     registers.D = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadDH);
+});
 
-const loadDL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD D, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.D, RegisterCode.L),
   cycleTime: 1,
@@ -328,14 +301,13 @@ const loadDL: Instruction = {
   operation() {
     registers.D = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadDL);
+});
 
 
 // ****************
 // * Load E, R2
 // ****************
-const loadEA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.A),
   cycleTime: 1,
@@ -343,10 +315,9 @@ const loadEA: Instruction = {
   operation() {
     registers.E = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadEA);
+});
 
-const loadEB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.B),
   cycleTime: 1,
@@ -354,10 +325,9 @@ const loadEB: Instruction = {
   operation() {
     registers.E = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadEB);
+});
 
-const loadEC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.C),
   cycleTime: 1,
@@ -365,10 +335,9 @@ const loadEC: Instruction = {
   operation() {
     registers.E = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadEC);
+});
 
-const loadED: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.D),
   cycleTime: 1,
@@ -376,10 +345,9 @@ const loadED: Instruction = {
   operation() {
     registers.E = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadED);
+});
 
-const loadEE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.E),
   cycleTime: 1,
@@ -387,10 +355,9 @@ const loadEE: Instruction = {
   operation() {
     registers.E = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadEE);
+});
 
-const loadEH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.H),
   cycleTime: 1,
@@ -398,10 +365,9 @@ const loadEH: Instruction = {
   operation() {
     registers.E = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadEH);
+});
 
-const loadEL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD E, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.E, RegisterCode.L),
   cycleTime: 1,
@@ -409,14 +375,13 @@ const loadEL: Instruction = {
   operation() {
     registers.E = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadEL);
+});
 
 
 // ****************
 // * Load H, R2
 // ****************
-const loadHA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.A),
   cycleTime: 1,
@@ -424,10 +389,9 @@ const loadHA: Instruction = {
   operation() {
     registers.H = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadHA);
+});
 
-const loadHB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.B),
   cycleTime: 1,
@@ -435,10 +399,9 @@ const loadHB: Instruction = {
   operation() {
     registers.H = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadHB);
+});
 
-const loadHC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.C),
   cycleTime: 1,
@@ -446,10 +409,9 @@ const loadHC: Instruction = {
   operation() {
     registers.H = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadHC);
+});
 
-const loadHD: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.D),
   cycleTime: 1,
@@ -457,10 +419,9 @@ const loadHD: Instruction = {
   operation() {
     registers.H = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadHD);
+});
 
-const loadHE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.E),
   cycleTime: 1,
@@ -468,10 +429,9 @@ const loadHE: Instruction = {
   operation() {
     registers.H = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadHE);
+});
 
-const loadHH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.H),
   cycleTime: 1,
@@ -479,10 +439,9 @@ const loadHH: Instruction = {
   operation() {
     registers.H = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadHH);
+});
 
-const loadHL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD H, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.H, RegisterCode.L),
   cycleTime: 1,
@@ -490,14 +449,13 @@ const loadHL: Instruction = {
   operation() {
     registers.H = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadHL);
+});
 
 
 // ****************
 // * Load L, R2
 // ****************
-const loadLA: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, A',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.A),
   cycleTime: 1,
@@ -505,10 +463,9 @@ const loadLA: Instruction = {
   operation() {
     registers.L = registers.A;
   }
-}
-registerToRegisterInstructions.push(loadLA);
+});
 
-const loadLB: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, B',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.B),
   cycleTime: 1,
@@ -516,10 +473,9 @@ const loadLB: Instruction = {
   operation() {
     registers.L = registers.B;
   }
-}
-registerToRegisterInstructions.push(loadLB);
+});
 
-const loadLC: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, C',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.C),
   cycleTime: 1,
@@ -527,10 +483,9 @@ const loadLC: Instruction = {
   operation() {
     registers.L = registers.C;
   }
-}
-registerToRegisterInstructions.push(loadLC);
+});
 
-const loadLD: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, D',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.D),
   cycleTime: 1,
@@ -538,10 +493,9 @@ const loadLD: Instruction = {
   operation() {
     registers.L = registers.D;
   }
-}
-registerToRegisterInstructions.push(loadLD);
+});
 
-const loadLE: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, E',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.E),
   cycleTime: 1,
@@ -549,10 +503,9 @@ const loadLE: Instruction = {
   operation() {
     registers.L = registers.E;
   }
-}
-registerToRegisterInstructions.push(loadLE);
+});
 
-const loadLH: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, H',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.H),
   cycleTime: 1,
@@ -560,10 +513,9 @@ const loadLH: Instruction = {
   operation() {
     registers.L = registers.H;
   }
-}
-registerToRegisterInstructions.push(loadLH);
+});
 
-const loadLL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD L, L',
   byteDefinition: getLoadRR2ByteDefinition(RegisterCode.L, RegisterCode.L),
   cycleTime: 1,
@@ -571,13 +523,12 @@ const loadLL: Instruction = {
   operation() {
     registers.L = registers.L;
   }
-}
-registerToRegisterInstructions.push(loadLL);
+});
 
 // ****************
 // * Load SP, HL
 // ****************
-const loadSPHL: Instruction = {
+registerToRegisterInstructions.push({
   command: 'LD SP, HL',
   byteDefinition: 0b11111001,
   cycleTime: 2,
@@ -585,5 +536,4 @@ const loadSPHL: Instruction = {
   operation() {
     registers.SP = registers.HL;
   }
-}
-registerToRegisterInstructions.push(loadSPHL);
+});

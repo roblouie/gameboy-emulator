@@ -151,74 +151,77 @@ export const registers = {
     this.stackPointer = twoBytes;
   },
 
-  // Helper methods for F register with friendly names and documented names
+  // Helper methods for F register with friendly named booleans and documented names with 0/1;
   flags: {
-    get isResultZero() {
-      return (registers.F >> 7) === 1;
+    get Z() {
+      return (registers.F >> 7);
     },
-    set isResultZero(newValue: boolean) {
-      if (newValue) {
+    set Z(newValue: number) {
+      if (newValue === 1) {
         registers.F |= 1 << 7;
       } else {
         registers.F &= ~(1 << 7);
       }
     },
-    get Z() {
-      return this.isResultZero;
+    get isResultZero() {
+      return this.Z === 1;
     },
-    set Z(newValue: boolean) {
-      this.isResultZero = newValue;
+    set isResultZero(newValue: boolean) {
+      this.Z = newValue ? 1 : 0;
     },
 
-    get isSubtraction() {
-      return ((registers.F >> 6 & 1)) === 1;
+
+    get N() {
+      return ((registers.F >> 6) & 1);
     },
-    set isSubtraction(newValue: boolean) {
-      if (newValue) {
+    set N(newValue: number) {
+      if (newValue === 1) {
         registers.F |= 1 << 6;
       } else {
         registers.F &= ~(1 << 6);
       }
     },
-    get N() {
-      return this.isSubtraction;
+    get isSubtraction() {
+      return this.N === 1;
     },
-    set N(newValue: boolean) {
-      this.isSubtraction = newValue;
+    set isSubtraction(newValue: boolean) {
+      this.N = newValue ? 1 : 0;
     },
 
-    get isHalfCarry() {
-      return ((registers.F >> 5) & 1) === 1;
+
+    get H() {
+      return ((registers.F >> 5) & 1);
     },
-    set isHalfCarry(newValue: boolean) {
-      if (newValue) {
+    set H(newValue: number) {
+      if (newValue === 1) {
         registers.F |= 1 << 5;
       } else {
         registers.F &= ~(1 << 5);
       }
     },
-    get H() {
-      return this.isHalfCarry;
+    get isHalfCarry() {
+      return this.H === 1;
     },
-    set H(newValue: boolean) {
-      this.isHalfCarry = newValue;
+    set isHalfCarry(newValue: boolean) {
+      this.H = newValue ? 1 : 0;
     },
 
-    get isCarry() {
-      return ((registers.F >> 4) & 1) === 1;
+
+    get CY() {
+      return ((registers.F >> 4) & 1);
     },
-    set isCarry(newValue: boolean) {
-      if (newValue) {
+    set CY(newValue: number) {
+      if (newValue === 1) {
         registers.F |= 1 << 4;
       } else {
         registers.F &= ~(1 << 4);
       }
     },
-    get C() {
-      return this.isCarry
+    get isCarry() {
+      return this.CY === 1;
     },
-    set C(newValue: boolean) {
-      this.isCarry = newValue
+    set isCarry(newValue: boolean) {
+      this.CY = newValue ? 1 : 0;
     }
   }
 }
