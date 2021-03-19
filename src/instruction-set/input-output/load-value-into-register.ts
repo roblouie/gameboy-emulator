@@ -101,7 +101,7 @@ valueToRegisterInstructions.push({
 // * Load dd, nn
 // ****************
 function getLoadDDNNByteDefinition(rpCode: RegisterPairCodeSP) {
-  return (rpCode << 5) + 1;
+  return (rpCode << 4) + 1;
 }
 
 valueToRegisterInstructions.push({

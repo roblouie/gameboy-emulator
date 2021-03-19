@@ -84,12 +84,12 @@ incrementOperations.push({
 });
 
 incrementOperations.push({
-  command: 'INC H',
-  byteDefinition: getIncRByteDefinition(RegisterCode.H),
+  command: 'INC L',
+  byteDefinition: getIncRByteDefinition(RegisterCode.L),
   cycleTime: 1,
   byteLength: 1,
   operation() {
-    registers.H = incrementAndSetFlags(registers.H);
+    registers.L = incrementAndSetFlags(registers.L);
   }
 });
 
