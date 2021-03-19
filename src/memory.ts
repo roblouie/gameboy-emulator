@@ -12,6 +12,10 @@ export const memory = {
     return memoryView.getUint8(address);
   },
 
+  readSignedByte(address: number) {
+    return memoryView.getInt8(address);
+  },
+
   readWord(address: number) {
     return memoryView.getUint16(address, true);
   },
