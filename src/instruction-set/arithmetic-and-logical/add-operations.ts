@@ -305,7 +305,7 @@ addOperations.push({
   get command() {
     return `ADD SP, 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
   },
-  byteDefinition: getAddHLSSByteDefinition(RegisterPairCodeSP.SP),
+  byteDefinition: 0b11_101_000,
   cycleTime: 4,
   byteLength: 2,
   operation() {

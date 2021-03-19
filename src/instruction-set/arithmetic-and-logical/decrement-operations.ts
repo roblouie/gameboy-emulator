@@ -85,12 +85,12 @@ decrementOperations.push({
 });
 
 decrementOperations.push({
-  command: 'DEC H',
-  byteDefinition: getDecRByteDefinition(RegisterCode.H),
+  command: 'DEC L',
+  byteDefinition: getDecRByteDefinition(RegisterCode.L),
   cycleTime: 1,
   byteLength: 1,
   operation() {
-    registers.H = decrementAndSetFlags(registers.H);
+    registers.L = decrementAndSetFlags(registers.L);
   }
 });
 
