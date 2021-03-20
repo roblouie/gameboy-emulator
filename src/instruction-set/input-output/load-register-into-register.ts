@@ -18,6 +18,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -28,6 +29,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -38,6 +40,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -48,6 +51,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -58,6 +62,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -68,6 +73,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -78,6 +84,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = registers.L;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -92,6 +99,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -102,6 +110,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -112,6 +121,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -122,6 +132,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -132,6 +143,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -142,6 +154,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -152,6 +165,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = registers.L;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -166,6 +180,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -176,6 +191,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -186,6 +202,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -196,6 +213,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -206,6 +224,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -216,6 +235,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -226,6 +246,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = registers.L;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -240,6 +261,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -250,6 +272,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -260,6 +283,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -270,6 +294,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -280,6 +305,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -290,6 +316,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -300,6 +327,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = registers.L;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -314,6 +342,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -324,6 +353,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -334,6 +364,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -344,6 +375,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -354,6 +386,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -364,6 +397,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -374,6 +408,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = registers.L;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -388,6 +423,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -398,6 +434,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -408,6 +445,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -418,6 +456,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -428,6 +467,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -438,6 +478,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -448,6 +489,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = registers.L;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -462,6 +504,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.A;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -472,6 +515,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.B;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -482,6 +526,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.C;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -492,6 +537,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.D;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -502,6 +548,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.E;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -512,6 +559,7 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.H;
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -522,18 +570,6 @@ registerToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = registers.L;
-  }
-});
-
-// ****************
-// * Load SP, HL
-// ****************
-registerToRegisterInstructions.push({
-  command: 'LD SP, HL',
-  byteDefinition: 0b11111001,
-  cycleTime: 2,
-  byteLength: 1,
-  operation() {
-    registers.SP = registers.HL;
+    registers.programCounter += this.byteLength;
   }
 });

@@ -45,8 +45,13 @@ CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wra
 
 const registersBuffer = new ArrayBuffer(12);
 const registersView = new DataView(registersBuffer);
+const registersBytes = new Uint8Array(registersBuffer);
 
 export const registers = {
+  reset() {
+    registersBytes.fill(0);
+  },
+
   get F() {
     return registersView.getUint8(0);
   },
@@ -104,6 +109,13 @@ export const registers = {
   },
 
   // Auxiliary register pairs
+  get AF() {
+    return registersView.getUint16(0, true);
+  },
+  set AF(twoBytes: number) {
+    registersView.setUint16(0, twoBytes, true);
+  },
+
   get BC() {
     return registersView.getUint16(2, true);
   },

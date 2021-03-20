@@ -3,17 +3,16 @@
   "version": "1.0.0",
   "description": "A gameboy emulator written with typescript",
   "main": "index.js",
-  "dependencies": {
-    "jest": "^26.6.3"
-  },
   "devDependencies": {
     "@types/jest": "^26.0.20",
+    "jest-canvas-mock": "^2.3.1",
     "ts-jest": "^26.5.3",
     "ts-loader": "^8.0.18",
     "typescript": "^4.2.3",
     "webpack": "^5.24.4",
     "webpack-cli": "^4.5.0",
-    "webpack-dev-server": "^3.11.2"
+    "webpack-dev-server": "^3.11.2",
+    "jest": "^26.6.3"
   },
   "scripts": {
     "serve": "webpack serve --mode=development",

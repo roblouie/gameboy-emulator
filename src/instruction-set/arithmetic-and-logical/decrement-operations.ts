@@ -31,6 +31,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.A = decrementAndSetFlags(registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -41,6 +42,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.B = decrementAndSetFlags(registers.B);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -51,6 +53,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.C = decrementAndSetFlags(registers.C);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -61,6 +64,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.D = decrementAndSetFlags(registers.D);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -71,6 +75,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.E = decrementAndSetFlags(registers.E);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -81,6 +86,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.H = decrementAndSetFlags(registers.H);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -91,6 +97,7 @@ decrementOperations.push({
   byteLength: 1,
   operation() {
     registers.L = decrementAndSetFlags(registers.L);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -108,6 +115,7 @@ decrementOperations.push({
     const value = memory.readByte(registers.HL);
     const incremented = decrementAndSetFlags(value);
     memory.writeByte(registers.HL, incremented);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -126,6 +134,7 @@ incrementOperations.push({
   byteLength: 1,
   operation() {
     registers.BC--;
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -136,6 +145,7 @@ incrementOperations.push({
   byteLength: 1,
   operation() {
     registers.DE--;
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -146,6 +156,7 @@ incrementOperations.push({
   byteLength: 1,
   operation() {
     registers.HL--;
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -156,5 +167,6 @@ incrementOperations.push({
   byteLength: 1,
   operation() {
     registers.SP--;
+    registers.programCounter += this.byteLength
   }
 });

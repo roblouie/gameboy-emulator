@@ -2,42 +2,54 @@ import { CartridgeType } from "./cartridge-type.enum";
 import { EnhancedImageData } from "../helpers/enhanced-image-data";
 import { getBit } from "../helpers/binary-helpers";
 
-export class GameRom {
-  private readonly gameDataView: DataView;
-  private readonly gameBytes: Uint8Array;
+let gameDataView: DataView;
+let gameBytes: Uint8Array;
 
-  static readonly EntryPointOffset = 0x100;
+export const CartridgeEntryPointOffset = 0x100;
 
-  constructor(gameData: ArrayBuffer) {
-    this.gameDataView = new DataView(gameData);
-    this.gameBytes = new Uint8Array(gameData);
-  }
+export const cartridge = {
+  loadCartridge(gameData: ArrayBuffer) {
+    gameDataView = new DataView(gameData);
+    gameBytes = new Uint8Array(gameData);
+  },
 
-  get dataView() {
-    return this.gameDataView;
-  }
+  readByte(address: number) {
+    return gameDataView.getUint8(address);
+  },
 
-  get bytes() {
-    return this.gameBytes;
-  }
+  readSignedByte(address: number) {
+    return gameDataView.getInt8(address);
+  },
+
+  readWord(address: number) {
+    return gameDataView.getUint16(address, true);
+  },
+
+  writeByte(address: number, value: number) {
+    gameDataView.setUint8(address, value);
+  },
+
+  writeWord(address: number, value: number) {
+    gameDataView.setUint16(address, value, true);
+  },
 
   get title(): string {
     const titleAreaStartOffset = 0x134;
     const titleAreaEndOffset = 0x143;
     const textDecoder = new TextDecoder();
-    const titleBytes = this.gameBytes.subarray(titleAreaStartOffset, titleAreaEndOffset);
+    const titleBytes = gameBytes.subarray(titleAreaStartOffset, titleAreaEndOffset);
     return textDecoder.decode(titleBytes);
-  }
+  },
 
   get type(): string {
     const typeOffset = 0x147;
-    const typeCode = this.gameDataView.getUint8(typeOffset);
+    const typeCode = gameDataView.getUint8(typeOffset);
     return CartridgeType[typeCode];
-  }
+  },
 
   get romSize() {
     const sizeOffset = 0x148;
-    const sizeCode = this.gameDataView.getUint8(sizeOffset);
+    const sizeCode = gameDataView.getUint8(sizeOffset);
     const sizes = [
       32,
       64,
@@ -51,11 +63,11 @@ export class GameRom {
     ];
 
     return sizes[sizeCode];
-  }
+  },
 
   get ramSize() {
     const sizeOffset = 0x149;
-    const sizeCode = this.gameDataView.getUint8(sizeOffset);
+    const sizeCode = gameDataView.getUint8(sizeOffset);
     const sizes = [
       0,
       16,
@@ -66,18 +78,18 @@ export class GameRom {
     ];
 
     return sizes[sizeCode];
-  }
+  },
 
   get versionNumber() {
     const versionNumberOffset = 0x14c;
-    return this.gameDataView.getUint8(versionNumberOffset);
-  }
+    return gameDataView.getUint8(versionNumberOffset);
+  },
 
   get nintendoLogo(): ImageData {
     const logoStartOffset = 0x104;
     const logoEndOffset = 0x134;
     const imageData = new EnhancedImageData(48, 8);
-    const logoData = this.gameBytes.subarray(logoStartOffset, logoEndOffset);
+    const logoData = gameBytes.subarray(logoStartOffset, logoEndOffset);
 
     let xPos = 0;
     let yPos = 0;

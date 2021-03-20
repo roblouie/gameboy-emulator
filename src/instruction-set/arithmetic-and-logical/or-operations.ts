@@ -29,6 +29,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -39,6 +40,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.B);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -49,6 +51,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.C);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -59,6 +62,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.D);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -69,6 +73,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.E);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -79,6 +84,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.H);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -89,6 +95,7 @@ orOperations.push({
   byteLength: 1,
   operation() {
     registers.A = orAndSetFlags(registers.A, registers.L);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -102,6 +109,7 @@ orOperations.push({
   operation() {
     const value = memory.readByte(registers.programCounter + 1);
     registers.A = orAndSetFlags(registers.A, value);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -113,5 +121,6 @@ orOperations.push({
   operation() {
     const value = memory.readByte(registers.HL);
     registers.A = orAndSetFlags(registers.A, value);
+    registers.programCounter += this.byteLength
   }
 });

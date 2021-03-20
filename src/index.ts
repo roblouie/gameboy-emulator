@@ -1,5 +1,6 @@
-import { GameRom } from "./game-rom/game-rom.model";
 import { operations } from "./instruction-set/operations";
+import { cpu } from "./cpu";
+import { cartridge } from "./game-rom/cartridge";
 
 let context: CanvasRenderingContext2D;
 
@@ -19,15 +20,17 @@ async function onFileChange(event: Event) {
 
   if (fileElement.files && fileElement.files[0]) {
     const arrayBuffer = await fileToArrayBuffer(fileElement.files[0]);
-    const game = new GameRom(arrayBuffer);
+    cartridge.loadCartridge(arrayBuffer);
 
-    console.log('title: ' + game.title);
-    console.log('version: ' + game.versionNumber);
-    console.log('type: ' + game.type);
-    console.log('rom size: ' + game.romSize);
-    console.log('ram size: ' + game.ramSize);
+    cpu.run();
 
-    context.putImageData(game.nintendoLogo, 0, 0);
+    console.log('title: ' + cartridge.title);
+    console.log('version: ' + cartridge.versionNumber);
+    console.log('type: ' + cartridge.type);
+    console.log('rom size: ' + cartridge.romSize);
+    console.log('ram size: ' + cartridge.ramSize);
+
+    context.putImageData(cartridge.nintendoLogo, 0, 0);
   }
 }
 

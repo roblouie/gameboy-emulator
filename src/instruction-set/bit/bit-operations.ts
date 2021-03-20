@@ -6,7 +6,6 @@ import { Instruction } from "../instruction.model";
 
 export const bitOperations: Instruction[] = [];
 
-
 bitOperations.push({
   get command() {
     const operationDetails = memory.readByte(registers.programCounter + 1);
@@ -62,6 +61,9 @@ bitOperations.push({
   cycleTime: 2,
   byteLength: 2,
   operation() {
+    registers.flags.isHalfCarry = true;
+    registers.flags.isSubtraction = false;
+
     const operationDetails = memory.readByte(registers.programCounter + 1);
     const operationFlag = operationDetails >> 6;
 
@@ -71,13 +73,16 @@ bitOperations.push({
     switch (operationFlag) {
       case 0b01:
         bitOperation();
-      break;
+        break;
       case 0b11:
         setOperation();
+        break;
       case 0b10:
         resetOperation();
         break;
     }
+
+    registers.programCounter += this.byteLength;
 
     function bitOperation() {
       if (operand === 0b110) {
@@ -180,8 +185,5 @@ bitOperations.push({
         }
       }
     }
-
-    registers.flags.isHalfCarry = true;
-    registers.flags.isSubtraction = false;
   }
 });

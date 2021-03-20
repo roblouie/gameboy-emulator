@@ -19,6 +19,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -29,6 +30,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.B);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -39,6 +41,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.C);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -49,6 +52,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.D);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -59,6 +63,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.E);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -69,6 +74,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.H);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -79,6 +85,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(registers.HL, registers.L);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -92,6 +99,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeByte(0xff00 + registers.C, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -100,13 +108,17 @@ registerToMemoryInstructions.push({
 // * Load (n), A
 // ****************
 registerToMemoryInstructions.push({
-  command: 'LD (n), A',
+  get command() {
+    const baseAddress = memory.readByte(registers.programCounter + 1);
+    return `LD (0x${baseAddress.toString(16)}), A`;
+  },
   byteDefinition: 0b11100000,
   cycleTime: 3,
   byteLength: 2,
   operation() {
     const baseAddress = memory.readByte(registers.programCounter + 1);
     memory.writeByte(0xff00 + baseAddress, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -115,13 +127,17 @@ registerToMemoryInstructions.push({
 // * Load (nn), A
 // ****************
 registerToMemoryInstructions.push({
-  command: 'LD (nn), A',
+  get command() {
+    const memoryAddress = memory.readWord(registers.programCounter + 1);
+    return `LD (0x${memoryAddress.toString(16)}), A`;
+  },
   byteDefinition: 0b11101010,
   cycleTime: 4,
   byteLength: 3,
   operation() {
     const memoryAddress = memory.readWord(registers.programCounter + 1);
     memory.writeByte(memoryAddress, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -136,6 +152,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeWord(registers.BC, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -146,6 +163,7 @@ registerToMemoryInstructions.push({
   byteLength: 1,
   operation() {
     memory.writeWord(registers.DE, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -161,6 +179,7 @@ registerToMemoryInstructions.push({
   operation() {
     memory.writeByte(registers.HL, registers.A);
     registers.HL++;
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -176,5 +195,6 @@ registerToMemoryInstructions.push({
   operation() {
     memory.writeByte(registers.HL, registers.A);
     registers.HL--;
+    registers.programCounter += this.byteLength
   }
 });

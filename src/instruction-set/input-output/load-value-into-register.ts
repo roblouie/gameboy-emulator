@@ -22,6 +22,7 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.A = memory.readByte(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -34,6 +35,7 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.B = memory.readByte(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -46,6 +48,7 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.C = memory.readByte(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -58,6 +61,7 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.D = memory.readByte(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -70,6 +74,7 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.E = memory.readByte(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -82,6 +87,7 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.H = memory.readByte(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -94,60 +100,6 @@ valueToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.L = memory.readByte(registers.programCounter + 1);
-  }
-});
-
-// ****************
-// * Load dd, nn
-// ****************
-function getLoadDDNNByteDefinition(rpCode: RegisterPairCodeSP) {
-  return (rpCode << 4) + 1;
-}
-
-valueToRegisterInstructions.push({
-  get command() {
-    return `LD BC, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
-  },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.BC),
-  cycleTime: 3,
-  byteLength: 3,
-  operation() {
-    registers.BC = memory.readWord(registers.programCounter + 1);
-  }
-});
-
-valueToRegisterInstructions.push({
-  get command() {
-    return `LD DE, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
-  },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.DE),
-  cycleTime: 3,
-  byteLength: 3,
-  operation() {
-    registers.DE = memory.readWord(registers.programCounter + 1);
-  }
-});
-
-valueToRegisterInstructions.push({
-  get command() {
-    return `LD HL, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
-  },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.HL),
-  cycleTime: 3,
-  byteLength: 3,
-  operation() {
-    registers.HL = memory.readWord(registers.programCounter + 1);
-  }
-});
-
-valueToRegisterInstructions.push({
-  get command() {
-    return `LD SP, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
-  },
-  byteDefinition: getLoadDDNNByteDefinition(RegisterPairCodeSP.SP),
-  cycleTime: 3,
-  byteLength: 3,
-  operation() {
-    registers.SP = memory.readWord(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
   }
 });

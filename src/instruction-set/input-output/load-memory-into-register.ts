@@ -19,6 +19,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -29,6 +30,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.B = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -39,6 +41,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.C = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -49,6 +52,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.D = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -59,6 +63,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.E = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -69,6 +74,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.H = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -79,6 +85,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.L = memory.readByte(registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -92,6 +99,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = memory.readByte(registers.BC);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -102,6 +110,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = memory.readByte(registers.DE);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -112,6 +121,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 1,
   operation() {
     registers.A = memory.readByte(0xff00 + registers.C);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -128,6 +138,7 @@ memoryContentsToRegisterInstructions.push({
   byteLength: 2,
   operation() {
     registers.A = memory.readByte(0xff00 + memory.readByte(registers.programCounter + 1));
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -147,6 +158,7 @@ memoryContentsToRegisterInstructions.push({
   operation() {
     const memoryAddress = memory.readWord(registers.programCounter + 1);
     registers.A = memory.readByte(memoryAddress);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -162,6 +174,7 @@ memoryContentsToRegisterInstructions.push({
   operation() {
     registers.A = memory.readByte(registers.HL);
     registers.HL++;
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -176,5 +189,6 @@ memoryContentsToRegisterInstructions.push({
   operation() {
     registers.A = memory.readByte(registers.HL);
     registers.HL--;
+    registers.programCounter += this.byteLength
   }
 });

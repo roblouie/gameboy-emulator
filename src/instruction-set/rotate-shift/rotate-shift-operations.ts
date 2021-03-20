@@ -16,6 +16,8 @@ rotateShiftOperations.push({
     registers.flags.N = 0;
 
     registers.A = (registers.A << 1) + bit7;
+
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -32,5 +34,7 @@ rotateShiftOperations.push({
     registers.flags.N = 0;
 
     registers.A = result;
+
+    registers.programCounter += this.byteLength;
   }
 });

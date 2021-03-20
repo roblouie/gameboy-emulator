@@ -32,6 +32,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -44,6 +45,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.B);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -56,6 +58,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.C);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -68,6 +71,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.D);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -80,6 +84,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.E);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -92,6 +97,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.H);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -104,6 +110,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.L);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -120,6 +127,7 @@ addOperations.push({
   byteLength: 2,
   operation() {
     registers.A = addAndSetFlags(registers.A, memory.readByte(registers.programCounter + 1));
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -135,6 +143,7 @@ addOperations.push({
   operation() {
     const value = memory.readByte(registers.HL);
     registers.A = addAndSetFlags(registers.A, value);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -153,6 +162,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.A + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -163,6 +173,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.B + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -173,6 +184,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.C + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -183,6 +195,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.D + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -193,6 +206,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.E + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -203,6 +217,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.H + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -213,6 +228,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.A = addAndSetFlags(registers.A, registers.L + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -226,6 +242,7 @@ addOperations.push({
   operation() {
     const value = memory.readByte(registers.programCounter + 1);
     registers.A = addAndSetFlags(registers.A, value + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -237,6 +254,7 @@ addOperations.push({
   operation() {
     const value = memory.readByte(registers.HL);
     registers.A = addAndSetFlags(registers.A, value + registers.flags.CY);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -264,6 +282,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.HL = add16BitAndSetFlags(registers.HL, registers.BC);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -274,6 +293,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.HL = add16BitAndSetFlags(registers.HL, registers.DE);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -284,6 +304,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.HL = add16BitAndSetFlags(registers.HL, registers.HL);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -294,6 +315,7 @@ addOperations.push({
   byteLength: 1,
   operation() {
     registers.HL = add16BitAndSetFlags(registers.HL, registers.SP);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -316,5 +338,6 @@ addOperations.push({
     registers.flags.isCarry = (newValue & 0xf000) < (registers.SP & 0xf000);
 
     registers.SP = newValue;
+    registers.programCounter += this.byteLength
   }
 });

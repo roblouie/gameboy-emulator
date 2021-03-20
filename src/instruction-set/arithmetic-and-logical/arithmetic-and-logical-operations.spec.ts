@@ -1,4 +1,5 @@
 import { arithmeticAndLogicalOperations } from "./arithmetic-and-logical-operations";
+import 'jest-canvas-mock';
 
 test('All instructions have a unique byte definition', () => {
   const byteDefinitions = arithmeticAndLogicalOperations.map(instruction => instruction.byteDefinition)

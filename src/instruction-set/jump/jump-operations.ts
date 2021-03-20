@@ -30,7 +30,7 @@ jumpOperations.push({
     if (!registers.flags.isResultZero) {
       registers.programCounter = memory.readWord(registers.programCounter + 1);
     } else {
-      registers.programCounter += 3;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -48,7 +48,7 @@ jumpOperations.push({
     if (registers.flags.isResultZero) {
       registers.programCounter = memory.readWord(registers.programCounter + 1);
     } else {
-      registers.programCounter += 3;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -66,7 +66,7 @@ jumpOperations.push({
     if (!registers.flags.isCarry) {
       registers.programCounter = memory.readWord(registers.programCounter + 1);
     } else {
-      registers.programCounter += 3;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -84,7 +84,7 @@ jumpOperations.push({
     if (registers.flags.isCarry) {
       registers.programCounter = memory.readWord(registers.programCounter + 1);
     } else {
-      registers.programCounter += 3;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -122,7 +122,7 @@ jumpOperations.push({
     if (!registers.flags.isResultZero) {
       registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
     } else {
-      registers.programCounter += 2;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -143,7 +143,7 @@ jumpOperations.push({
     if (registers.flags.isResultZero) {
       registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
     } else {
-      registers.programCounter += 2;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -164,7 +164,7 @@ jumpOperations.push({
     if (!registers.flags.isCarry) {
       registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
     } else {
-      registers.programCounter += 2;
+      registers.programCounter += this.byteLength;
     }
   }
 });
@@ -185,7 +185,7 @@ jumpOperations.push({
     if (registers.flags.isCarry) {
       registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
     } else {
-      registers.programCounter += 2;
+      registers.programCounter += this.byteLength;
     }
   }
 });

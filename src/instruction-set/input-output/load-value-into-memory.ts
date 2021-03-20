@@ -14,5 +14,6 @@ valueToMemoryInstructions.push({
     operation() {
       const value = memory.readByte(registers.programCounter + 1);
       memory.writeByte(registers.HL, value);
+      registers.programCounter += this.byteLength;
     }
 });

@@ -1,3 +1,5 @@
+import { cartridge } from "./game-rom/cartridge";
+
 const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);
 const memoryBytes = new Uint8Array(memoryBuffer);
@@ -7,24 +9,47 @@ export const memory = {
     memoryBytes.fill(0, 0, memoryBytes.length - 1);
   },
 
-  // TODO: Update read logic to read from cartridge when applicable
   readByte(address: number) {
-    return memoryView.getUint8(address);
+    if (isAccessingCartridge(address)) {
+      return cartridge.readByte(address);
+    } else {
+      return memoryView.getUint8(address);
+    }
   },
 
   readSignedByte(address: number) {
-    return memoryView.getInt8(address);
+    if (isAccessingCartridge(address)) {
+      return cartridge.readSignedByte(address);
+    } else {
+      return memoryView.getInt8(address);
+    }
   },
 
   readWord(address: number) {
-    return memoryView.getUint16(address, true);
+    if (isAccessingCartridge(address)) {
+      return cartridge.readWord(address);
+    } else {
+      return memoryView.getUint16(address, true);
+    }
   },
 
   writeByte(address: number, value: number) {
-    memoryView.setUint8(address, value);
+    if (isAccessingCartridge(address)) {
+      return cartridge.writeByte(address, value);
+    } else {
+      memoryView.setUint8(address, value);
+    }
   },
 
   writeWord(address: number, value: number) {
-    memoryView.setUint16(address, value, true);
+    if (isAccessingCartridge(address)) {
+      return cartridge.writeWord(address, value);
+    } else {
+      memoryView.setUint16(address, value, true);
+    }
   }
+}
+
+function isAccessingCartridge(address: number): boolean {
+  return address <= 0x7FFF || (address >= 0xA000 && address <= 0xBFFF);
 }

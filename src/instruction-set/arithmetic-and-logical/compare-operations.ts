@@ -27,6 +27,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.A);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -37,6 +38,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.B);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -47,6 +49,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.C);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -57,6 +60,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.D);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -67,6 +71,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.E);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -77,6 +82,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.H);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -87,6 +93,7 @@ compareOperations.push({
   byteLength: 1,
   operation() {
     compareAndSetFlags(registers.A, registers.L);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -100,6 +107,7 @@ compareOperations.push({
   operation() {
     const value = memory.readByte(registers.programCounter + 1);
     compareAndSetFlags(registers.A, value);
+    registers.programCounter += this.byteLength
   }
 });
 
@@ -111,5 +119,6 @@ compareOperations.push({
   operation() {
     const value = memory.readByte(registers.HL);
     compareAndSetFlags(registers.A, value);
+    registers.programCounter += this.byteLength
   }
 });
