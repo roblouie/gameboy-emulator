@@ -1,7 +1,7 @@
 import { Instruction } from "../instruction.model";
 import { registers } from "../../registers/registers";
-import { memory } from "../../memory";
 import { FlagCondition } from "../../registers/flag-condition.enum";
+import { memory } from "../../../memory";
 
 export const callAndReturnOperations: Instruction[] = [];
 

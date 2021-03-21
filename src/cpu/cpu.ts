@@ -1,7 +1,7 @@
 import { operations } from "./instruction-set/operations";
 import { registers } from "./registers/registers";
-import { CartridgeEntryPointOffset } from "./game-rom/cartridge";
-import { memory } from "./memory";
+import { CartridgeEntryPointOffset } from "../game-rom/cartridge";
+import { memory } from "../memory";
 
 export const cpu = {
   run() {

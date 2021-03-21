@@ -1,9 +1,9 @@
 import { Instruction } from "../instruction.model";
 import { RegisterPairCodeSP } from "../../registers/register-pair-code-sp.enum";
-import { memory } from "../../memory";
 import { registers } from "../../registers/registers";
 import { RegisterPairCodeAF } from "../../registers/register-pair-code-af.enum";
 import { popFromStack, pushToStack } from "../stack-helpers";
+import { memory } from "../../../memory";
 
 export const sixteenBitTransferOperations: Instruction[] = [];
 

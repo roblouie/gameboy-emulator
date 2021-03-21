@@ -1,7 +1,7 @@
-import { memory } from "../../memory";
 import { registers } from "../../registers/registers";
 import { Instruction } from "../instruction.model";
 import { RegisterCode } from "../../registers/register-code.enum";
+import { memory } from "../../../memory";
 
 export const registerToMemoryInstructions: Instruction[] = [];
 

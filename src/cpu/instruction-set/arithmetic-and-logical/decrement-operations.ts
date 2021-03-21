@@ -1,9 +1,9 @@
 import { Instruction } from "../instruction.model";
 import { registers } from "../../registers/registers";
 import { RegisterCode } from "../../registers/register-code.enum";
-import { memory } from "../../memory";
 import { RegisterPairCodeSP } from "../../registers/register-pair-code-sp.enum";
 import { incrementOperations } from "./increment-operations";
+import { memory } from "../../../memory";
 
 export const decrementOperations: Instruction[] = [];
 

@@ -1,6 +1,6 @@
-import { operations } from "./instruction-set/operations";
-import { cpu } from "./cpu";
-import { cartridge } from "./game-rom/cartridge";
+import { operations } from "@/cpu/instruction-set/operations";
+import { cpu } from "@/cpu/cpu";
+import { cartridge } from "@/game-rom/cartridge";
 
 let context: CanvasRenderingContext2D;
 

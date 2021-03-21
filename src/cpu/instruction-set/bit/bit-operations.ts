@@ -1,8 +1,8 @@
-import { clearBit, getBit, setBit } from "../../helpers/binary-helpers";
-import { memory } from "../../memory";
 import { RegisterCode } from "../../registers/register-code.enum";
 import { registers } from "../../registers/registers";
 import { Instruction } from "../instruction.model";
+import { memory } from "../../../memory";
+import { clearBit, getBit, setBit } from "../../../helpers/binary-helpers";
 
 export const bitOperations: Instruction[] = [];
 

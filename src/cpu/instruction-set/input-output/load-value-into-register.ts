@@ -1,8 +1,8 @@
 import { RegisterCode } from "../../registers/register-code.enum";
 import { Instruction } from "../instruction.model";
 import { registers } from "../../registers/registers";
-import { memory } from "../../memory";
 import { RegisterPairCodeSP } from "../../registers/register-pair-code-sp.enum";
+import { memory } from "../../../memory";
 
 export const valueToRegisterInstructions: Instruction[] = [];
 

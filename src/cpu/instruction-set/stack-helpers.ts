@@ -1,5 +1,5 @@
 import { registers } from "../registers/registers";
-import { memory } from "../memory";
+import { memory } from "@/memory";
 
 export function pushToStack(word: number) {
   registers.stackPointer--;

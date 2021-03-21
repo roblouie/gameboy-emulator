@@ -1,6 +1,6 @@
-import { memory } from "../../memory";
 import { registers } from "../../registers/registers";
 import { Instruction } from "../instruction.model";
+import { memory } from "../../../memory";
 
 
 export const jumpOperations: Instruction[] = [];
