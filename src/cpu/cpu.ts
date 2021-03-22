@@ -4,13 +4,12 @@ import { CartridgeEntryPointOffset } from "../game-rom/cartridge";
 import { memory } from "../memory";
 
 export const cpu = {
-  run() {
-    registers.programCounter = CartridgeEntryPointOffset;
-    for(let i = 0; i < 200; i++) {
+  isMasterInterruptEnabled: true,
+
+  tick(): number {
       const operationIndex = memory.readByte(registers.programCounter);
-      console.log(operations[operationIndex].command);
       operations[operationIndex].operation();
-    }
+      return operations[operationIndex].cycleTime * 4;
   },
 
   reset() {

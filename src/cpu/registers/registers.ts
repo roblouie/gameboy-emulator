@@ -131,10 +131,10 @@ export const registers = {
   },
 
   get HL() {
-    return registersView.getUint16(4, true);
+    return registersView.getUint16(6, true);
   },
   set HL(twoBytes: number) {
-    registersView.setUint16(4, twoBytes, true);
+    registersView.setUint16(6, twoBytes, true);
   },
 
   get programCounter() {

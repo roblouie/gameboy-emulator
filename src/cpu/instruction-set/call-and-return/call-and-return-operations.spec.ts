@@ -1,7 +1,7 @@
-import { operations } from "./operations";
+import { callAndReturnOperations } from "@/cpu/instruction-set/call-and-return/call-and-return-operations";
 
 test('All instructions have a unique byte definition', () => {
-  const byteDefinitions = operations.map(instruction => instruction.byteDefinition)
+  const byteDefinitions = callAndReturnOperations.map(instruction => instruction.byteDefinition)
   const duplicates = byteDefinitions.filter((e, i, a) => a.indexOf(e) !== i);
 
   expect(duplicates.length).toBe(0);

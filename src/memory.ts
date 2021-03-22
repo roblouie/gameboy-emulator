@@ -5,6 +5,10 @@ const memoryView = new DataView(memoryBuffer);
 const memoryBytes = new Uint8Array(memoryBuffer);
 
 export const memory = {
+  get memoryBytes() {
+    return memoryBytes;
+  },
+
   reset() {
     memoryBytes.fill(0, 0, memoryBytes.length - 1);
   },
