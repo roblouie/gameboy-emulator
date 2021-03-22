@@ -7,9 +7,10 @@ export const cpu = {
   isMasterInterruptEnabled: true,
 
   tick(): number {
-      const operationIndex = memory.readByte(registers.programCounter);
-      operations[operationIndex].operation();
-      return operations[operationIndex].cycleTime * 4;
+    const operationIndex = memory.readByte(registers.programCounter);
+    // console.log(operations[operationIndex].command)
+    operations[operationIndex].operation();
+    return operations[operationIndex].cycleTime * 4;
   },
 
   reset() {

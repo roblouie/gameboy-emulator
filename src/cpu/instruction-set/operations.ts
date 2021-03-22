@@ -6,6 +6,7 @@ import { generalPurposeOperations } from "./general-purpose/general-purpose-oper
 import { Instruction } from "./instruction.model";
 import { inputOutputInstructions } from "./input-output/input-output";
 import { callAndReturnOperations } from "./call-and-return/call-and-return-operations";
+import { registers } from "@/cpu/registers/registers";
 
 export const operations = initializeOperations();
 
@@ -32,10 +33,11 @@ function initializeOperations() {
       orderedOperations[i] = {
         command: '!!!! NOT IMPLEMENTED !!!!',
         byteDefinition: i,
-        byteLength: 0,
+        byteLength: 1,
         cycleTime: 0,
         operation() {
-          console.log(`Opcode ${this.byteDefinition} not implemented`);
+          registers.programCounter = 0x150; // just restart the rom to stop infinite looping
+          // console.log(`Opcode ${this.byteDefinition} not implemented`);
         }
       }
     }

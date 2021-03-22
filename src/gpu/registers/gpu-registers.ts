@@ -8,6 +8,11 @@ const STATOffset = 0xff41;
 const SCYOffset = 0xff42;
 const SCXOffset = 0xff43;
 
+const LYOffset = 0xff44;
+const LYCOffset = 0xff45;
+
+const BGPOffset = 0xff47;
+
 enum BlockComposition {
   EightByEight,
   EightBySixteen
@@ -38,36 +43,12 @@ export const gpuRegisters = {
       return getBit(gpuRegisters.LCDC, 2);
     },
 
-    get backgroundCodeArea(): AddressRange {
-      const ranges = [
-        {
-          start: 0x9800,
-          end: 0x9bff
-        },
-        {
-          start: 0x9c00,
-          end: 0x9fff,
-        }
-      ];
-
-      const flag = getBit(gpuRegisters.LCDC, 3);
-      return ranges[flag];
+    get backgroundCodeArea(): number {
+      return getBit(gpuRegisters.LCDC, 3);
     },
 
     get backgroundCharacterData() {
-      const ranges = [
-        {
-          start: 0x8800,
-          end: 0x97ff
-        },
-        {
-          start: 0x8000,
-          end: 0x8fff,
-        }
-      ];
-
-      const flag = getBit(gpuRegisters.LCDC, 4);
-      return ranges[flag];
+      return getBit(gpuRegisters.LCDC, 4);
     },
 
     get isWindowingOn() {
@@ -124,5 +105,32 @@ export const gpuRegisters = {
 
   get SCX() {
     return memory.readByte(SCXOffset);
+  },
+
+  // Line
+  get LY() {
+    return memory.readByte(LYOffset);
+  },
+  set LY(newValye: number) {
+    memory.writeByte(LYOffset, newValye);
+  },
+
+  get LYC() {
+    return memory.readByte(LYCOffset);
+  },
+
+  // Background Palette
+  get BGP() {
+    return memory.readByte(BGPOffset);
+  },
+
+  get backgroundPalette() {
+    const paletteByte = this.BGP;
+    const color0 = paletteByte & 0b11;
+    const color1 = (paletteByte >> 2) & 0b11;
+    const color2 = (paletteByte >> 4) & 0b11;
+    const color3 = (paletteByte >> 6) & 0b11;
+
+    return [color0, color1, color2, color3];
   }
 }
