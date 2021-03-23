@@ -43,105 +43,105 @@ H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
 
-const registersBuffer = new ArrayBuffer(12);
-const registersView = new DataView(registersBuffer);
-const registersBytes = new Uint8Array(registersBuffer);
+import { ByteManager } from "@/helpers/byte-manager";
+
+const registersByteManager = new ByteManager(12);
 
 export const registers = {
   reset() {
-    registersBytes.fill(0);
+    registersByteManager.clearAll();
   },
 
   get F() {
-    return registersView.getUint8(0);
+    return registersByteManager.getByte(0);
   },
   set F(byte: number) {
-    registersView.setUint8(0, byte);
+    registersByteManager.setByte(0, byte);
   },
 
   get A() {
-    return registersView.getUint8(1);
+    return registersByteManager.getByte(1);
   },
   set A(byte: number) {
-    registersView.setUint8(1, byte);
+    registersByteManager.setByte(1, byte);
   },
 
   get C() {
-    return registersView.getUint8(2);
+    return registersByteManager.getByte(2);
   },
   set C(byte: number) {
-    registersView.setUint8(2, byte);
+    registersByteManager.setByte(2, byte);
   },
 
   get B() {
-    return registersView.getUint8(3);
+    return registersByteManager.getByte(3);
   },
   set B(byte: number) {
-    registersView.setUint8(3, byte);
+    registersByteManager.setByte(3, byte);
   },
 
   get E() {
-    return registersView.getUint8(4);
+    return registersByteManager.getByte(4);
   },
   set E(byte: number) {
-    registersView.setUint8(4, byte);
+    registersByteManager.setByte(4, byte);
   },
 
   get D() {
-    return registersView.getUint8(5);
+    return registersByteManager.getByte(5);
   },
   set D(byte: number) {
-    registersView.setUint8(5, byte);
+    registersByteManager.setByte(5, byte);
   },
 
   get L() {
-    return registersView.getUint8(6);
+    return registersByteManager.getByte(6);
   },
   set L(byte: number) {
-    registersView.setUint8(6, byte);
+    registersByteManager.setByte(6, byte);
   },
 
   get H() {
-    return registersView.getUint8(7);
+    return registersByteManager.getByte(7);
   },
   set H(byte: number) {
-    registersView.setUint8(7, byte);
+    registersByteManager.setByte(7, byte);
   },
 
   // Auxiliary register pairs
   get AF() {
-    return registersView.getUint16(0, true);
+    return registersByteManager.getWord(0);
   },
   set AF(twoBytes: number) {
-    registersView.setUint16(0, twoBytes, true);
+    registersByteManager.setWord(0, twoBytes);
   },
 
   get BC() {
-    return registersView.getUint16(2, true);
+    return registersByteManager.getWord(2);
   },
   set BC(twoBytes: number) {
-    registersView.setUint16(2, twoBytes, true);
+    registersByteManager.setWord(2, twoBytes);
   },
 
   get DE() {
-    return registersView.getUint16(4, true);
+    return registersByteManager.getWord(4);
   },
   set DE(twoBytes: number) {
-    registersView.setUint16(4, twoBytes, true);
+    registersByteManager.setWord(4, twoBytes);
   },
 
   get HL() {
-    return registersView.getUint16(6, true);
+    return registersByteManager.getWord(6);
   },
   set HL(twoBytes: number) {
-    registersView.setUint16(6, twoBytes, true);
+    registersByteManager.setWord(6, twoBytes);
   },
 
   get programCounter() {
-    return registersView.getUint16(8, true);
+    return registersByteManager.getWord(8);
   },
   set programCounter(twoBytes: number) {
-    registersView.setUint16(8, twoBytes, true);
+    registersByteManager.setWord(8, twoBytes);
   },
   get PC() {
     return this.programCounter;
@@ -151,10 +151,10 @@ export const registers = {
   },
 
   get stackPointer() {
-    return registersView.getUint16(10, true);
+    return registersByteManager.getWord(10);
   },
   set stackPointer(twoBytes: number) {
-    registersView.setUint16(10, twoBytes, true);
+    registersByteManager.setWord(10, twoBytes);
   },
   get SP() {
     return this.stackPointer;
@@ -163,17 +163,30 @@ export const registers = {
     this.stackPointer = twoBytes;
   },
 
+  setFlags(isCarry: boolean, isHalfCarry: boolean, isSubtraction: boolean, isZero: boolean) {
+    const carry = isCarry ? 1 : 0;
+    const halfCarry = isHalfCarry ? 1 : 0;
+    const subtraction = isSubtraction ? 1 : 0;
+    const resultZero = isZero ? 1 : 0;
+
+    const flag = (carry << 4) + (halfCarry << 5) + (subtraction << 6) + (resultZero << 7);
+    registersByteManager.setByte(0, flag);
+  },
+
   // Helper methods for F register with friendly named booleans and documented names with 0/1;
   flags: {
     get Z() {
-      return (registers.F >> 7);
+      return registersByteManager.getByte(0) >> 7;
     },
     set Z(newValue: number) {
+      let value = registersByteManager.getByte(0);
       if (newValue === 1) {
-        registers.F |= 1 << 7;
+        value |= 1 << 7;
       } else {
-        registers.F &= ~(1 << 7);
+        value &= ~(1 << 7);
       }
+
+      registersByteManager.setByte(0, value);
     },
     get isResultZero() {
       return this.Z === 1;
@@ -184,14 +197,18 @@ export const registers = {
 
 
     get N() {
-      return ((registers.F >> 6) & 1);
+      return (registersByteManager.getByte(0) >> 6) & 1;
     },
     set N(newValue: number) {
+      let value = registersByteManager.getByte(0);
+
       if (newValue === 1) {
-        registers.F |= 1 << 6;
+        value |= 1 << 6;
       } else {
-        registers.F &= ~(1 << 6);
+        value &= ~(1 << 6);
       }
+
+      registersByteManager.setByte(0, value);
     },
     get isSubtraction() {
       return this.N === 1;
@@ -202,14 +219,18 @@ export const registers = {
 
 
     get H() {
-      return ((registers.F >> 5) & 1);
+      return (registersByteManager.getByte(0) >> 5) & 1;
     },
     set H(newValue: number) {
+      let value = registersByteManager.getByte(0);
+
       if (newValue === 1) {
-        registers.F |= 1 << 5;
+        value |= 1 << 5;
       } else {
-        registers.F &= ~(1 << 5);
+        value &= ~(1 << 5);
       }
+
+      registersByteManager.setByte(0, value);
     },
     get isHalfCarry() {
       return this.H === 1;
@@ -220,14 +241,18 @@ export const registers = {
 
 
     get CY() {
-      return ((registers.F >> 4) & 1);
+      return (registersByteManager.getByte(0) >> 4) & 1;
     },
     set CY(newValue: number) {
+      let value = registersByteManager.getByte(0);
+
       if (newValue === 1) {
-        registers.F |= 1 << 4;
+        value |= 1 << 4;
       } else {
-        registers.F &= ~(1 << 4);
+        value &= ~(1 << 4);
       }
+
+      registersByteManager.setByte(0, value);
     },
     get isCarry() {
       return this.CY === 1;

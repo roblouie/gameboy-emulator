@@ -9,7 +9,7 @@ export class Gameboy {
     let cycles = 0;
     let funTimes = 0;
 
-    const runFrame = () => {
+    const runFrame = (timedif: number) => {
       while (cycles < CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
@@ -21,24 +21,24 @@ export class Gameboy {
       }
 
       cycles = cycles % CyclesPerFrame;
-      // console.log(timedif);
+      console.log(timedif);
       // debugger;
       // console.log(cpu.instructions);
       funTimes++;
 
       // if (funTimes < 60) {
-        setTimeout(runFrame, 16);
+        requestAnimationFrame(runFrame);
       // }
 
       if (funTimes === 60) {
-        console.log(instructionCache);
-        console.log(registerStateCache);
-        debugger;
+        // console.log(instructionCache);
+        // console.log(registerStateCache);
+        // debugger;
         funTimes = 0;
       }
     }
 
-    runFrame();
+    requestAnimationFrame(runFrame);
   }
 
   onFrameFinished(callback: Function) {

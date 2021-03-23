@@ -10,8 +10,8 @@ export const cpu = {
   tick(): number {
     const operationIndex = memory.readByte(registers.programCounter);
     // Store last X instructions and register states for debugging
-    updateInstructionCache(operations[operationIndex].command);
-    updateRegisterStateCache();
+    // updateInstructionCache(operations[operationIndex].command);
+    // updateRegisterStateCache();
 
     operations[operationIndex].operation();
     return operations[operationIndex].cycleTime;

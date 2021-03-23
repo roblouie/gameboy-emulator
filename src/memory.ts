@@ -1,23 +1,26 @@
 import { cartridge } from "./game-rom/cartridge";
+import { ByteManager } from "@/helpers/byte-manager";
 
-const memoryBuffer = new ArrayBuffer(0x10000);
-const memoryView = new DataView(memoryBuffer);
-const memoryBytes = new Uint8Array(memoryBuffer);
+// const memoryBuffer = new ArrayBuffer(0x10000);
+// const memoryView = new DataView(memoryBuffer);
+// const memoryBytes = new Uint8Array(memoryBuffer);
+
+const memoryByteManager = new ByteManager(0x10000);
 
 export const memory = {
   get memoryBytes() {
-    return memoryBytes;
+    return memoryByteManager.data;
   },
 
   reset() {
-    memoryBytes.fill(0, 0, memoryBytes.length - 1);
+    memoryByteManager.clearAll();
   },
 
   readByte(address: number) {
     if (isAccessingCartridge(address)) {
       return cartridge.readByte(address);
     } else {
-      return memoryView.getUint8(address);
+      return memoryByteManager.getByte(address);
     }
   },
 
@@ -25,7 +28,7 @@ export const memory = {
     if (isAccessingCartridge(address)) {
       return cartridge.readSignedByte(address);
     } else {
-      return memoryView.getInt8(address);
+      return memoryByteManager.getSignedByte(address);
     }
   },
 
@@ -33,7 +36,7 @@ export const memory = {
     if (isAccessingCartridge(address)) {
       return cartridge.readWord(address);
     } else {
-      return memoryView.getUint16(address, true);
+      return memoryByteManager.getWord(address);
     }
   },
 
@@ -41,7 +44,7 @@ export const memory = {
     if (isAccessingCartridge(address)) {
       return cartridge.writeByte(address, value);
     } else {
-      memoryView.setUint8(address, value);
+      memoryByteManager.setByte(address, value);
     }
   },
 
@@ -49,7 +52,7 @@ export const memory = {
     if (isAccessingCartridge(address)) {
       return cartridge.writeWord(address, value);
     } else {
-      memoryView.setUint16(address, value, true);
+      memoryByteManager.setWord(address, value);
     }
   }
 }

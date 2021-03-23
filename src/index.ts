@@ -4,7 +4,7 @@ import { cartridge, CartridgeEntryPointOffset } from "@/game-rom/cartridge";
 import { CyclesPerFrame, gpu } from "@/gpu/gpu";
 import { registers } from "@/cpu/registers/registers";
 import { gpuRegisters } from "@/gpu/registers/gpu-registers";
-import { backgroundTilesToImageData, characterImageData } from "@/gpu/gpu-debug-helpers";
+import { characterImageData } from "@/gpu/gpu-debug-helpers";
 import { memory } from "@/memory";
 import { Gameboy } from "@/gameboy";
 
@@ -74,7 +74,7 @@ async function onFileChange(event: Event) {
     vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
 
     backgroundContext.imageSmoothingEnabled = false;
-    backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
+    // backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
     backgroundContext.drawImage( backgroundCanvas, 0, 0, 2*backgroundCanvas.width, 2*backgroundCanvas.height );
 
   }

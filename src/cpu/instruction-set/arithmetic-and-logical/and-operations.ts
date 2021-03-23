@@ -7,11 +7,7 @@ export const andOperations: Instruction[] = [];
 
 function andAndSetFlags(accumulatorVal: number, toAnd: number) {
   const newValue = accumulatorVal & toAnd;
-  registers.flags.isCarry = false;
-  registers.flags.isHalfCarry = true;
-  registers.flags.isSubtraction = false;
-  registers.flags.isResultZero = newValue === 0;
-
+  registers.setFlags(false, true, false, newValue === 0);
   return newValue;
 }
 

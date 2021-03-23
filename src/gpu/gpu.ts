@@ -38,9 +38,6 @@ const colors = [
   0, // black
 ]
 
-const vramBytes = memory.memoryBytes.subarray(CharacterDataStart, BackgroundDisplayData2End);
-
-
 export const gpu = {
   cycleCounter: 0,
   videoMode: VideoMode.AccessingOAM,
@@ -84,7 +81,7 @@ export const gpu = {
       case VideoMode.AccessingOAM:
         if (this.cycleCounter >= CyclesPerScanlineOam) {
           this.cycleCounter %= CyclesPerScanlineOam;
-          // gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
+          gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
           this.videoMode = VideoMode.AccessingVRAM;
         }
         break;
@@ -97,7 +94,7 @@ export const gpu = {
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
 
-          // gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
+          gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
         }
         break;
 
@@ -116,7 +113,7 @@ export const gpu = {
             this.videoMode = VideoMode.VBlank;
 
           } else {
-            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            gpuRegisters.status.mode = StatusMode.SearchingOAM;
             this.videoMode = VideoMode.AccessingOAM;
 
           }
@@ -135,7 +132,7 @@ export const gpu = {
 
           // If we drew the last (offscreen) line, vblank is over, start over
           if (gpuRegisters.LY === 154) {
-            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            gpuRegisters.status.mode = StatusMode.SearchingOAM;
             this.videoMode = VideoMode.AccessingOAM;
             gpuRegisters.LY = 0;
           }
@@ -145,18 +142,16 @@ export const gpu = {
   },
 
   drawBackgroundLine(currentLine: number) {
-    let backgroundTileMap: Uint8Array | Int8Array;
+    // let backgroundTileMap: Uint8Array | Int8Array;
     const tileMapRange = gpu.backgroundTileMapAddressRange;
     const characterDataRange = gpu.backgroundCharacterDataAddressRange;
 
     if (gpuRegisters.lcdControl.backgroundCodeArea === 0) {
-      backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      // backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
     } else {
-      const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
-      backgroundTileMap = new Int8Array(originalData);
+      // const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      // backgroundTileMap = new Int8Array(originalData);
     }
-
-    const backgroundCharData = memory.memoryBytes.subarray(characterDataRange.start, characterDataRange.end);
 
     const palette = gpuRegisters.backgroundPalette;
 
@@ -173,7 +168,14 @@ export const gpu = {
 
       const bytePositionInTile = yPosInTile * 2;
 
-      const tileCharIndex = backgroundTileMap[tileMapIndex];
+      let tileCharIndex = 0;
+
+      if (gpuRegisters.lcdControl.backgroundCodeArea === 0) {
+        tileCharIndex = memory.readByte(tileMapRange.start + tileMapIndex);
+      } else {
+        tileCharIndex = memory.readSignedByte(tileMapRange.start + tileCharIndex)
+      }
+
       const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
 

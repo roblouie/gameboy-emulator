@@ -9,10 +9,12 @@ export const decrementOperations: Instruction[] = [];
 
 function decrementAndSetFlags(originalValue: number) {
   const newValue = originalValue - 1;
-  registers.flags.isResultZero = newValue === 0;
-  registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
-  registers.flags.isSubtraction = true;
-  registers.flags.isCarry = (newValue & 0xf0) > (originalValue & 0xf0);
+  const isResultZero = newValue === 0;
+  const isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
+  const isSubtraction = true;
+  const isCarry = (newValue & 0xf0) > (originalValue & 0xf0);
+
+  registers.setFlags(isCarry, isHalfCarry, isSubtraction, isResultZero);
 
   return newValue;
 }
