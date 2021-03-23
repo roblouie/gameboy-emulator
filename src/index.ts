@@ -5,6 +5,8 @@ import { CyclesPerFrame, gpu } from "@/gpu/gpu";
 import { registers } from "@/cpu/registers/registers";
 import { gpuRegisters } from "@/gpu/registers/gpu-registers";
 import { backgroundTilesToImageData, characterImageData } from "@/gpu/gpu-debug-helpers";
+import { memory } from "@/memory";
+import { Gameboy } from "@/gameboy";
 
 let context: CanvasRenderingContext2D;
 let vramCanvas: HTMLCanvasElement;
@@ -49,34 +51,23 @@ async function onFileChange(event: Event) {
 
     // Temporarily just running until TestGame.GB properly sets the lcd control registers
     // This happens right before the main game loop, and can be seen on line 188 of testGame.asm
-    while (gpuRegisters.lcdControl.backgroundCharacterData !== 1) {
-    // while(cycles <= CyclesPerFrame) {
-      cycles += cpu.tick();
-      gpu.tick(cycles);
-    }
+    // while (gpuRegisters.lcdControl.backgroundCharacterData !== 1) {
+    // // while(cycles <= CyclesPerFrame) {
+    //   cycles += cpu.tick();
+    //   gpu.tick(cycles);
+    // }
+    //
+    //
+    // context.putImageData(gpu.screen, 0, 0);
+    //
+    // console.log(cycles);
 
-    gpu.drawBackgroundLine(0);
-    gpu.drawBackgroundLine(1);
-    gpu.drawBackgroundLine(3);
-    gpu.drawBackgroundLine(4);
-    gpu.drawBackgroundLine(5);
-    gpu.drawBackgroundLine(6);
-    gpu.drawBackgroundLine(7);
-    gpu.drawBackgroundLine(8);
-    gpu.drawBackgroundLine(9);
-    gpu.drawBackgroundLine(10);
-    gpu.drawBackgroundLine(11);
-    gpu.drawBackgroundLine(12);
-    gpu.drawBackgroundLine(13);
-    gpu.drawBackgroundLine(14);
-    gpu.drawBackgroundLine(15);
-    gpu.drawBackgroundLine(16);
-    gpu.drawBackgroundLine(17);
+    const gameboy = new Gameboy();
+    gameboy.onFrameFinished((imageData: ImageData) => {
+      context.putImageData(imageData, 0, 0);
+    });
 
-
-    context.putImageData(gpu.screen, 0, 0);
-
-    console.log(cycles);
+    gameboy.run();
 
     vramContext.imageSmoothingEnabled = false;
     vramContext.putImageData(characterImageData(), 0, 0);

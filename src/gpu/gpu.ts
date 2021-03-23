@@ -4,7 +4,6 @@ import { getBit } from "@/helpers/binary-helpers";
 import { VideoMode } from "@/gpu/video-mode.enum";
 import { gpuRegisters } from "@/gpu/registers/gpu-registers";
 import { StatusMode } from "@/gpu/registers/status-mode.enum";
-import { backgroundTilesToImageData } from "@/gpu/gpu-debug-helpers";
 
 const CyclesPerHBlank = 204;
 const CyclesPerScanlineOam = 80;
@@ -85,7 +84,7 @@ export const gpu = {
       case VideoMode.AccessingOAM:
         if (this.cycleCounter >= CyclesPerScanlineOam) {
           this.cycleCounter %= CyclesPerScanlineOam;
-          gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
+          // gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
           this.videoMode = VideoMode.AccessingVRAM;
         }
         break;
@@ -98,14 +97,14 @@ export const gpu = {
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
 
-          gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
+          // gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
         }
         break;
 
       case VideoMode.HBlank:
         if (this.cycleCounter >= CyclesPerHBlank) {
           // TODO: Draw a scanline
-          // this.drawBackgroundLine(gpuRegisters.LY);
+          this.drawBackgroundLine(gpuRegisters.LY);
 
           this.cycleCounter %= CyclesPerHBlank;
 
@@ -115,12 +114,32 @@ export const gpu = {
           if (gpuRegisters.LY === ScreenHeight) {
             gpuRegisters.status.mode = StatusMode.InVBlank;
             this.videoMode = VideoMode.VBlank;
+
+          } else {
+            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            this.videoMode = VideoMode.AccessingOAM;
+
           }
         }
         break;
 
       case VideoMode.VBlank:
+        if (this.cycleCounter >= CyclesPerScanline) {
 
+          gpuRegisters.LY++;
+
+
+          this.cycleCounter %= CyclesPerScanline;
+
+
+
+          // If we drew the last (offscreen) line, vblank is over, start over
+          if (gpuRegisters.LY === 154) {
+            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            this.videoMode = VideoMode.AccessingOAM;
+            gpuRegisters.LY = 0;
+          }
+        }
         break;
     }
   },
@@ -143,7 +162,6 @@ export const gpu = {
 
 
     const scrolledY = (currentLine + gpuRegisters.SCY) & 0xff;
-
 
     for (let screenX = 0; screenX < ScreenWidth; screenX++) {
       const scrolledX = (screenX + gpuRegisters.SCX) & 0xff;

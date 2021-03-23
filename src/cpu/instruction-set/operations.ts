@@ -7,6 +7,8 @@ import { Instruction } from "./instruction.model";
 import { inputOutputInstructions } from "./input-output/input-output";
 import { callAndReturnOperations } from "./call-and-return/call-and-return-operations";
 import { registers } from "@/cpu/registers/registers";
+import { interuptOperations } from "@/cpu/instruction-set/interupts/interupt-operations";
+import { instructionCache, registerStateCache } from "@/cpu/cpu-debug-helpers";
 
 export const operations = initializeOperations();
 
@@ -19,6 +21,7 @@ function initializeOperations() {
     ...bitOperations,
     ...generalPurposeOperations,
     ...callAndReturnOperations,
+    ...interuptOperations,
   ];
 
   console.log(unorderedOperations.length);
@@ -36,8 +39,11 @@ function initializeOperations() {
         byteLength: 1,
         cycleTime: 0,
         operation() {
-          registers.programCounter = 0x150; // just restart the rom to stop infinite looping
-          // console.log(`Opcode ${this.byteDefinition} not implemented`);
+          // Log out last X instructions so we see how we got to the unimplemented op code
+          console.log(instructionCache);
+          console.log(registerStateCache);
+          registers.programCounter = 0x100; // just restart the rom to stop infinite looping
+          console.log(`Opcode ${this.byteDefinition} not implemented`);
         }
       }
     }

@@ -102,7 +102,7 @@ jumpOperations.push({
   cycleTime: 3,
   byteLength: 2,
   operation() {
-    registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
+    registers.programCounter = registers.programCounter + memory.readSignedByte(registers.programCounter + 1);
   }
 });
 
@@ -110,7 +110,7 @@ jumpOperations.push({
   get command() { 
     const value = memory.readSignedByte(registers.programCounter + 1);
     if (value >= 0) {
-      return `JR  NZ 0x${ value.toString(16) }`;
+      return `JR NZ 0x${ value.toString(16) }`;
     } else {
       return `JR NZ -0x${ (value * -1).toString(16) }`;
     }
@@ -120,7 +120,7 @@ jumpOperations.push({
   byteLength: 2,
   operation() {
     if (!registers.flags.isResultZero) {
-      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
+      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1));
     } else {
       registers.programCounter += this.byteLength;
     }
@@ -141,7 +141,7 @@ jumpOperations.push({
   byteLength: 2,
   operation() {
     if (registers.flags.isResultZero) {
-      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
+      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1));
     } else {
       registers.programCounter += this.byteLength;
     }
@@ -162,7 +162,7 @@ jumpOperations.push({
   byteLength: 2,
   operation() {
     if (!registers.flags.isCarry) {
-      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
+      registers.programCounter = registers.programCounter + memory.readSignedByte(registers.programCounter + 1);
     } else {
       registers.programCounter += this.byteLength;
     }
@@ -183,7 +183,7 @@ jumpOperations.push({
   byteLength: 2,
   operation() {
     if (registers.flags.isCarry) {
-      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1) - 2);
+      registers.programCounter = registers.programCounter + memory.readSignedByte(registers.programCounter + 1);
     } else {
       registers.programCounter += this.byteLength;
     }
