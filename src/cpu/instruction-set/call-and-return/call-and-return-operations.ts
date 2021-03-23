@@ -15,13 +15,14 @@ callAndReturnOperations.push({
   byteLength: 3,
   cycleTime: 6,
   operation() {
-    const toAddress = memory.readWord(registers.programCounter + 1);
+    const callToAddress = memory.readWord(registers.programCounter + 1);
+    const returnToAddress = registers.programCounter + this.byteLength;
     registers.stackPointer--;
-    memory.writeByte(registers.stackPointer, registers.programCounter >> 8);
+    memory.writeByte(registers.stackPointer, returnToAddress >> 8);
     registers.stackPointer--;
-    memory.writeByte(registers.stackPointer, registers.programCounter & 0xff);
+    memory.writeByte(registers.stackPointer, returnToAddress & 0xff);
 
-    registers.programCounter = toAddress;
+    registers.programCounter = callToAddress;
   }
 });
 
@@ -46,10 +47,11 @@ callAndReturnOperations.push({
   operation() {
     if (!registers.flags.isResultZero) {
       const toAddress = memory.readWord(registers.programCounter + 1);
+      const returnToAddress = registers.programCounter + this.byteLength;
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter >> 8);
+      memory.writeByte(registers.stackPointer, returnToAddress >> 8);
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter & 0xff);
+      memory.writeByte(registers.stackPointer, returnToAddress & 0xff);
 
       registers.programCounter = toAddress;
     } else {
@@ -71,10 +73,11 @@ callAndReturnOperations.push({
   operation() {
     if (registers.flags.isResultZero) {
       const toAddress = memory.readWord(registers.programCounter + 1);
+      const returnToAddress = registers.programCounter + this.byteLength;
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter >> 8);
+      memory.writeByte(registers.stackPointer, returnToAddress >> 8);
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter & 0xff);
+      memory.writeByte(registers.stackPointer, returnToAddress & 0xff);
 
       registers.programCounter = toAddress;
     } else {
@@ -96,10 +99,11 @@ callAndReturnOperations.push({
   operation() {
     if (!registers.flags.isCarry) {
       const toAddress = memory.readWord(registers.programCounter + 1);
+      const returnToAddress = registers.programCounter + this.byteLength;
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter >> 8);
+      memory.writeByte(registers.stackPointer, returnToAddress >> 8);
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter & 0xff);
+      memory.writeByte(registers.stackPointer, returnToAddress & 0xff);
 
       registers.programCounter = toAddress;
     } else {
@@ -121,10 +125,11 @@ callAndReturnOperations.push({
   operation() {
     if (registers.flags.isCarry) {
       const toAddress = memory.readWord(registers.programCounter + 1);
+      const returnToAddress = registers.programCounter + this.byteLength;
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter >> 8);
+      memory.writeByte(registers.stackPointer, returnToAddress >> 8);
       registers.stackPointer--;
-      memory.writeByte(registers.stackPointer, registers.programCounter & 0xff);
+      memory.writeByte(registers.stackPointer, returnToAddress & 0xff);
 
       registers.programCounter = toAddress;
     } else {

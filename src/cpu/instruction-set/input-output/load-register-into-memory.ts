@@ -131,7 +131,7 @@ registerToMemoryInstructions.push({
     const memoryAddress = memory.readWord(registers.programCounter + 1);
     return `LD (0x${memoryAddress.toString(16)}), A`;
   },
-  byteDefinition: 0b11101010,
+  byteDefinition: 0b11_101_010,
   cycleTime: 4,
   byteLength: 3,
   operation() {

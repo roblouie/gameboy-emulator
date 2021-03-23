@@ -55,5 +55,6 @@ export const memory = {
 }
 
 function isAccessingCartridge(address: number): boolean {
-  return address <= 0x7FFF || (address >= 0xA000 && address <= 0xBFFF);
+  // TODO: Revisit how to handle cartridge ram
+  return address <= 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
 }

@@ -8,7 +8,7 @@ import { memory } from "../../../memory";
 export const decrementOperations: Instruction[] = [];
 
 function decrementAndSetFlags(originalValue: number) {
-  const newValue = originalValue--;
+  const newValue = originalValue - 1;
   registers.flags.isResultZero = newValue === 0;
   registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
   registers.flags.isSubtraction = true;

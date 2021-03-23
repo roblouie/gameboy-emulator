@@ -4,7 +4,6 @@ import { getBit } from "@/helpers/binary-helpers";
 import { VideoMode } from "@/gpu/video-mode.enum";
 import { gpuRegisters } from "@/gpu/registers/gpu-registers";
 import { StatusMode } from "@/gpu/registers/status-mode.enum";
-import { registers } from "@/cpu/registers/registers";
 
 const CyclesPerHBlank = 204;
 const CyclesPerScanlineOam = 80;
@@ -27,6 +26,11 @@ const BackgroundDisplayData1End = 0x9bff;
 const BackgroundDisplayData2Start = 0x9c00;
 const BackgroundDisplayData2End = 0x9fff;
 
+interface AddressRange {
+  start: number,
+  end: number,
+}
+
 const colors = [
   255, // white
   192, // light gray
@@ -39,9 +43,40 @@ const vramBytes = memory.memoryBytes.subarray(CharacterDataStart, BackgroundDisp
 
 export const gpu = {
   cycleCounter: 0,
-  lineBeingDrawn: 0,
   videoMode: VideoMode.AccessingOAM,
+  screen: new EnhancedImageData(ScreenWidth, ScreenHeight),
 
+  get backgroundTileMapAddressRange(): AddressRange {
+    const ranges = [
+      {
+        start: 0x9800,
+        end: 0x9bff
+      },
+      {
+        start: 0x9c00,
+        end: 0x9fff,
+      }
+    ];
+
+    return ranges[gpuRegisters.lcdControl.backgroundCodeArea];
+  },
+
+  get backgroundCharacterDataAddressRange(): AddressRange {
+    const ranges = [
+      {
+        start: 0x8800,
+        end: 0x97ff
+      },
+      {
+        start: 0x8000,
+        end: 0x8fff,
+      }
+    ];
+
+    return ranges[gpuRegisters.lcdControl.backgroundCharacterData];
+  },
+
+  // TODO: Video Mode and Status Mode are redundant, make gpuRegisters.stats.mode the source of truth for mode and possibly update statusmode enum
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
@@ -49,7 +84,7 @@ export const gpu = {
       case VideoMode.AccessingOAM:
         if (this.cycleCounter >= CyclesPerScanlineOam) {
           this.cycleCounter %= CyclesPerScanlineOam;
-          gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
+          // gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
           this.videoMode = VideoMode.AccessingVRAM;
         }
         break;
@@ -62,66 +97,130 @@ export const gpu = {
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
 
-          gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
+          // gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
         }
         break;
 
       case VideoMode.HBlank:
         if (this.cycleCounter >= CyclesPerHBlank) {
           // TODO: Draw a scanline
+          this.drawBackgroundLine(gpuRegisters.LY);
 
-          this.cycleCounter &= CyclesPerHBlank;
+          this.cycleCounter %= CyclesPerHBlank;
 
-          this.lineBeingDrawn++;
+          gpuRegisters.LY++;
 
           // If we drew the last line, we switch to vblank
-          if (this.lineBeingDrawn === ScreenHeight) {
+          if (gpuRegisters.LY === ScreenHeight) {
             gpuRegisters.status.mode = StatusMode.InVBlank;
+            this.videoMode = VideoMode.VBlank;
+
+          } else {
+            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            this.videoMode = VideoMode.AccessingOAM;
+
           }
         }
         break;
 
       case VideoMode.VBlank:
+        if (this.cycleCounter >= CyclesPerScanline) {
 
+          gpuRegisters.LY++;
+
+
+          this.cycleCounter %= CyclesPerScanline;
+
+
+
+          // If we drew the last (offscreen) line, vblank is over, start over
+          if (gpuRegisters.LY === 154) {
+            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            this.videoMode = VideoMode.AccessingOAM;
+            gpuRegisters.LY = 0;
+          }
+        }
         break;
     }
   },
 
   drawBackgroundLine(currentLine: number) {
+    let backgroundTileMap: Uint8Array | Int8Array;
+    const tileMapRange = gpu.backgroundTileMapAddressRange;
+    const characterDataRange = gpu.backgroundCharacterDataAddressRange;
+
+    if (gpuRegisters.lcdControl.backgroundCodeArea === 0) {
+      backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+    } else {
+      const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      backgroundTileMap = new Int8Array(originalData);
+    }
+
+    const backgroundCharData = memory.memoryBytes.subarray(characterDataRange.start, characterDataRange.end);
+
+    const palette = gpuRegisters.backgroundPalette;
+
+
+    const scrolledY = (currentLine + gpuRegisters.SCY) & 0xff;
+
     for (let screenX = 0; screenX < ScreenWidth; screenX++) {
-      const scrolledX = screenX + gpuRegisters.SCX;
-      const scrolledY = currentLine + gpuRegisters.SCY;
+      const scrolledX = (screenX + gpuRegisters.SCX) & 0xff;
+      const tileMapIndex = getTileIndexFromPixelLocation(scrolledX, scrolledY);
+      const tilePixelPosition = getUpperLeftPixelLocationOfTile(tileMapIndex);
+
+      const xPosInTile = scrolledX - tilePixelPosition.x;
+      const yPosInTile = scrolledY - tilePixelPosition.y;
+
+      const bytePositionInTile = yPosInTile * 2;
+
+      const tileCharIndex = backgroundTileMap[tileMapIndex];
+      const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
+
+
+      const currentTileBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
+      const lowerByte = memory.readByte(currentTileBytePosition);
+      const higherByte = memory.readByte(currentTileBytePosition + 1);
+
+      const shadeLower = getBit(lowerByte, xPosInTile);
+      const shadeHigher = getBit(higherByte, xPosInTile);
+
+      const paletteColor = palette[shadeLower + shadeHigher];
+      const color = colors[paletteColor];
+
+      this.screen.setPixel(screenX, currentLine, color, color, color);
+
+      // debugger;
+
+
+
 
       // TODO: Reference image viewer for tile drawing logic?
     }
+
+
   },
 
-  get characterImageData(): ImageData {
-    const characterData = memory.memoryBytes.subarray(CharacterDataStart, CharacterDataEnd);
-    const enhancedImageData = new EnhancedImageData(8, 3072);
 
-    let imageDataX = 0;
-    let imageDataY = 0;
+}
 
-    // two bytes build a 8 x 1 line
-    for (let byteIndex = 0; byteIndex < characterData.length; byteIndex+= 2) {
-      const lowerByte = characterData[byteIndex];
-      const higherByte = characterData[byteIndex + 1];
 
-      // start at the left most bit so we can draw to the image data from left to right
-      for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
-        const shadeLower = getBit(lowerByte, bitPosition);
-        const shadeHigher = getBit(higherByte, bitPosition);
+function getTileIndexFromPixelLocation(x: number, y: number) {
+  const tileSize = 8;
+  const backgroundNumberOfTilesPerSide = 32;
 
-        const color = colors[shadeLower + shadeHigher];
-        enhancedImageData.setPixel(imageDataX, imageDataY, color, color, color);
-        imageDataX++;
-      }
+  const tileX = Math.floor(x / tileSize);
+  const tileY = Math.floor(y / tileSize);
 
-      imageDataY++
-      imageDataX = 0;
-    }
+  return (tileY * backgroundNumberOfTilesPerSide) + tileX;
+}
 
-    return enhancedImageData;
-  }
+function getUpperLeftPixelLocationOfTile(tile: number) {
+  const tileSize = 8;
+  const backgroundNumberOfTilesPerSide = 32;
+
+  const posY = Math.floor(tile / backgroundNumberOfTilesPerSide);
+  const posX = tile - posY * backgroundNumberOfTilesPerSide;
+
+
+  return { x: posX * tileSize, y: posY * tileSize };
 }
