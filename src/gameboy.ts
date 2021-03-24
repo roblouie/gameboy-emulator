@@ -4,12 +4,15 @@ import { instructionCache, registerStateCache } from "@/cpu/cpu-debug-helpers";
 
 export class Gameboy {
   frameFinishedCallback?: Function;
+  fps = 0;
 
   run() {
     let cycles = 0;
     let funTimes = 0;
 
-    const runFrame = () => {
+    let previousTime = 0;
+
+    const runFrame = (currentTime: number) => {
       while (cycles < CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
@@ -17,8 +20,14 @@ export class Gameboy {
       }
 
       if (this.frameFinishedCallback) {
-        this.frameFinishedCallback(gpu.screen);
+        this.frameFinishedCallback(gpu.screen, this.fps);
       }
+
+
+
+      this.fps = 1000 / (currentTime - previousTime);
+
+      previousTime = currentTime;
 
       cycles = cycles % CyclesPerFrame;
       // console.log(timedif);
@@ -27,18 +36,18 @@ export class Gameboy {
       funTimes++;
 
       // if (funTimes < 60) {
-        setTimeout(runFrame, 16);
+        requestAnimationFrame(runFrame);
       // }
 
       if (funTimes === 60) {
-        console.log(instructionCache);
-        console.log(registerStateCache);
-        debugger;
+        // console.log(instructionCache);
+        // console.log(registerStateCache);
+        // debugger;
         funTimes = 0;
       }
     }
 
-    runFrame();
+    requestAnimationFrame(runFrame);
   }
 
   onFrameFinished(callback: Function) {

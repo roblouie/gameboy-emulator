@@ -15,6 +15,7 @@ export function updateInstructionCache(instruction: string) {
 
 export function updateRegisterStateCache() {
   registerStateCache.unshift(`
+    A: ${registers.A},
     PC: ${registers.programCounter},
     D: ${registers.D}
     E: ${registers.E}

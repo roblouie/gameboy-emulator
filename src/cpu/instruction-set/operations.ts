@@ -44,6 +44,7 @@ function initializeOperations() {
           console.log(registerStateCache);
           registers.programCounter = 0x100; // just restart the rom to stop infinite looping
           console.log(`Opcode ${this.byteDefinition} not implemented`);
+          debugger;
         }
       }
     }

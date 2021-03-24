@@ -38,9 +38,6 @@ const colors = [
   0, // black
 ]
 
-const vramBytes = memory.memoryBytes.subarray(CharacterDataStart, BackgroundDisplayData2End);
-
-
 export const gpu = {
   cycleCounter: 0,
   videoMode: VideoMode.AccessingOAM,
@@ -84,7 +81,7 @@ export const gpu = {
       case VideoMode.AccessingOAM:
         if (this.cycleCounter >= CyclesPerScanlineOam) {
           this.cycleCounter %= CyclesPerScanlineOam;
-          // gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
+          gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
           this.videoMode = VideoMode.AccessingVRAM;
         }
         break;
@@ -97,7 +94,7 @@ export const gpu = {
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
 
-          // gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
+          gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
         }
         break;
 
@@ -116,7 +113,7 @@ export const gpu = {
             this.videoMode = VideoMode.VBlank;
 
           } else {
-            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            gpuRegisters.status.mode = StatusMode.SearchingOAM;
             this.videoMode = VideoMode.AccessingOAM;
 
           }
@@ -128,14 +125,11 @@ export const gpu = {
 
           gpuRegisters.LY++;
 
-
           this.cycleCounter %= CyclesPerScanline;
-
-
 
           // If we drew the last (offscreen) line, vblank is over, start over
           if (gpuRegisters.LY === 154) {
-            // gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            gpuRegisters.status.mode = StatusMode.SearchingOAM;
             this.videoMode = VideoMode.AccessingOAM;
             gpuRegisters.LY = 0;
           }

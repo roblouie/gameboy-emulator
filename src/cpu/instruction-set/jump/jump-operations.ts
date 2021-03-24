@@ -120,7 +120,8 @@ jumpOperations.push({
   byteLength: 2,
   operation() {
     if (!registers.flags.isResultZero) {
-      registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1));
+      const jumpDistance = memory.readSignedByte(registers.programCounter + 1);
+      registers.programCounter = registers.programCounter + jumpDistance + this.byteLength;
     } else {
       registers.programCounter += this.byteLength;
     }

@@ -63,8 +63,12 @@ async function onFileChange(event: Event) {
     // console.log(cycles);
 
     const gameboy = new Gameboy();
-    gameboy.onFrameFinished((imageData: ImageData) => {
+    const fpsDiv = document.querySelector('#fps');
+    gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
       context.putImageData(imageData, 0, 0);
+      if (fpsDiv) {
+        fpsDiv.innerHTML = `FPS: ${fps}`;
+      }
     });
 
     gameboy.run();
