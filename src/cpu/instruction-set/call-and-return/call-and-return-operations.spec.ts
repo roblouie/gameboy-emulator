@@ -1,7 +1,11 @@
-import { callAndReturnOperations } from "@/cpu/instruction-set/call-and-return/call-and-return-operations";
+import { getCallAndReturnOperations } from "@/cpu/instruction-set/call-and-return/call-and-return-operations";
+import { CPU } from "@/cpu/cpu";
 
 test('All instructions have a unique byte definition', () => {
-  const byteDefinitions = callAndReturnOperations.map(instruction => instruction.byteDefinition)
+  const cpu = new CPU();
+  const operations = getCallAndReturnOperations(cpu);
+
+  const byteDefinitions = operations.map(instruction => instruction.byteDefinition)
   const duplicates = byteDefinitions.filter((e, i, a) => a.indexOf(e) !== i);
 
   expect(duplicates.length).toBe(0);

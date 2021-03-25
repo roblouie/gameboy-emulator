@@ -95,6 +95,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 4,
   operation() {
     pushToStack(registers.BC);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -106,6 +107,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 4,
   operation() {
     pushToStack(registers.DE);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -116,6 +118,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 4,
   operation() {
     pushToStack(registers.HL);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -126,6 +129,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 4,
   operation() {
     pushToStack(registers.AF);
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -144,6 +148,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 3,
   operation() {
     registers.BC = popFromStack();
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -154,6 +159,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 3,
   operation() {
     registers.DE = popFromStack();
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -164,6 +170,7 @@ sixteenBitTransferOperations.push({
   cycleTime: 3,
   operation() {
     registers.HL = popFromStack();
+    registers.programCounter += this.byteLength;
   }
 });
 
@@ -174,5 +181,6 @@ sixteenBitTransferOperations.push({
   cycleTime: 3,
   operation() {
     registers.AF = popFromStack();
+    registers.programCounter += this.byteLength;
   }
 });

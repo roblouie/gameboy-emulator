@@ -5,11 +5,11 @@ import { bitOperations } from "./bit/bit-operations";
 import { generalPurposeOperations } from "./general-purpose/general-purpose-operations";
 import { Instruction } from "./instruction.model";
 import { inputOutputInstructions } from "./input-output/input-output";
-import { callAndReturnOperations } from "./call-and-return/call-and-return-operations";
 import { registers } from "@/cpu/registers/registers";
-import { interuptOperations } from "@/cpu/instruction-set/interupts/interupt-operations";
+import { getInterruptOperations } from "@/cpu/instruction-set/interupts/interupt-operations";
 import { instructionCache, registerStateCache } from "@/cpu/cpu-debug-helpers";
 
+//TODO: Delete, as it is replaced by CPU
 export const operations = initializeOperations();
 
 function initializeOperations() {
@@ -20,8 +20,8 @@ function initializeOperations() {
     ...jumpOperations,
     ...bitOperations,
     ...generalPurposeOperations,
-    ...callAndReturnOperations,
-    ...interuptOperations,
+    // ...callAndReturnOperations,
+    // ...getInterruptOperations,
   ];
 
   console.log(unorderedOperations.length);

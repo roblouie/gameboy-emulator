@@ -1,6 +1,8 @@
 import { CyclesPerFrame, gpu } from "@/gpu/gpu";
-import { cpu } from "@/cpu/cpu";
+import { CPU } from "@/cpu/cpu";
 import { instructionCache, registerStateCache } from "@/cpu/cpu-debug-helpers";
+
+const cpu = new CPU();
 
 export class Gameboy {
   frameFinishedCallback?: Function;

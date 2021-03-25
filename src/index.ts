@@ -1,5 +1,5 @@
 import { operations } from "@/cpu/instruction-set/operations";
-import { cpu } from "@/cpu/cpu";
+import { CPU } from "@/cpu/cpu";
 import { cartridge, CartridgeEntryPointOffset } from "@/game-rom/cartridge";
 import { CyclesPerFrame, gpu } from "@/gpu/gpu";
 import { registers } from "@/cpu/registers/registers";
