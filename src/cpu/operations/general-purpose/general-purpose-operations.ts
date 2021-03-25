@@ -1,18 +1,23 @@
 import { Operation } from "../operation.model";
-import { registers } from "../../registers/registers";
+import { CPU } from "@/cpu/cpu";
 
-export const generalPurposeOperations: Operation[] = [];
+export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
+  const generalPurposeOperations: Operation[] = [];
+  const { registers } = cpu;
 
 // TODO: Implement DAA
 
 // TODO: Implement CPL
 
-generalPurposeOperations.push({
-  instruction: 'NOP',
-  byteDefinition: 0b0,
-  cycleTime: 1,
-  byteLength: 1,
-  execute() {
-    registers.programCounter += this.byteLength;
-  }
-})
+  generalPurposeOperations.push({
+    instruction: 'NOP',
+    byteDefinition: 0b0,
+    cycleTime: 1,
+    byteLength: 1,
+    execute() {
+      registers.programCounter += this.byteLength;
+    }
+  });
+
+  return generalPurposeOperations;
+}

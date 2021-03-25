@@ -1,11 +1,11 @@
 import { Operation } from "../operation.model";
-import { registers } from "../../registers/registers";
 import { FlagCondition } from "../../registers/flag-condition.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
 export function getCallAndReturnOperations(cpu: CPU): Operation[] {
   const callAndReturnOperations: Operation[] = [];
+  const { registers } = cpu;
 
   callAndReturnOperations.push({
     get instruction() {

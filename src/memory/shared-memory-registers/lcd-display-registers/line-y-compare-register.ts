@@ -1,7 +1,7 @@
 import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-class LineYCompareRegister implements MemoryRegister {
+export class LineYCompareRegister implements MemoryRegister {
   offset = 0xff45;
   name = 'LYC';
 
@@ -13,5 +13,3 @@ class LineYCompareRegister implements MemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 }
-
-export const lineYCompareRegister = new LineYCompareRegister();

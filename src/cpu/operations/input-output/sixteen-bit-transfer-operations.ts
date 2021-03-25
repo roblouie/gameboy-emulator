@@ -1,11 +1,11 @@
 import { Operation } from "../operation.model";
-import { registers } from "../../registers/registers";
 import { RegisterPairCode } from "../../registers/register-pair-code";
-import { memory } from "../../../memory/memory";
+import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
 export function getSixteenBitTransferOperations(cpu: CPU) {
   const sixteenBitTransferOperations: Operation[] = [];
+  const { registers } = cpu;
 
 // ****************
 // * Load dd, nn

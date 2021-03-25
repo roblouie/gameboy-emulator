@@ -1,4 +1,4 @@
-import { cartridge } from "../game-rom/cartridge";
+import { cartridge } from "../cartridge/cartridge";
 
 const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);

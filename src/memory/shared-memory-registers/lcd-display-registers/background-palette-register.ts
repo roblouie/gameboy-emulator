@@ -1,7 +1,7 @@
 import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-class BackgroundPaletteRegister implements MemoryRegister {
+export class BackgroundPaletteRegister implements MemoryRegister {
   offset = 0xff47;
   name = 'BGP';
 
@@ -23,5 +23,3 @@ class BackgroundPaletteRegister implements MemoryRegister {
     return [color0, color1, color2, color3];
   }
 }
-
-export const backgroundPaletteRegister = new BackgroundPaletteRegister();

@@ -1,11 +1,12 @@
 import { Operation } from "@/cpu/operations/operation.model";
-import { registers } from "@/cpu/registers/registers";
 import { CPU } from "@/cpu/cpu";
 
 // TODO: Interrupt disable / enable doesn't change the master interrupt flag until
 // after the instruction following EI/DI executes. Currently they just change the flag
 // immediately.
 export function getInterruptOperations(cpu: CPU): Operation[] {
+  const { registers } = cpu;
+
   return [
     {
       instruction: 'EI',

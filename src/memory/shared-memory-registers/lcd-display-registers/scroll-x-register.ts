@@ -1,7 +1,7 @@
 import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-class ScrollXRegister implements MemoryRegister {
+export class ScrollXRegister implements MemoryRegister {
   offset = 0xff43;
   name = 'SCX';
 
@@ -13,5 +13,3 @@ class ScrollXRegister implements MemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 }
-
-export const scrollXRegister = new ScrollXRegister();

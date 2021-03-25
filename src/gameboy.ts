@@ -5,9 +5,9 @@ import {
   registerStateCache,
   updateInstructionCache,
   updateRegisterStateCache
-} from "@/cpu/cpu-debug-helpers";
+} from "@/helpers/cpu-debug-helpers";
 import { memory } from "@/memory/memory";
-import { registers } from "@/cpu/registers/registers";
+import { CartridgeEntryPointOffset } from "@/cartridge/cartridge";
 
 const cpu = new CPU();
 
@@ -23,6 +23,8 @@ export class Gameboy {
 
     let debug = false;
 
+    cpu.registers.programCounter = CartridgeEntryPointOffset;
+
     const runFrame = (currentTime: number) => {
       while (cycles < CyclesPerFrame) {
         const cycleForTick = cpu.tick();
@@ -30,9 +32,12 @@ export class Gameboy {
         cycles += cycleForTick;
 
         if (debug) {
-          updateRegisterStateCache();
-          const operationIndex = memory.readByte(registers.programCounter);
+          updateRegisterStateCache(cpu);
+          const operationIndex = memory.readByte(cpu.registers.programCounter);
           updateInstructionCache(cpu.operations[operationIndex].instruction);
+          console.log(registerStateCache);
+          console.log(instructionCache);
+          debugger;
         }
       }
 

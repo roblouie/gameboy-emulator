@@ -10,7 +10,7 @@ interface InterruptFlags {
   isP10P13NegativeEdge: boolean;
 }
 
-class InterruptRequestRegister implements MemoryRegister {
+export class InterruptRequestRegister implements MemoryRegister {
   offset = 0xff0f;
   name = 'IF';
 
@@ -56,5 +56,3 @@ class InterruptRequestRegister implements MemoryRegister {
     }
   }
 }
-
-export const interruptRequestRegister = new InterruptRequestRegister();

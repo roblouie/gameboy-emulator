@@ -1,21 +1,28 @@
 import 'jest-canvas-mock';
 import {
-  addOperations,
-  andOperations, compareOperations, decrementOperations, incrementOperations,
-  orOperations,
-  subtractOperations, xorOperations
+  createAddOperations,
+  createSubtractOperations,
+  createAndOperations,
+  createOrOperations,
+  createXorOperations,
+  createCompareOperations,
+  createIncrementOperations,
+  createDecrementOperations,
 } from "@/cpu/operations/arithmetic-and-logical";
+import { CPU } from "@/cpu/cpu";
 
 test('All instructions have a unique byte definition', () => {
+  const cpu = new CPU();
+
   const operations = [
-      ...addOperations,
-      ...subtractOperations,
-      ...andOperations,
-      ...orOperations,
-      ...xorOperations,
-      ...compareOperations,
-      ...incrementOperations,
-      ...decrementOperations,
+    ...createAddOperations(cpu),
+    ...createSubtractOperations(cpu),
+    ...createAndOperations(cpu),
+    ...createOrOperations(cpu),
+    ...createXorOperations(cpu),
+    ...createCompareOperations(cpu),
+    ...createIncrementOperations(cpu),
+    ...createDecrementOperations(cpu),
   ]
   const byteDefinitions = operations.map(instruction => instruction.byteDefinition)
   const duplicates = byteDefinitions.filter((e, i, a) => a.indexOf(e) !== i);

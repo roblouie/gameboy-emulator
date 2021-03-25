@@ -1,13 +1,16 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
-import { clearBit, getBit, setBit } from "@/helpers/binary-helpers";
-import { lcdControlRegister } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-control-register";
-import { LcdStatusRegister, lcdStatusRegister } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-register";
-import { interruptRequestRegister } from "@/memory/shared-memory-registers/interrupt-flags/interrupt-request-register";
-import { scrollYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/scroll-y-register";
-import { scrollXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/scroll-x-register";
-import { lineYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/line-y-register";
-import { backgroundPaletteRegister } from "@/memory/shared-memory-registers/lcd-display-registers/background-palette-register";
+import { getBit } from "@/helpers/binary-helpers";
+import {
+  backgroundPaletteRegister,
+  interruptRequestRegister,
+  lcdControlRegister,
+  lcdStatusRegister,
+  lineYRegister,
+  scrollXRegister,
+  scrollYRegister
+} from "@/memory/shared-memory-registers";
+import { LcdStatusMode } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-mode.enum";
 
 const CyclesPerHBlank = 204;
 const CyclesPerScanlineOam = 80;
@@ -51,25 +54,25 @@ export const gpu = {
     this.cycleCounter += cycles;
 
     switch (lcdStatusRegister.mode) {
-      case LcdStatusRegister.Mode.SearchingOAM:
+      case LcdStatusMode.SearchingOAM:
         if (this.cycleCounter >= CyclesPerScanlineOam) {
           this.cycleCounter %= CyclesPerScanlineOam;
-          lcdStatusRegister.mode = LcdStatusRegister.Mode.TransferringDataToLCD;
+          lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
         }
         break;
 
-      case LcdStatusRegister.Mode.TransferringDataToLCD:
+      case LcdStatusMode.TransferringDataToLCD:
         if (this.cycleCounter >= CyclesPerScanlineVram) {
           this.cycleCounter %= CyclesPerScanlineVram;
 
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
 
-          lcdStatusRegister.mode = LcdStatusRegister.Mode.EnableCPUAccessToVRAM;
+          lcdStatusRegister.mode = LcdStatusMode.EnableCPUAccessToVRAM;
         }
         break;
 
-      case LcdStatusRegister.Mode.EnableCPUAccessToVRAM:
+      case LcdStatusMode.EnableCPUAccessToVRAM:
         if (this.cycleCounter >= CyclesPerHBlank) {
           this.drawBackgroundLine(lineYRegister.value);
 
@@ -78,22 +81,22 @@ export const gpu = {
           lineYRegister.value++;
 
           if (lineYRegister.value === ScreenHeight) {
-            lcdStatusRegister.mode = LcdStatusRegister.Mode.InVBlank;
+            lcdStatusRegister.mode = LcdStatusMode.InVBlank;
             interruptRequestRegister.setVBlankInterruptRequest();
           } else {
-            lcdStatusRegister.mode = LcdStatusRegister.Mode.SearchingOAM;
+            lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
           }
         }
         break;
 
-      case LcdStatusRegister.Mode.InVBlank:
+      case LcdStatusMode.InVBlank:
         if (this.cycleCounter >= CyclesPerScanline) {
           lineYRegister.value++;
 
           this.cycleCounter %= CyclesPerScanline;
 
           if (lineYRegister.value === MaxOffscreenLine) {
-            lcdStatusRegister.mode = LcdStatusRegister.Mode.SearchingOAM;
+            lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
             lineYRegister.value = 0;
           }
         }
