@@ -1,6 +1,4 @@
-import { operations } from "./instruction-set/operations";
 import { CPU } from "@/cpu/cpu";
-import { Instruction } from "@/cpu/instruction-set/instruction.model";
 
 test('All instructions have a unique byte definition', () => {
   const cpu = new CPU()
@@ -15,13 +13,13 @@ test('All instructions have a unique byte definition', () => {
 
 test('Master interrupt flag can be set via the IE command', () => {
   const cpu = new CPU()
-  const ieOperation = cpu.operations.find(op => op.command = 'IE');
+  const ieOperation = cpu.operations.find(op => op.instruction = 'IE');
 
   if (!ieOperation) {
     throw new Error('IE operation not found');
   }
 
   expect(cpu.isInterruptMasterEnable).toBe(false);
-  ieOperation.operation();
+  ieOperation.execute();
   expect(cpu.isInterruptMasterEnable).toBe(true);
 });

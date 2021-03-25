@@ -1,11 +1,9 @@
-import { operations } from "@/cpu/instruction-set/operations";
 import { CPU } from "@/cpu/cpu";
 import { cartridge, CartridgeEntryPointOffset } from "@/game-rom/cartridge";
 import { CyclesPerFrame, gpu } from "@/gpu/gpu";
 import { registers } from "@/cpu/registers/registers";
-import { gpuRegisters } from "@/gpu/registers/gpu-registers";
 import { backgroundTilesToImageData, characterImageData } from "@/gpu/gpu-debug-helpers";
-import { memory } from "@/memory";
+import { memory } from "@/memory/memory";
 import { Gameboy } from "@/gameboy";
 
 let context: CanvasRenderingContext2D;
@@ -27,7 +25,6 @@ window.addEventListener('load', () => {
 
   backgroundCanvas = document.querySelector('#background') as HTMLCanvasElement;
   backgroundContext = backgroundCanvas.getContext('2d') as CanvasRenderingContext2D;
-  console.log(operations.length);
 });
 
 
