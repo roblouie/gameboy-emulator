@@ -42,19 +42,14 @@ export class CPU {
   }
 
   pushToStack(word: number) {
-    registers.stackPointer--;
-    memory.writeByte(registers.stackPointer, word >> 8);
-    registers.stackPointer--;
-    memory.writeByte(registers.stackPointer, word & 0xff);
+    registers.stackPointer -= 2;
+    memory.writeWord(registers.stackPointer, word);
   }
 
   popFromStack() {
-    const lowByte = memory.readByte(registers.stackPointer);
-    registers.stackPointer++;
-    const highByte = memory.readByte(registers.stackPointer);
-    registers.stackPointer++;
-
-    return (highByte << 8) | lowByte;
+    const value = memory.readWord(registers.stackPointer);
+    registers.stackPointer += 2;
+    return value;
   }
 
   private handleInterrupts() {
