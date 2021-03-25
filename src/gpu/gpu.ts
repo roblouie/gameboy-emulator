@@ -1,8 +1,13 @@
-import { memory } from "@/memory";
+import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import { clearBit, getBit, setBit } from "@/helpers/binary-helpers";
-import { gpuRegisters } from "@/gpu/registers/gpu-registers";
-import { StatusMode } from "@/gpu/registers/status-mode.enum";
+import { lcdControlRegister } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-control-register";
+import { LcdStatusRegister, lcdStatusRegister } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-register";
+import { interruptRequestRegister } from "@/memory/shared-memory-registers/interrupt-flags/interrupt-request-register";
+import { scrollYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/scroll-y-register";
+import { scrollXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/scroll-x-register";
+import { lineYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/line-y-register";
+import { backgroundPaletteRegister } from "@/memory/shared-memory-registers/lcd-display-registers/background-palette-register";
 
 const CyclesPerHBlank = 204;
 const CyclesPerScanlineOam = 80;
@@ -42,116 +47,78 @@ export const gpu = {
   cycleCounter: 0,
   screen: new EnhancedImageData(ScreenWidth, ScreenHeight),
 
-  get backgroundTileMapAddressRange(): AddressRange {
-    const ranges = [
-      {
-        start: 0x9800,
-        end: 0x9bff
-      },
-      {
-        start: 0x9c00,
-        end: 0x9fff,
-      }
-    ];
-
-    return ranges[gpuRegisters.lcdControl.backgroundCodeArea];
-  },
-
-  get backgroundCharacterDataAddressRange(): AddressRange {
-    const ranges = [
-      {
-        start: 0x8800,
-        end: 0x97ff
-      },
-      {
-        start: 0x8000,
-        end: 0x8fff,
-      }
-    ];
-
-    return ranges[gpuRegisters.lcdControl.backgroundCharacterData];
-  },
-
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
-    switch (gpuRegisters.status.mode) {
-      case StatusMode.SearchingOAM:
+    switch (lcdStatusRegister.mode) {
+      case LcdStatusRegister.Mode.SearchingOAM:
         if (this.cycleCounter >= CyclesPerScanlineOam) {
           this.cycleCounter %= CyclesPerScanlineOam;
-          gpuRegisters.status.mode = StatusMode.TransferringDataToLCD;
+          lcdStatusRegister.mode = LcdStatusRegister.Mode.TransferringDataToLCD;
         }
         break;
 
-      case StatusMode.TransferringDataToLCD:
+      case LcdStatusRegister.Mode.TransferringDataToLCD:
         if (this.cycleCounter >= CyclesPerScanlineVram) {
           this.cycleCounter %= CyclesPerScanlineVram;
 
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
 
-          gpuRegisters.status.mode = StatusMode.EnableCPUAccessToVRAM;
+          lcdStatusRegister.mode = LcdStatusRegister.Mode.EnableCPUAccessToVRAM;
         }
         break;
 
-      case StatusMode.EnableCPUAccessToVRAM:
+      case LcdStatusRegister.Mode.EnableCPUAccessToVRAM:
         if (this.cycleCounter >= CyclesPerHBlank) {
-          this.drawBackgroundLine(gpuRegisters.LY);
+          this.drawBackgroundLine(lineYRegister.value);
 
           this.cycleCounter %= CyclesPerHBlank;
 
-          gpuRegisters.LY++;
+          lineYRegister.value++;
 
-          if (gpuRegisters.LY === ScreenHeight) {
-            gpuRegisters.status.mode = StatusMode.InVBlank;
-            this.setVBlankInterruptRequest();
+          if (lineYRegister.value === ScreenHeight) {
+            lcdStatusRegister.mode = LcdStatusRegister.Mode.InVBlank;
+            interruptRequestRegister.setVBlankInterruptRequest();
           } else {
-            gpuRegisters.status.mode = StatusMode.SearchingOAM;
+            lcdStatusRegister.mode = LcdStatusRegister.Mode.SearchingOAM;
           }
         }
         break;
 
-      case StatusMode.InVBlank:
+      case LcdStatusRegister.Mode.InVBlank:
         if (this.cycleCounter >= CyclesPerScanline) {
-          gpuRegisters.LY++;
+          lineYRegister.value++;
 
           this.cycleCounter %= CyclesPerScanline;
 
-          if (gpuRegisters.LY === MaxOffscreenLine) {
-            gpuRegisters.status.mode = StatusMode.SearchingOAM;
-            gpuRegisters.LY = 0;
+          if (lineYRegister.value === MaxOffscreenLine) {
+            lcdStatusRegister.mode = LcdStatusRegister.Mode.SearchingOAM;
+            lineYRegister.value = 0;
           }
         }
         break;
     }
   },
 
-  setVBlankInterruptRequest() {
-    //TODO: Clean up, these shared special memory positions should possibly be
-    // stored in a memory module as to not duplicate this code across cpu/gpu
-    const flagValue = memory.readByte(0xff0f);
-    const vblankSet = setBit(flagValue, 0, 1);
-    memory.writeByte(0xff0f, vblankSet);
-  },
-
   drawBackgroundLine(currentLine: number) {
     let backgroundTileMap: Uint8Array | Int8Array;
-    const tileMapRange = gpu.backgroundTileMapAddressRange;
-    const characterDataRange = gpu.backgroundCharacterDataAddressRange;
+    const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
+    const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
 
-    if (gpuRegisters.lcdControl.backgroundCodeArea === 0) {
+    if (lcdControlRegister.backgroundCodeArea === 0) {
       backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
     } else {
       const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
       backgroundTileMap = new Int8Array(originalData);
     }
 
-    const palette = gpuRegisters.backgroundPalette;
+    const palette = backgroundPaletteRegister.backgroundPalette;
 
-    const scrolledY = (currentLine + gpuRegisters.SCY) & 0xff;
+    const scrolledY = (currentLine + scrollYRegister.value) & 0xff;
 
     for (let screenX = 0; screenX < ScreenWidth; screenX++) {
-      const scrolledX = (screenX + gpuRegisters.SCX) & 0xff;
+      const scrolledX = (screenX + scrollXRegister.value) & 0xff;
       const tileMapIndex = getTileIndexFromPixelLocation(scrolledX, scrolledY);
       const tilePixelPosition = getUpperLeftPixelLocationOfTile(tileMapIndex);
 

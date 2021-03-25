@@ -1,8 +1,8 @@
-import { gpuRegisters } from "@/gpu/registers/gpu-registers";
-import { memory } from "@/memory";
+import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import { getBit } from "@/helpers/binary-helpers";
-import { gpu } from "@/gpu/gpu";
+import { lcdControlRegister } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-control-register";
+import { backgroundPaletteRegister } from "@/memory/shared-memory-registers/lcd-display-registers/background-palette-register";
 
 const colors = [
   255, // white
@@ -17,10 +17,10 @@ const CharacterDataEnd = 0x97ff;
 export function backgroundTilesToImageData(): ImageData {
   let backgroundTileMap: Uint8Array | Int8Array;
 
-  const tileMapRange = gpu.backgroundTileMapAddressRange;
-  const characterDataRange = gpu.backgroundCharacterDataAddressRange;
+  const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
+  const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
 
-  if (gpuRegisters.lcdControl.backgroundCodeArea === 0) {
+  if (lcdControlRegister.backgroundCodeArea === 0) {
     backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
   } else {
     const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
@@ -53,7 +53,7 @@ function drawTileAt(imageData: EnhancedImageData, x: number, y: number, backgrou
   let imageDataX = x;
   let imageDataY = y;
 
-  const palette = gpuRegisters.backgroundPalette;
+  const palette = backgroundPaletteRegister.backgroundPalette;
 
   for (let byteIndex = 0; byteIndex < 16; byteIndex+= 2) {
     const lowerByte = backgroundCharData[tileStart + byteIndex];

@@ -1,6 +1,13 @@
 import { CyclesPerFrame, gpu } from "@/gpu/gpu";
 import { CPU } from "@/cpu/cpu";
-import { instructionCache, registerStateCache } from "@/cpu/cpu-debug-helpers";
+import {
+  instructionCache,
+  registerStateCache,
+  updateInstructionCache,
+  updateRegisterStateCache
+} from "@/cpu/cpu-debug-helpers";
+import { memory } from "@/memory/memory";
+import { registers } from "@/cpu/registers/registers";
 
 const cpu = new CPU();
 
@@ -14,11 +21,19 @@ export class Gameboy {
 
     let previousTime = 0;
 
+    let debug = false;
+
     const runFrame = (currentTime: number) => {
       while (cycles < CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
         cycles += cycleForTick;
+
+        if (debug) {
+          updateRegisterStateCache();
+          const operationIndex = memory.readByte(registers.programCounter);
+          updateInstructionCache(cpu.operations[operationIndex].instruction);
+        }
       }
 
       if (this.frameFinishedCallback) {

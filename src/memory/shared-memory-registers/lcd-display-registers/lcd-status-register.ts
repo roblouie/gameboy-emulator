@@ -1,0 +1,38 @@
+import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
+import { memory } from "@/memory/memory";
+import { setBit } from "@/helpers/binary-helpers";
+
+export class LcdStatusRegister implements MemoryRegister {
+  offset = 0xff41;
+  name = 'STAT';
+
+  get value() {
+    return memory.readByte(this.offset);
+  }
+
+  set value(byte: number) {
+    memory.writeByte(this.offset, byte);
+  }
+
+  get mode(): LcdStatusRegister.Mode {
+    return this.value & 0b11;
+  }
+
+  set mode(newMode: LcdStatusRegister.Mode) {
+    let stat = this.value;
+    stat = setBit(stat, 0, newMode & 0b1);
+    stat = setBit(stat, 1, (newMode >> 1) & 0b1);
+    this.value = stat;
+  }
+}
+
+export namespace LcdStatusRegister {
+  export enum Mode {
+    EnableCPUAccessToVRAM,
+    InVBlank,
+    SearchingOAM,
+    TransferringDataToLCD
+  }
+}
+
+export const lcdStatusRegister = new LcdStatusRegister();
