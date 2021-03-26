@@ -9,5 +9,8 @@ module.exports = {
   "transform": {
     "^.+\\.(ts|tsx)$": "ts-jest"
   },
-  "setupFiles": ["jest-canvas-mock"]
+  "setupFiles": ["jest-canvas-mock"],
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
 }

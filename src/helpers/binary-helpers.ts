@@ -3,7 +3,7 @@ export function getBit(value: number, bitPosition: number): number {
 }
 
 export function clearBit(value: number, bitPosition: number): number {
-  return value &= ~(0b1 << bitPosition);
+  return value & ~(0b1 << bitPosition);
 }
 
 export function setBit(value: number, bitPosition: number, bitValue: number): number {
