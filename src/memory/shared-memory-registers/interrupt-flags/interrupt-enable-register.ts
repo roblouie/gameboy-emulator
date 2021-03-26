@@ -1,7 +1,7 @@
-import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-export class InterruptEnableRegister implements MemoryRegister {
+class InterruptEnableRegister implements SingleByteMemoryRegister {
   offset = 0xffff;
   name = 'IE';
 
@@ -13,3 +13,5 @@ export class InterruptEnableRegister implements MemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 }
+
+export const interruptEnableRegister = new InterruptEnableRegister();

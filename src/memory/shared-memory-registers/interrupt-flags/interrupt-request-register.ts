@@ -1,4 +1,4 @@
-import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 import { clearBit, setBit } from "@/helpers/binary-helpers";
 
@@ -10,7 +10,7 @@ interface InterruptFlags {
   isP10P13NegativeEdge: boolean;
 }
 
-export class InterruptRequestRegister implements MemoryRegister {
+class InterruptRequestRegister implements SingleByteMemoryRegister {
   offset = 0xff0f;
   name = 'IF';
 
@@ -56,3 +56,5 @@ export class InterruptRequestRegister implements MemoryRegister {
     }
   }
 }
+
+export const interruptRequestRegister = new InterruptRequestRegister();

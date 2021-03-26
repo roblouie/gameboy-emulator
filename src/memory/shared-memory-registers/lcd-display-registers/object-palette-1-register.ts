@@ -1,9 +1,9 @@
 import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-class BackgroundPaletteRegister implements SingleByteMemoryRegister {
-  offset = 0xff47;
-  name = 'BGP';
+export class ObjectPalette1Register implements SingleByteMemoryRegister {
+  offset = 0xff49;
+  name = 'OBP1';
 
   get value() {
     return memory.readByte(this.offset);
@@ -13,7 +13,7 @@ class BackgroundPaletteRegister implements SingleByteMemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 
-  get backgroundPalette() {
+  get palette() {
     const paletteByte = this.value;
     const color0 = paletteByte & 0b11;
     const color1 = (paletteByte >> 2) & 0b11;
@@ -23,5 +23,3 @@ class BackgroundPaletteRegister implements SingleByteMemoryRegister {
     return [color0, color1, color2, color3];
   }
 }
-
-export const backgroundPaletteRegister = new BackgroundPaletteRegister();

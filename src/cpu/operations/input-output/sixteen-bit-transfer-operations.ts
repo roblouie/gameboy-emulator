@@ -8,6 +8,22 @@ export function getSixteenBitTransferOperations(cpu: CPU) {
   const { registers } = cpu;
 
 // ****************
+// * Load (nn), SP
+// ****************
+sixteenBitTransferOperations.push({
+  get instruction() {
+    return `LD (0x${memory.readWord(registers.programCounter + 1).toString(16)}), SP`;
+  },
+  byteDefinition: 0b00_001_000,
+  cycleTime: 5,
+  byteLength: 3,
+  execute() {
+    registers.SP = memory.readWord(registers.programCounter + 1);
+    registers.programCounter += this.byteLength;
+  }
+});
+
+// ****************
 // * Load dd, nn
 // ****************
   function getLoadDDNNByteDefinition(rpCode: RegisterPairCode) {

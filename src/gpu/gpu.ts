@@ -146,6 +146,10 @@ export const gpu = {
       this.screen.setPixel(screenX, currentLine, color, color, color);
     }
   },
+
+  drawSpriteLine() {
+
+  }
 }
 
 function getTileIndexFromPixelLocation(x: number, y: number) {

@@ -42,9 +42,6 @@ N is subtraction flag, should be set following the execution of any subtraction 
 H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 2 wraps to 0x11, and flag should be set
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
-
-
-
 export class CPURegisters {
   flags: FFlags;
   private registersBuffer: ArrayBuffer;
