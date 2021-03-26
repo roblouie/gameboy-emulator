@@ -1,4 +1,4 @@
-import { registers } from "@/cpu/registers/registers";
+import { CPU } from "@/cpu/cpu";
 
 export const instructionCache: string[] = [];
 const instructionCacheSize = 20;
@@ -13,7 +13,8 @@ export function updateInstructionCache(instruction: string) {
   }
 }
 
-export function updateRegisterStateCache() {
+export function updateRegisterStateCache(cpu: CPU) {
+  const { registers } = cpu;
   registerStateCache.unshift(`
     A: ${registers.A},
     PC: ${registers.programCounter},

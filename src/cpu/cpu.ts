@@ -1,22 +1,22 @@
-import { registers } from "./registers/registers";
+import { CPURegisters } from "./registers/registers";
 import { memory } from "@/memory/memory";
 import * as arithmeticAndLogicalOperations from '@/cpu/operations/arithmetic-and-logical';
 import * as inputOutputOperations from '@/cpu/operations/input-output';
 import { getCallAndReturnOperations } from "@/cpu/operations/call-and-return/call-and-return-operations";
 import { getInterruptOperations } from "@/cpu/operations/interupts/interupt-operations";
-import { jumpOperations } from "@/cpu/operations/jump/jump-operations";
-import { rotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
-import { generalPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
-import { bitOperations } from "@/cpu/operations/bit/bit-operations";
-import { instructionCache, registerStateCache } from "@/cpu/cpu-debug-helpers";
+import { createJumpOperations } from "@/cpu/operations/jump/jump-operations";
+import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
+import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
+import { createBitOperations } from "@/cpu/operations/bit/bit-operations";
+import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
-import { interruptRequestRegister } from "@/memory/shared-memory-registers/interrupt-flags/interrupt-request-register";
-import { interruptEnableRegister } from "@/memory/shared-memory-registers/interrupt-flags/interrupt-enable-register";
+import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
 
 
 export class CPU {
   isInterruptMasterEnable = false;
   operations: Operation[];
+  registers: CPURegisters;
 
   private static VBlankInterruptAddress = 0x0040;
   private static LCDStatusInterruptAddress = 0x0048;
@@ -25,30 +25,31 @@ export class CPU {
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
   constructor() {
+    this.registers = new CPURegisters();
     this.operations = this.initializeOperations();
   }
 
   tick(): number {
     this.handleInterrupts();
 
-    const operationIndex = memory.readByte(registers.programCounter);
+    const operationIndex = memory.readByte(this.registers.programCounter);
     this.operations[operationIndex].execute();
 
     return this.operations[operationIndex].cycleTime;
   }
 
   reset() {
-    registers.reset();
+    this.registers.reset();
   }
 
   pushToStack(word: number) {
-    registers.stackPointer -= 2;
-    memory.writeWord(registers.stackPointer, word);
+    this.registers.stackPointer -= 2;
+    memory.writeWord(this.registers.stackPointer, word);
   }
 
   popFromStack() {
-    const value = memory.readWord(registers.stackPointer);
-    registers.stackPointer += 2;
+    const value = memory.readWord(this.registers.stackPointer);
+    this.registers.stackPointer += 2;
     return value;
   }
 
@@ -59,33 +60,33 @@ export class CPU {
       return;
     }
 
-    this.pushToStack(registers.programCounter);
+    this.pushToStack(this.registers.programCounter);
 
     const interruptFlags = interruptRequestRegister.getInterruptFlags(firedInterrupts);
 
     if (interruptFlags.isVerticalBlanking) {
       interruptRequestRegister.clearVBlankInterruptRequest();
-      registers.programCounter = CPU.VBlankInterruptAddress;
+      this.registers.programCounter = CPU.VBlankInterruptAddress;
     }
 
     else if (interruptFlags.isLCDStatus) {
       interruptRequestRegister.clearLCDStatusInterruptRequest();
-      registers.programCounter = CPU.LCDStatusInterruptAddress;
+      this.registers.programCounter = CPU.LCDStatusInterruptAddress;
     }
 
     else if (interruptFlags.isTimerOverflow) {
       interruptRequestRegister.clearTimerOverflowInterruptRequest();
-      registers.programCounter = CPU.TimerOverflowInterruptAddress;
+      this.registers.programCounter = CPU.TimerOverflowInterruptAddress;
     }
 
     else if (interruptFlags.isSerialTransferCompletion) {
       interruptRequestRegister.clearSerialTransferInterruptRequest();
-      registers.programCounter = CPU.SerialTransferCompletionInterruptAddress;
+      this.registers.programCounter = CPU.SerialTransferCompletionInterruptAddress;
     }
 
     else if (interruptFlags.isP10P13NegativeEdge) {
       interruptRequestRegister.clearP10P13NegativeEdgeInterruptRequest();
-      registers.programCounter = CPU.P10P13InputSignalLowInterruptAddress;
+      this.registers.programCounter = CPU.P10P13InputSignalLowInterruptAddress;
     }
 
     this.isInterruptMasterEnable = false;
@@ -93,26 +94,26 @@ export class CPU {
 
   private initializeOperations() {
     const unorderedOperations = [
-      ...arithmeticAndLogicalOperations.addOperations,
-      ...arithmeticAndLogicalOperations.subtractOperations,
-      ...arithmeticAndLogicalOperations.andOperations,
-      ...arithmeticAndLogicalOperations.orOperations,
-      ...arithmeticAndLogicalOperations.xorOperations,
-      ...arithmeticAndLogicalOperations.compareOperations,
-      ...arithmeticAndLogicalOperations.incrementOperations,
-      ...arithmeticAndLogicalOperations.decrementOperations,
+      ...arithmeticAndLogicalOperations.createAddOperations(this),
+      ...arithmeticAndLogicalOperations.createSubtractOperations(this),
+      ...arithmeticAndLogicalOperations.createAndOperations(this),
+      ...arithmeticAndLogicalOperations.createOrOperations(this),
+      ...arithmeticAndLogicalOperations.createXorOperations(this),
+      ...arithmeticAndLogicalOperations.createCompareOperations(this),
+      ...arithmeticAndLogicalOperations.createIncrementOperations(this),
+      ...arithmeticAndLogicalOperations.createDecrementOperations(this),
 
-      ...inputOutputOperations.memoryContentsToRegisterInstructions,
-      ...inputOutputOperations.registerToMemoryInstructions,
-      ...inputOutputOperations.registerToRegisterInstructions,
-      ...inputOutputOperations.valueToMemoryInstructions,
-      ...inputOutputOperations.valueToRegisterInstructions,
+      ...inputOutputOperations.createMemoryContentsToRegisterOperations(this),
+      ...inputOutputOperations.createRegisterToMemoryOperations(this),
+      ...inputOutputOperations.createRegisterToRegisterOperations(this),
+      ...inputOutputOperations.createValueToMemoryInstructions(this),
+      ...inputOutputOperations.createValueToRegisterOperations(this),
       ...inputOutputOperations.getSixteenBitTransferOperations(this),
 
-      ...rotateShiftOperations,
-      ...jumpOperations,
-      ...bitOperations,
-      ...generalPurposeOperations,
+      ...createRotateShiftOperations(this),
+      ...createJumpOperations(this),
+      ...createBitOperations(this),
+      ...createGeneralPurposeOperations(this),
       ...getCallAndReturnOperations(this),
       ...getInterruptOperations(this),
     ];
@@ -120,6 +121,7 @@ export class CPU {
     console.log(unorderedOperations.length);
 
     const orderedOperations: Operation[] = [];
+    const { registers } = this;
 
     for (let i = 0; i < 256; i++) {
       const operation = unorderedOperations.find(op => op.byteDefinition === i);

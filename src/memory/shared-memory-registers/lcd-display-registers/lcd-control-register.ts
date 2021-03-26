@@ -1,6 +1,7 @@
 import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 import { getBit } from "@/helpers/binary-helpers";
+import { lcdControlRegister } from "@/memory/shared-memory-registers";
 
 // TODO: Possibly just replace with returning 8 or 16 as height
 enum BlockComposition {
@@ -8,7 +9,7 @@ enum BlockComposition {
   EightBySixteen
 }
 
-class LcdControlRegister implements MemoryRegister {
+export class LcdControlRegister implements MemoryRegister {
   offset = 0xff40;
   name = 'LCDC';
 
@@ -72,7 +73,7 @@ class LcdControlRegister implements MemoryRegister {
       }
     ];
 
-    return ranges[lcdControlRegister.backgroundCodeArea];
+    return ranges[this.backgroundCodeArea];
   }
 
   get backgroundCharacterDataAddressRange() {
@@ -87,7 +88,7 @@ class LcdControlRegister implements MemoryRegister {
       }
     ];
 
-    return ranges[lcdControlRegister.backgroundCharacterData];
+    return ranges[this.backgroundCharacterData];
   }
 
   get isLCDControllerOperating() {
@@ -95,4 +96,3 @@ class LcdControlRegister implements MemoryRegister {
   }
 }
 
-export const lcdControlRegister = new LcdControlRegister();

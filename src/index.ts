@@ -1,8 +1,7 @@
 import { CPU } from "@/cpu/cpu";
-import { cartridge, CartridgeEntryPointOffset } from "@/game-rom/cartridge";
+import { cartridge, CartridgeEntryPointOffset } from "@/cartridge/cartridge";
 import { CyclesPerFrame, gpu } from "@/gpu/gpu";
-import { registers } from "@/cpu/registers/registers";
-import { backgroundTilesToImageData, characterImageData } from "@/gpu/gpu-debug-helpers";
+import { backgroundTilesToImageData, characterImageData } from "@/helpers/gpu-debug-helpers";
 import { memory } from "@/memory/memory";
 import { Gameboy } from "@/gameboy";
 
@@ -44,7 +43,7 @@ async function onFileChange(event: Event) {
     // context.putImageData(cartridge.nintendoLogo, 0, 0);
 
     let cycles = 0;
-    registers.programCounter = CartridgeEntryPointOffset;
+    // registers.programCounter = CartridgeEntryPointOffset;
 
     // Temporarily just running until TestGame.GB properly sets the lcd control registers
     // This happens right before the main game loop, and can be seen on line 188 of testGame.asm

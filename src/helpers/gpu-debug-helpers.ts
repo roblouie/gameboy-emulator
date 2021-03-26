@@ -1,8 +1,7 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import { getBit } from "@/helpers/binary-helpers";
-import { lcdControlRegister } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-control-register";
-import { backgroundPaletteRegister } from "@/memory/shared-memory-registers/lcd-display-registers/background-palette-register";
+import { backgroundPaletteRegister, lcdControlRegister } from "@/memory/shared-memory-registers";
 
 const colors = [
   255, // white

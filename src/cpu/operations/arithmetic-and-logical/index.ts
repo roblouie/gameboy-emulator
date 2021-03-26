@@ -1,21 +1,20 @@
-import { Operation } from "../operation.model";
-import { addOperations } from "./add-operations";
-import { subtractOperations } from "./subtract-operations";
-import { andOperations } from "./and-operations";
-import { orOperations } from "./or-operations";
-import { xorOperations } from "./xor-operations";
-import { compareOperations } from "./compare-operations";
-import { incrementOperations } from "./increment-operations";
-import { decrementOperations } from "./decrement-operations";
+import { createAddOperations } from "./add-operations";
+import { createSubtractOperations } from "./subtract-operations";
+import { createAndOperations } from "./and-operations";
+import { createOrOperations } from "./or-operations";
+import { createXorOperations } from "./xor-operations";
+import { createCompareOperations } from "./compare-operations";
+import { createIncrementOperations } from "./increment-operations";
+import { createDecrementOperations } from "./decrement-operations";
 
 export {
-  addOperations,
-  subtractOperations,
-  andOperations,
-  orOperations,
-  xorOperations,
-  compareOperations,
-  incrementOperations,
-  decrementOperations,
+  createAddOperations,
+  createSubtractOperations,
+  createAndOperations,
+  createOrOperations,
+  createXorOperations,
+  createCompareOperations,
+  createIncrementOperations,
+  createDecrementOperations,
 }
 

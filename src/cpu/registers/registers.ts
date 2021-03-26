@@ -43,197 +43,407 @@ H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
 
-const registersBuffer = new ArrayBuffer(12);
-const registersView = new DataView(registersBuffer);
-const registersBytes = new Uint8Array(registersBuffer);
 
-export const registers = {
+
+export class CPURegisters {
+  flags: FFlags;
+  private registersBuffer: ArrayBuffer;
+  private registersView: DataView;
+
+  constructor() {
+    this.registersBuffer = new ArrayBuffer(12);
+    this.registersView = new DataView(this.registersBuffer);
+    this.flags = new FFlags(this);
+  }
+
   reset() {
-    registersBytes.fill(0);
-  },
+    this.registersBuffer = new ArrayBuffer(12);
+    this.registersView = new DataView(this.registersBuffer);
+  }
 
   get F() {
-    return registersView.getUint8(0);
-  },
+    return this.registersView.getUint8(0);
+  }
   set F(byte: number) {
-    registersView.setUint8(0, byte);
-  },
+    this.registersView.setUint8(0, byte);
+  }
 
   get A() {
-    return registersView.getUint8(1);
-  },
+    return this.registersView.getUint8(1);
+  }
   set A(byte: number) {
-    registersView.setUint8(1, byte);
-  },
+    this.registersView.setUint8(1, byte);
+  }
 
   get C() {
-    return registersView.getUint8(2);
-  },
+    return this.registersView.getUint8(2);
+  }
   set C(byte: number) {
-    registersView.setUint8(2, byte);
-  },
+    this.registersView.setUint8(2, byte);
+  }
 
   get B() {
-    return registersView.getUint8(3);
-  },
+    return this.registersView.getUint8(3);
+  }
   set B(byte: number) {
-    registersView.setUint8(3, byte);
-  },
+    this.registersView.setUint8(3, byte);
+  }
 
   get E() {
-    return registersView.getUint8(4);
-  },
+    return this.registersView.getUint8(4);
+  }
   set E(byte: number) {
-    registersView.setUint8(4, byte);
-  },
+    this.registersView.setUint8(4, byte);
+  }
 
   get D() {
-    return registersView.getUint8(5);
-  },
+    return this.registersView.getUint8(5);
+  }
   set D(byte: number) {
-    registersView.setUint8(5, byte);
-  },
+    this.registersView.setUint8(5, byte);
+  }
 
   get L() {
-    return registersView.getUint8(6);
-  },
+    return this.registersView.getUint8(6);
+  }
   set L(byte: number) {
-    registersView.setUint8(6, byte);
-  },
+    this.registersView.setUint8(6, byte);
+  }
 
   get H() {
-    return registersView.getUint8(7);
-  },
+    return this.registersView.getUint8(7);
+  }
   set H(byte: number) {
-    registersView.setUint8(7, byte);
-  },
+    this.registersView.setUint8(7, byte);
+  }
 
   // Auxiliary register pairs
   get AF() {
-    return registersView.getUint16(0, true);
-  },
+    return this.registersView.getUint16(0, true);
+  }
   set AF(twoBytes: number) {
-    registersView.setUint16(0, twoBytes, true);
-  },
+    this.registersView.setUint16(0, twoBytes, true);
+  }
 
   get BC() {
-    return registersView.getUint16(2, true);
-  },
+    return this.registersView.getUint16(2, true);
+  }
   set BC(twoBytes: number) {
-    registersView.setUint16(2, twoBytes, true);
-  },
+    this.registersView.setUint16(2, twoBytes, true);
+  }
 
   get DE() {
-    return registersView.getUint16(4, true);
-  },
+    return this.registersView.getUint16(4, true);
+  }
   set DE(twoBytes: number) {
-    registersView.setUint16(4, twoBytes, true);
-  },
+    this.registersView.setUint16(4, twoBytes, true);
+  }
 
   get HL() {
-    return registersView.getUint16(6, true);
-  },
+    return this.registersView.getUint16(6, true);
+  }
   set HL(twoBytes: number) {
-    registersView.setUint16(6, twoBytes, true);
-  },
+    this.registersView.setUint16(6, twoBytes, true);
+  }
 
   get programCounter() {
-    return registersView.getUint16(8, true);
-  },
+    return this.registersView.getUint16(8, true);
+  }
   set programCounter(twoBytes: number) {
-    registersView.setUint16(8, twoBytes, true);
-  },
+    this.registersView.setUint16(8, twoBytes, true);
+  }
   get PC() {
     return this.programCounter;
-  },
+  }
   set PC(twoBytes: number) {
     this.programCounter = twoBytes;
-  },
+  }
 
   get stackPointer() {
-    return registersView.getUint16(10, true);
-  },
+    return this.registersView.getUint16(10, true);
+  }
   set stackPointer(twoBytes: number) {
-    registersView.setUint16(10, twoBytes, true);
-  },
+    this.registersView.setUint16(10, twoBytes, true);
+  }
   get SP() {
     return this.stackPointer;
-  },
+  }
   set SP(twoBytes: number) {
     this.stackPointer = twoBytes;
-  },
-
-  // Helper methods for F register with friendly named booleans and documented names with 0/1;
-  flags: {
-    get Z() {
-      return (registers.F >> 7);
-    },
-    set Z(newValue: number) {
-      if (newValue === 1) {
-        registers.F |= 1 << 7;
-      } else {
-        registers.F &= ~(1 << 7);
-      }
-    },
-    get isResultZero() {
-      return this.Z === 1;
-    },
-    set isResultZero(newValue: boolean) {
-      this.Z = newValue ? 1 : 0;
-    },
-
-
-    get N() {
-      return ((registers.F >> 6) & 1);
-    },
-    set N(newValue: number) {
-      if (newValue === 1) {
-        registers.F |= 1 << 6;
-      } else {
-        registers.F &= ~(1 << 6);
-      }
-    },
-    get isSubtraction() {
-      return this.N === 1;
-    },
-    set isSubtraction(newValue: boolean) {
-      this.N = newValue ? 1 : 0;
-    },
-
-
-    get H() {
-      return ((registers.F >> 5) & 1);
-    },
-    set H(newValue: number) {
-      if (newValue === 1) {
-        registers.F |= 1 << 5;
-      } else {
-        registers.F &= ~(1 << 5);
-      }
-    },
-    get isHalfCarry() {
-      return this.H === 1;
-    },
-    set isHalfCarry(newValue: boolean) {
-      this.H = newValue ? 1 : 0;
-    },
-
-
-    get CY() {
-      return ((registers.F >> 4) & 1);
-    },
-    set CY(newValue: number) {
-      if (newValue === 1) {
-        registers.F |= 1 << 4;
-      } else {
-        registers.F &= ~(1 << 4);
-      }
-    },
-    get isCarry() {
-      return this.CY === 1;
-    },
-    set isCarry(newValue: boolean) {
-      this.CY = newValue ? 1 : 0;
-    }
   }
 }
+
+class FFlags {
+  parentRegisters: CPURegisters;
+  
+  constructor(registers: CPURegisters) {
+    this.parentRegisters = registers;  
+  }
+
+  get Z() {
+    return (this.parentRegisters.F >> 7);
+  }
+  set Z(newValue: number) {
+    if (newValue === 1) {
+      this.parentRegisters.F |= 1 << 7;
+    } else {
+      this.parentRegisters.F &= ~(1 << 7);
+    }
+  }
+  get isResultZero() {
+    return this.Z === 1;
+  }
+  set isResultZero(newValue: boolean) {
+    this.Z = newValue ? 1 : 0;
+  }
+
+
+  get N() {
+    return ((this.parentRegisters.F >> 6) & 1);
+  }
+  set N(newValue: number) {
+    if (newValue === 1) {
+      this.parentRegisters.F |= 1 << 6;
+    } else {
+      this.parentRegisters.F &= ~(1 << 6);
+    }
+  }
+  get isSubtraction() {
+    return this.N === 1;
+  }
+  set isSubtraction(newValue: boolean) {
+    this.N = newValue ? 1 : 0;
+  }
+
+
+  get H() {
+    return ((this.parentRegisters.F >> 5) & 1);
+  }
+  set H(newValue: number) {
+    if (newValue === 1) {
+      this.parentRegisters.F |= 1 << 5;
+    } else {
+      this.parentRegisters.F &= ~(1 << 5);
+    }
+  }
+  get isHalfCarry() {
+    return this.H === 1;
+  }
+  set isHalfCarry(newValue: boolean) {
+    this.H = newValue ? 1 : 0;
+  }
+
+
+  get CY() {
+    return ((this.parentRegisters.F >> 4) & 1);
+  }
+  set CY(newValue: number) {
+    if (newValue === 1) {
+      this.parentRegisters.F |= 1 << 4;
+    } else {
+      this.parentRegisters.F &= ~(1 << 4);
+    }
+  }
+  get isCarry() {
+    return this.CY === 1;
+  }
+  set isCarry(newValue: boolean) {
+    this.CY = newValue ? 1 : 0;
+  }
+}
+
+// const registersBuffer = new ArrayBuffer(12);
+// const registersView = new DataView(registersBuffer);
+// const registersBytes = new Uint8Array(registersBuffer);
+
+// const registersOld = {
+//   reset() {
+//     registersBytes.fill(0);
+//   },
+//
+//   get F() {
+//     return registersView.getUint8(0);
+//   },
+//   set F(byte: number) {
+//     registersView.setUint8(0, byte);
+//   },
+//
+//   get A() {
+//     return registersView.getUint8(1);
+//   },
+//   set A(byte: number) {
+//     registersView.setUint8(1, byte);
+//   },
+//
+//   get C() {
+//     return registersView.getUint8(2);
+//   },
+//   set C(byte: number) {
+//     registersView.setUint8(2, byte);
+//   },
+//
+//   get B() {
+//     return registersView.getUint8(3);
+//   },
+//   set B(byte: number) {
+//     registersView.setUint8(3, byte);
+//   },
+//
+//   get E() {
+//     return registersView.getUint8(4);
+//   },
+//   set E(byte: number) {
+//     registersView.setUint8(4, byte);
+//   },
+//
+//   get D() {
+//     return registersView.getUint8(5);
+//   },
+//   set D(byte: number) {
+//     registersView.setUint8(5, byte);
+//   },
+//
+//   get L() {
+//     return registersView.getUint8(6);
+//   },
+//   set L(byte: number) {
+//     registersView.setUint8(6, byte);
+//   },
+//
+//   get H() {
+//     return registersView.getUint8(7);
+//   },
+//   set H(byte: number) {
+//     registersView.setUint8(7, byte);
+//   },
+//
+//   // Auxiliary register pairs
+//   get AF() {
+//     return registersView.getUint16(0, true);
+//   },
+//   set AF(twoBytes: number) {
+//     registersView.setUint16(0, twoBytes, true);
+//   },
+//
+//   get BC() {
+//     return registersView.getUint16(2, true);
+//   },
+//   set BC(twoBytes: number) {
+//     registersView.setUint16(2, twoBytes, true);
+//   },
+//
+//   get DE() {
+//     return registersView.getUint16(4, true);
+//   },
+//   set DE(twoBytes: number) {
+//     registersView.setUint16(4, twoBytes, true);
+//   },
+//
+//   get HL() {
+//     return registersView.getUint16(6, true);
+//   },
+//   set HL(twoBytes: number) {
+//     registersView.setUint16(6, twoBytes, true);
+//   },
+//
+//   get programCounter() {
+//     return registersView.getUint16(8, true);
+//   },
+//   set programCounter(twoBytes: number) {
+//     registersView.setUint16(8, twoBytes, true);
+//   },
+//   get PC() {
+//     return this.programCounter;
+//   },
+//   set PC(twoBytes: number) {
+//     this.programCounter = twoBytes;
+//   },
+//
+//   get stackPointer() {
+//     return registersView.getUint16(10, true);
+//   },
+//   set stackPointer(twoBytes: number) {
+//     registersView.setUint16(10, twoBytes, true);
+//   },
+//   get SP() {
+//     return this.stackPointer;
+//   },
+//   set SP(twoBytes: number) {
+//     this.stackPointer = twoBytes;
+//   },
+//
+//   // Helper methods for F register with friendly named booleans and documented names with 0/1;
+//   flags: {
+//     get Z() {
+//       return (registers.F >> 7);
+//     },
+//     set Z(newValue: number) {
+//       if (newValue === 1) {
+//         registers.F |= 1 << 7;
+//       } else {
+//         registers.F &= ~(1 << 7);
+//       }
+//     },
+//     get isResultZero() {
+//       return this.Z === 1;
+//     },
+//     set isResultZero(newValue: boolean) {
+//       this.Z = newValue ? 1 : 0;
+//     },
+//
+//
+//     get N() {
+//       return ((registers.F >> 6) & 1);
+//     },
+//     set N(newValue: number) {
+//       if (newValue === 1) {
+//         registers.F |= 1 << 6;
+//       } else {
+//         registers.F &= ~(1 << 6);
+//       }
+//     },
+//     get isSubtraction() {
+//       return this.N === 1;
+//     },
+//     set isSubtraction(newValue: boolean) {
+//       this.N = newValue ? 1 : 0;
+//     },
+//
+//
+//     get H() {
+//       return ((registers.F >> 5) & 1);
+//     },
+//     set H(newValue: number) {
+//       if (newValue === 1) {
+//         registers.F |= 1 << 5;
+//       } else {
+//         registers.F &= ~(1 << 5);
+//       }
+//     },
+//     get isHalfCarry() {
+//       return this.H === 1;
+//     },
+//     set isHalfCarry(newValue: boolean) {
+//       this.H = newValue ? 1 : 0;
+//     },
+//
+//
+//     get CY() {
+//       return ((registers.F >> 4) & 1);
+//     },
+//     set CY(newValue: number) {
+//       if (newValue === 1) {
+//         registers.F |= 1 << 4;
+//       } else {
+//         registers.F &= ~(1 << 4);
+//       }
+//     },
+//     get isCarry() {
+//       return this.CY === 1;
+//     },
+//     set isCarry(newValue: boolean) {
+//       this.CY = newValue ? 1 : 0;
+//     }
+//   }
+// }
+

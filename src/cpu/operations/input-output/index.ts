@@ -1,15 +1,15 @@
-import { memoryContentsToRegisterInstructions } from "./load-memory-into-register";
-import { registerToMemoryInstructions } from "./load-register-into-memory";
-import { registerToRegisterInstructions } from "./load-register-into-register";
-import { valueToMemoryInstructions } from "./load-value-into-memory";
-import { valueToRegisterInstructions } from "./load-value-into-register";
+import { createMemoryContentsToRegisterOperations } from "./load-memory-into-register";
+import { createRegisterToMemoryOperations } from "./load-register-into-memory";
+import { createRegisterToRegisterOperations } from "./load-register-into-register";
+import { createValueToMemoryInstructions } from "./load-value-into-memory";
+import { createValueToRegisterOperations } from "./load-value-into-register";
 import { getSixteenBitTransferOperations } from "./sixteen-bit-transfer-operations";
 
 export {
-  memoryContentsToRegisterInstructions,
-  registerToMemoryInstructions,
-  registerToRegisterInstructions,
-  valueToMemoryInstructions,
-  valueToRegisterInstructions,
+  createMemoryContentsToRegisterOperations,
+  createRegisterToMemoryOperations,
+  createRegisterToRegisterOperations,
+  createValueToMemoryInstructions,
+  createValueToRegisterOperations,
   getSixteenBitTransferOperations,
 }
