@@ -1,9 +1,9 @@
-import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 import { setBit } from "@/helpers/binary-helpers";
 import { LcdStatusMode } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-mode.enum";
 
-export class LcdStatusRegister implements MemoryRegister {
+class LcdStatusRegister implements SingleByteMemoryRegister {
   offset = 0xff41;
   name = 'STAT';
 
@@ -26,3 +26,5 @@ export class LcdStatusRegister implements MemoryRegister {
     this.value = stat;
   }
 }
+
+export const lcdStatusRegister = new LcdStatusRegister();

@@ -1,7 +1,7 @@
-import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-export class ScrollYRegister implements MemoryRegister {
+export class ScrollYRegister implements SingleByteMemoryRegister {
   offset = 0xff42;
   name = 'SCY';
 
@@ -13,3 +13,5 @@ export class ScrollYRegister implements MemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 }
+
+export const scrollYRegister = new ScrollYRegister();

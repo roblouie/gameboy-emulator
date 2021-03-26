@@ -1,7 +1,7 @@
-import { MemoryRegister } from "@/memory/shared-memory-registers/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-export class LineYRegister implements MemoryRegister {
+export class LineYRegister implements SingleByteMemoryRegister {
   offset = 0xff44;
   name = 'LY';
 
@@ -13,3 +13,5 @@ export class LineYRegister implements MemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 }
+
+export const lineYRegister = new LineYRegister();
