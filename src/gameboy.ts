@@ -26,9 +26,15 @@ export class Gameboy {
 
     let previousTime = 0;
 
-    let debug = false;
+    let debug = true;
 
+    // Initialize registers, probalby should be moved to CPU
     cpu.registers.programCounter.value = CartridgeEntryPointOffset;
+    cpu.registers.stackPointer.value = 0xfffe;
+    cpu.registers.HL.value = 0x014d;
+    cpu.registers.C.value = 0x13;
+    cpu.registers.E.value = 0xD8;
+    cpu.registers.A.value = 1;
 
     const runFrame = (currentTime: number) => {
       while (cycles < CyclesPerFrame) {
@@ -40,9 +46,9 @@ export class Gameboy {
           updateRegisterStateCache(cpu);
           const operationIndex = memory.readByte(cpu.registers.programCounter.value);
           updateInstructionCache(cpu.operations[operationIndex].instruction);
-          console.log(registerStateCache);
-          console.log(instructionCache);
-          debugger;
+          // console.log(registerStateCache);
+          // console.log(instructionCache);
+          // debugger;
         }
       }
 
@@ -67,29 +73,3 @@ export class Gameboy {
 
 }
 
-// export const gameboy = function() {
-//   let screen: ImageData;
-//
-//   function run() {
-//     let cycles = 0;
-//
-//     requestAnimationFrame(runFrame);
-//
-//     function runFrame() {
-//       while (cycles < CyclesPerFrame) {
-//         cycles += cpu.tick();
-//         gpu.tick(cycles);
-//       }
-//
-//       screen = gpu.screen;
-//
-//       cycles = cycles % CyclesPerFrame;
-//       requestAnimationFrame(runFrame);
-//     }
-//   }
-//
-//   return {
-//     run,
-//     screen,
-//   }
-// }();

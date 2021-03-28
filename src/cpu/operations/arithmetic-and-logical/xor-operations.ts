@@ -31,7 +31,7 @@ export function createXorOperations(cpu: CPU): Operation[] {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = xorAndSetFlags(register.value, register.value);
+        registers.A.value = xorAndSetFlags(registers.A.value, register.value);
         registers.programCounter.value += this.byteLength;
       }
     });

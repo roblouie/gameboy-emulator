@@ -29,7 +29,7 @@ export function createCompareOperations(cpu: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        compareAndSetFlags(register.value, register.value);
+        compareAndSetFlags(registers.A.value, register.value);
         registers.programCounter.value += this.byteLength;
       }
     });

@@ -31,7 +31,7 @@ export function createOrOperations(cpu: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = orAndSetFlags(register.value, register.value);
+        registers.A.value = orAndSetFlags(registers.A.value, register.value);
         registers.programCounter.value += this.byteLength;
       }
     });

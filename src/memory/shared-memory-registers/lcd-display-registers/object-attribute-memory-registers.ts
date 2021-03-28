@@ -22,11 +22,11 @@ export class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
     return memory.readByte(this.offset + index);
   }
 
-  get xPosition() {
+  get yPosition() {
     return this.getValueAt(0);
   }
 
-  get yPosition() {
+  get xPosition() {
     return this.getValueAt(1);
   }
 

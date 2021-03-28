@@ -5,6 +5,7 @@ import { getBitSubOperations } from "@/cpu/operations/cb-sub-operations/bit-oper
 import { getSetSubOperations } from "@/cpu/operations/cb-sub-operations/set-operations";
 import { getResSubOperations } from "@/cpu/operations/cb-sub-operations/res-operations";
 import { memory } from "@/memory/memory";
+import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 
 export function getCBOperations(cpu: CPU): Operation[] {
   const unorderedSubOperations: Operation[] = [
@@ -20,8 +21,24 @@ export function getCBOperations(cpu: CPU): Operation[] {
     const operation = unorderedSubOperations.find(operation => operation.byteDefinition === i);
     if (operation) {
       subOperations[i] = operation;
+    } else {
+      subOperations[i] = {
+        instruction: '!!!! NOT IMPLEMENTED !!!!',
+        byteDefinition: i,
+        byteLength: 1,
+        cycleTime: 0,
+        execute() {
+          // Log out last X instructions so we see how we got to the unimplemented op code
+          console.log(instructionCache);
+          console.log(registerStateCache);
+          registers.programCounter.value = 0x100; // just restart the rom to stop infinite looping
+          console.log(`Opcode ${this.byteDefinition} not implemented`);
+          debugger;
+        }
+      }
     }
   }
+
 
   console.log(subOperations);
 

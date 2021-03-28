@@ -34,7 +34,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = addAndSetFlags(registers.A.value, registers.A.value);
+        registers.A.value = addAndSetFlags(registers.A.value, register.value);
         registers.programCounter.value += this.byteLength
       }
     });
@@ -88,7 +88,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = addAndSetFlags(register.value, register.value + registers.flags.CY);
+        registers.A.value = addAndSetFlags(registers.A.value, register.value + registers.flags.CY);
         registers.programCounter.value += this.byteLength;
       }
     });

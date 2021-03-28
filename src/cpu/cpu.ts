@@ -33,9 +33,10 @@ export class CPU {
     this.handleInterrupts();
 
     const operationIndex = memory.readByte(this.registers.programCounter.value);
-    const cycleTime = this.operations[operationIndex].cycleTime;
+    const operation = this.operations[operationIndex];
+    const cycleTime = operation.cycleTime;
 
-    this.operations[operationIndex].execute();
+    operation.execute();
 
     return cycleTime;
   }
@@ -114,7 +115,6 @@ export class CPU {
 
       ...createRotateShiftOperations(this),
       ...createJumpOperations(this),
-      // ...createBitOperations(this),
       ...getCBOperations(this),
       ...createGeneralPurposeOperations(this),
       ...getCallAndReturnOperations(this),

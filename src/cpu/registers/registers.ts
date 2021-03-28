@@ -45,7 +45,7 @@ CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wra
 import { CpuRegister } from "@/cpu/registers/cpu-register";
 import { RegisterCode } from "@/cpu/registers/register-code.enum";
 import { RegisterPairCode } from "@/cpu/registers/register-pair-code";
-import { CpuFlagRegister } from "@/cpu/registers/CpuFlagRegister";
+import { CpuFlagRegister } from "@/cpu/registers/cpu-flag-register";
 
 export class CPURegisters {
   private registersBuffer: ArrayBuffer;
