@@ -31,7 +31,7 @@ export function createAndOperations(cpu: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = andAndSetFlags(register.value, register.value);
+        registers.A.value = andAndSetFlags(registers.A.value, register.value);
         registers.programCounter.value += this.byteLength;
       }
     });

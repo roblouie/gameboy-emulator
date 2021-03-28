@@ -2,6 +2,7 @@ import { CPU } from "@/cpu/cpu";
 import { Operation } from "@/cpu/operations/operation.model";
 import { RegisterCode } from "@/cpu/registers/register-code.enum";
 import { memory } from "@/memory/memory";
+import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 
 export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   const subOperations: Operation[] = [];

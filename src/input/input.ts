@@ -25,8 +25,8 @@ export class Input {
 
   reportInput(byte: number): number {
     let inputValue = 0b1111;
-    const isPollingDirections = (byte >> 4) & 0b1;
-    const isPollingButtons = (byte >> 5) & 0b1;
+    const isPollingDirections = ((byte >> 4) & 0b1) === 0;
+    const isPollingButtons = ((byte >> 5) & 0b1) === 0;
 
     if (isPollingDirections) {
       inputValue = setBit(inputValue, 0, this.isPressingRight ? 0 : 1);
@@ -41,6 +41,9 @@ export class Input {
       inputValue = setBit(inputValue, 2, this.isPressingSelect ? 0 : 1);
       inputValue = setBit(inputValue, 3, this.isPressingStart ? 0 : 1);
     }
+
+    inputValue = setBit(inputValue, 4, isPollingButtons ? 0 : 1);
+    inputValue = setBit(inputValue, 5, isPollingButtons ? 0 : 1);
 
     return inputValue;
   }

@@ -31,7 +31,7 @@ export function createSubtractOperations(cpu: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = subtractAndSetFlags(register.value, register.value);
+        registers.A.value = subtractAndSetFlags(registers.A.value, register.value);
         registers.programCounter.value += this.byteLength;
       }
     });
@@ -77,7 +77,7 @@ export function createSubtractOperations(cpu: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        register.value = subtractAndSetFlags(register.value, register.value - registers.flags.CY);
+        registers.A.value = subtractAndSetFlags(registers.A.value, register.value - registers.flags.CY);
         registers.programCounter.value += this.byteLength;
       }
     });

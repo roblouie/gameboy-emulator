@@ -22,7 +22,9 @@ export const memory = {
     }
     else if (isReadingInput(address)) {
       const inputValue = memoryView.getUint8(address);
-      return input.reportInput(inputValue);
+      const result = input.reportInput(inputValue);
+      // console.log(result);
+      return result;
     } else {
       return memoryView.getUint8(address);
     }

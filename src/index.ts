@@ -4,9 +4,10 @@ import { Gameboy } from "@/gameboy";
 import { GameboyButton } from "@/input/gameboy-button.enum";
 import { memory } from "@/memory/memory";
 
+let canvas: HTMLCanvasElement;
 let context: CanvasRenderingContext2D;
-// let vramCanvas: HTMLCanvasElement;
-// let vramContext: CanvasRenderingContext2D;
+let vramCanvas: HTMLCanvasElement;
+let vramContext: CanvasRenderingContext2D;
 //
 // let backgroundCanvas: HTMLCanvasElement;
 // let backgroundContext: CanvasRenderingContext2D;
@@ -17,17 +18,14 @@ window.addEventListener('load', () => {
   const fileInput = document.querySelector('.file-input') as HTMLInputElement;
   fileInput?.addEventListener('change', onFileChange);
 
-  const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+  canvas = document.querySelector('canvas') as HTMLCanvasElement;
   context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-  // vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
-  // vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
+  vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
+  vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
   //
   // backgroundCanvas = document.querySelector('#background') as HTMLCanvasElement;
   // backgroundContext = backgroundCanvas.getContext('2d') as CanvasRenderingContext2D;
-
-  document.addEventListener('keydown', event => isPressingDown = event.key === 'ArrowDown');
-  document.addEventListener('keyup', event => isPressingDown = event.key === 'ArrowDown');
 });
 
 
@@ -51,28 +49,58 @@ async function onFileChange(event: Event) {
 
     const gameboy = new Gameboy();
 
+
     document.addEventListener('keydown', event => {
-      gameboy.input.isPressingDown = event.key === 'ArrowDown';
-      gameboy.input.isPressingUp = event.key === 'ArrowUp';
+      if (event.code === 'ArrowDown') {
+        gameboy.input.isPressingDown = true;
+      }
+      if (event.code === 'ArrowUp') {
+        gameboy.input.isPressingUp = true;
+      }
+      if (event.code === 'ArrowLeft') {
+        gameboy.input.isPressingLeft = true;
+      }
+      if (event.code === 'ArrowRight') {
+        gameboy.input.isPressingRight = true;
+      }
+
+      gameboy.input.isPressingA = event.code === 'KeyA';
+      gameboy.input.isPressingB = event.code === 'KeyB'
 
       // if (event.key === 'ArrowDown') {
       //   gameboy.input.buttonPressed(GameboyButton.Down);
       // }
     });
     document.addEventListener('keyup', event => {
-      gameboy.input.isPressingDown = !(event.key == 'ArrowDown');
-      gameboy.input.isPressingUp = !(event.key == 'ArrowUp');
+      if (event.code === 'ArrowDown') {
+        gameboy.input.isPressingDown = false;
+      }
+      if (event.code === 'ArrowUp') {
+        gameboy.input.isPressingUp = false;
+      }
+      if (event.code === 'ArrowLeft') {
+        gameboy.input.isPressingLeft = false;
+      }
+      if (event.code === 'ArrowRight') {
+        gameboy.input.isPressingRight = false;
+      }
+
+
 
       // if (event.key === 'ArrowDown') {
       //   gameboy.input.buttonReleased(GameboyButton.Down)
       // }
     });
 
+    context.imageSmoothingEnabled = false;
+    vramContext.imageSmoothingEnabled = false;
     const fpsDiv = document.querySelector('#fps');
     gameboy.onFrameFinished((imageData: ImageData, fps: number, registers: any) => {
       context.putImageData(imageData, 0, 0);
+      vramContext.drawImage(canvas, 0, 0, 640, 576);
       if (fpsDiv) {
-        fpsDiv.innerHTML = `FPS: ${fps}`;
+        // fpsDiv.innerHTML = `FPS: ${fps}`;
+        fpsDiv.innerHTML = memory.readByte(0xc0a0) + ', ' + memory.readByte(0xc0a1);
       }
     });
 
