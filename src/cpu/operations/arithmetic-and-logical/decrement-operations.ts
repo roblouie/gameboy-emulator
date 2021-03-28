@@ -25,81 +25,17 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     return (rCode << 3) + 0b101;
   }
 
-  decrementOperations.push({
-    instruction: 'DEC A',
-    byteDefinition: getDecRByteDefinition(RegisterCode.A),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.A = decrementAndSetFlags(registers.A);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC B',
-    byteDefinition: getDecRByteDefinition(RegisterCode.B),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.B = decrementAndSetFlags(registers.B);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC C',
-    byteDefinition: getDecRByteDefinition(RegisterCode.C),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.C = decrementAndSetFlags(registers.C);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC D',
-    byteDefinition: getDecRByteDefinition(RegisterCode.D),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.D = decrementAndSetFlags(registers.D);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC E',
-    byteDefinition: getDecRByteDefinition(RegisterCode.E),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.E = decrementAndSetFlags(registers.E);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC H',
-    byteDefinition: getDecRByteDefinition(RegisterCode.H),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.H = decrementAndSetFlags(registers.H);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC L',
-    byteDefinition: getDecRByteDefinition(RegisterCode.L),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.L = decrementAndSetFlags(registers.L);
-      registers.programCounter += this.byteLength
-    }
+  cpu.registers.baseRegisters.forEach(register => {
+    decrementOperations.push({
+      instruction: `DEC ${register.name}`,
+      byteDefinition: getDecRByteDefinition(register.code),
+      cycleTime: 1,
+      byteLength: 1,
+      execute() {
+        register.value = decrementAndSetFlags(register.value);
+        registers.programCounter.value += this.byteLength;
+      }
+    });
   });
 
 
@@ -113,10 +49,10 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     cycleTime: 3,
     byteLength: 1,
     execute() {
-      const value = memory.readByte(registers.HL);
+      const value = memory.readByte(registers.HL.value);
       const incremented = decrementAndSetFlags(value);
-      memory.writeByte(registers.HL, incremented);
-      registers.programCounter += this.byteLength
+      memory.writeByte(registers.HL.value, incremented);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -134,8 +70,8 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.BC--;
-      registers.programCounter += this.byteLength
+      registers.BC.value--;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -145,8 +81,8 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.DE--;
-      registers.programCounter += this.byteLength
+      registers.DE.value--;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -156,8 +92,8 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.HL--;
-      registers.programCounter += this.byteLength
+      registers.HL.value--;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -167,8 +103,8 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.SP--;
-      registers.programCounter += this.byteLength
+      registers.stackPointer.value--;
+      registers.programCounter.value += this.byteLength;
     }
   });
 

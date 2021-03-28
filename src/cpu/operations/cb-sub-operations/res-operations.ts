@@ -1,0 +1,58 @@
+import { CPU } from "@/cpu/cpu";
+import { Operation } from "@/cpu/operations/operation.model";
+import { RegisterCode } from "@/cpu/registers/register-code.enum";
+import { clearBit } from "@/helpers/binary-helpers";
+import { memory } from "@/memory/memory";
+
+export function getResSubOperations(cpu: CPU): Operation[] {
+  const subOperations: Operation[] = [];
+  const { registers } = cpu;
+
+  // ****************
+  // * Res b, A
+  // ****************
+  function getResBAByteDefinition(bitPosition: number, registerCode: RegisterCode) {
+    return (0b10 << 6) + (bitPosition << 3) + registerCode;
+  }
+
+  cpu.registers.baseRegisters.forEach(register => {
+    for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
+      subOperations.push({
+        byteDefinition: getResBAByteDefinition(bitPosition, register.code),
+        instruction: `BIT ${bitPosition}, ${register.name}`,
+        cycleTime: 2,
+        byteLength: 2,
+        execute() {
+          register.value = clearBit(register.value, bitPosition);
+          registers.programCounter.value += this.byteLength;
+        }
+      })
+    }
+  });
+
+
+
+  // ****************
+  // * Res b, (HL)
+  // ****************
+  function getResHLByteDefinition(bitPosition: number) {
+    return (0b10 << 6) + (bitPosition << 3) + 0b110;
+  }
+
+  for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
+    subOperations.push({
+      byteDefinition: getResHLByteDefinition(bitPosition),
+      instruction: `RES ${bitPosition}, (HL)`,
+      cycleTime: 3,
+      byteLength: 2,
+      execute() {
+        const value = memory.readByte(registers.HL.value);
+        const bitSet = clearBit(value, bitPosition);
+        memory.writeByte(registers.HL.value, bitSet);
+        registers.programCounter.value += this.byteLength;
+      }
+    })
+  }
+
+  return subOperations;
+}

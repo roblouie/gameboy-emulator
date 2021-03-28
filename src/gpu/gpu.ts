@@ -6,7 +6,7 @@ import {
   interruptRequestRegister,
   lcdControlRegister,
   lcdStatusRegister,
-  lineYRegister,
+  lineYRegister, objectAttributeMemoryRegisters, objectPaletteRegisters,
   scrollXRegister,
   scrollYRegister
 } from "@/memory/shared-memory-registers";
@@ -33,6 +33,11 @@ const BackgroundDisplayData1End = 0x9bff;
 
 const BackgroundDisplayData2Start = 0x9c00;
 const BackgroundDisplayData2End = 0x9fff;
+
+const BytesPerCharacter = 2;
+
+const SpriteOffsetX = -8;
+const SpriteOffsetY = -16;
 
 interface AddressRange {
   start: number,
@@ -74,7 +79,7 @@ export const gpu = {
 
       case LcdStatusMode.EnableCPUAccessToVRAM:
         if (this.cycleCounter >= CyclesPerHBlank) {
-          this.drawBackgroundLine(lineYRegister.value);
+          this.drawScanline();
 
           this.cycleCounter %= CyclesPerHBlank;
 
@@ -104,7 +109,13 @@ export const gpu = {
     }
   },
 
-  drawBackgroundLine(currentLine: number) {
+  drawScanline() {
+    this.drawBackgroundLine();
+    this.drawSpriteLine();
+  },
+
+  // TODO: Refactor to do a pixel at a time?
+  drawBackgroundLine() {
     let backgroundTileMap: Uint8Array | Int8Array;
     const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
     const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
@@ -118,7 +129,7 @@ export const gpu = {
 
     const palette = backgroundPaletteRegister.backgroundPalette;
 
-    const scrolledY = (currentLine + scrollYRegister.value) & 0xff;
+    const scrolledY = (lineYRegister.value + scrollYRegister.value) & 0xff;
 
     for (let screenX = 0; screenX < ScreenWidth; screenX++) {
       const scrolledX = (screenX + scrollXRegister.value) & 0xff;
@@ -128,27 +139,60 @@ export const gpu = {
       const xPosInTile = scrolledX - tilePixelPosition.x;
       const yPosInTile = scrolledY - tilePixelPosition.y;
 
-      const bytePositionInTile = yPosInTile * 2;
+      const bytePositionInTile = yPosInTile * BytesPerCharacter;
 
       const tileCharIndex = backgroundTileMap[tileMapIndex];
       const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
-      const currentTileBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
-      const lowerByte = memory.readByte(currentTileBytePosition);
-      const higherByte = memory.readByte(currentTileBytePosition + 1);
+      const currentTileLineBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
+      const lowerByte = memory.readByte(currentTileLineBytePosition);
+      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
-      const shadeLower = getBit(lowerByte, xPosInTile);
-      const shadeHigher = getBit(higherByte, xPosInTile);
+      const paletteIndex = getPixelInTileLineLeftToRight(xPosInTile, lowerByte, higherByte);
 
-      const paletteColor = palette[shadeLower + shadeHigher];
+      const paletteColor = palette[paletteIndex];
       const color = colors[paletteColor];
 
-      this.screen.setPixel(screenX, currentLine, color, color, color);
+      this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
     }
   },
 
   drawSpriteLine() {
 
+      objectAttributeMemoryRegisters.forEach(oamRegister => {
+        if (oamRegister.xPosition === 0 || oamRegister.yPosition == 0) {
+          return;
+        }
+
+        const spriteX = oamRegister.xPosition + SpriteOffsetX;
+        const spriteY = oamRegister.yPosition + SpriteOffsetY;
+
+        const scanlineIntersectsYAt = spriteY - lineYRegister.value;
+
+        const isIntersectingY = scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lcdControlRegister.objectHeight;
+        if (!isIntersectingY) {
+          return;
+        }
+
+        const bytePositionInTile = scanlineIntersectsYAt * BytesPerCharacter;
+        const tileCharBytePosition = oamRegister.characterCode * 16; // 16 bytes per tile
+        const currentTileLineBytePosition = CharacterDataStart + tileCharBytePosition + bytePositionInTile;
+
+        const lowerByte = memory.readByte(currentTileLineBytePosition);
+        const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+
+        for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
+          const paletteIndex = getPixelInTileLineLeftToRight(xPixelInTile, lowerByte, higherByte);
+
+          const palette = objectPaletteRegisters[oamRegister.paletteNumber].palette;
+          const paletteColor = palette[paletteIndex];
+          const color = colors[paletteColor];
+
+          if (color !== 0) {
+            this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color);
+          }
+        }
+      });
   }
 }
 
@@ -170,4 +214,15 @@ function getUpperLeftPixelLocationOfTile(tile: number) {
   const posX = tile - posY * backgroundNumberOfTilesPerSide;
 
   return { x: posX * tileSize, y: posY * tileSize };
+}
+
+function getPixelInTileLineLeftToRight(xPosition: number, lowerByte: number, higherByte: number) {
+  // the pixel at position 0 in a byte is the rightmost pixel, but when drawing on canvas, we
+  // go from left to right, so 0 is the leftmost pixel. By subtracting 7 (the last index in the byte)
+  // we can effectively swap the order.
+  const xPixelInTile = 7 - xPosition;
+  const shadeLower = getBit(lowerByte, xPixelInTile);
+  const shadeHigher = getBit(higherByte, xPixelInTile);
+
+  return shadeLower + shadeHigher;
 }

@@ -1,4 +1,7 @@
-import { cartridge } from "../cartridge/cartridge";
+import { cartridge } from "@/cartridge/cartridge";
+import { controllerDataRegister, dmaTransferRegister } from "@/memory/shared-memory-registers";
+import { dmaTransferController } from "@/memory/dma-transfer-controller";
+import { input } from "@/input/input";
 
 const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);
@@ -16,6 +19,10 @@ export const memory = {
   readByte(address: number) {
     if (isAccessingCartridge(address)) {
       return cartridge.readByte(address);
+    }
+    else if (isReadingInput(address)) {
+      const inputValue = memoryView.getUint8(address);
+      return input.reportInput(inputValue);
     } else {
       return memoryView.getUint8(address);
     }
@@ -39,9 +46,13 @@ export const memory = {
 
   writeByte(address: number, value: number) {
     if (isAccessingCartridge(address)) {
-      return cartridge.writeByte(address, value);
-    } else {
-      memoryView.setUint8(address, value);
+      cartridge.writeByte(address, value);
+      return;
+    }
+
+    memoryView.setUint8(address, value);
+    if (isDmaTransfer(address)) {
+      dmaTransferController.transfer();
     }
   },
 
@@ -57,4 +68,12 @@ export const memory = {
 function isAccessingCartridge(address: number): boolean {
   // TODO: Revisit how to handle cartridge ram
   return address <= 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
+}
+
+function isDmaTransfer(address: number) {
+  return address === dmaTransferRegister.offset;
+}
+
+function isReadingInput(address: number) {
+  return address === controllerDataRegister.offset;
 }

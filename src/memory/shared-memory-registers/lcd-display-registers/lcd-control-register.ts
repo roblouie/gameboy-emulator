@@ -2,12 +2,6 @@ import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memor
 import { memory } from "@/memory/memory";
 import { getBit } from "@/helpers/binary-helpers";
 
-// TODO: Possibly just replace with returning 8 or 16 as height
-enum BlockComposition {
-  EightByEight,
-  EightBySixteen
-}
-
 class LcdControlRegister implements SingleByteMemoryRegister {
   offset = 0xff40;
   name = 'LCDC';
@@ -28,8 +22,9 @@ class LcdControlRegister implements SingleByteMemoryRegister {
     return getBit(this.value, 1) === 1;
   }
 
-  get objBlockComposition() {
-    return getBit(this.value, 2);
+  get objectHeight() {
+    const objectBlockCompositionFlag = getBit(this.value, 2)
+    return objectBlockCompositionFlag === 0 ? 8 : 16;
   }
 
   get backgroundCodeArea(): number {

@@ -1,16 +1,17 @@
-import { CPU } from "@/cpu/cpu";
-import { cartridge, CartridgeEntryPointOffset } from "@/cartridge/cartridge";
-import { CyclesPerFrame, gpu } from "@/gpu/gpu";
+import { cartridge } from "@/cartridge/cartridge";
 import { backgroundTilesToImageData, characterImageData } from "@/helpers/gpu-debug-helpers";
-import { memory } from "@/memory/memory";
 import { Gameboy } from "@/gameboy";
+import { GameboyButton } from "@/input/gameboy-button.enum";
+import { memory } from "@/memory/memory";
 
 let context: CanvasRenderingContext2D;
-let vramCanvas: HTMLCanvasElement;
-let vramContext: CanvasRenderingContext2D;
+// let vramCanvas: HTMLCanvasElement;
+// let vramContext: CanvasRenderingContext2D;
+//
+// let backgroundCanvas: HTMLCanvasElement;
+// let backgroundContext: CanvasRenderingContext2D;
 
-let backgroundCanvas: HTMLCanvasElement;
-let backgroundContext: CanvasRenderingContext2D;
+let isPressingDown = false;
 
 window.addEventListener('load', () => {
   const fileInput = document.querySelector('.file-input') as HTMLInputElement;
@@ -19,11 +20,14 @@ window.addEventListener('load', () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
   context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-  vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
-  vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
+  // vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
+  // vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
+  //
+  // backgroundCanvas = document.querySelector('#background') as HTMLCanvasElement;
+  // backgroundContext = backgroundCanvas.getContext('2d') as CanvasRenderingContext2D;
 
-  backgroundCanvas = document.querySelector('#background') as HTMLCanvasElement;
-  backgroundContext = backgroundCanvas.getContext('2d') as CanvasRenderingContext2D;
+  document.addEventListener('keydown', event => isPressingDown = event.key === 'ArrowDown');
+  document.addEventListener('keyup', event => isPressingDown = event.key === 'ArrowDown');
 });
 
 
@@ -43,24 +47,29 @@ async function onFileChange(event: Event) {
     // context.putImageData(cartridge.nintendoLogo, 0, 0);
 
     let cycles = 0;
-    // registers.programCounter = CartridgeEntryPointOffset;
 
-    // Temporarily just running until TestGame.GB properly sets the lcd control registers
-    // This happens right before the main game loop, and can be seen on line 188 of testGame.asm
-    // while (gpuRegisters.lcdControl.backgroundCharacterData !== 1) {
-    // // while(cycles <= CyclesPerFrame) {
-    //   cycles += cpu.tick();
-    //   gpu.tick(cycles);
-    // }
-    //
-    //
-    // context.putImageData(gpu.screen, 0, 0);
-    //
-    // console.log(cycles);
 
     const gameboy = new Gameboy();
+
+    document.addEventListener('keydown', event => {
+      gameboy.input.isPressingDown = event.key === 'ArrowDown';
+      gameboy.input.isPressingUp = event.key === 'ArrowUp';
+
+      // if (event.key === 'ArrowDown') {
+      //   gameboy.input.buttonPressed(GameboyButton.Down);
+      // }
+    });
+    document.addEventListener('keyup', event => {
+      gameboy.input.isPressingDown = !(event.key == 'ArrowDown');
+      gameboy.input.isPressingUp = !(event.key == 'ArrowUp');
+
+      // if (event.key === 'ArrowDown') {
+      //   gameboy.input.buttonReleased(GameboyButton.Down)
+      // }
+    });
+
     const fpsDiv = document.querySelector('#fps');
-    gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
+    gameboy.onFrameFinished((imageData: ImageData, fps: number, registers: any) => {
       context.putImageData(imageData, 0, 0);
       if (fpsDiv) {
         fpsDiv.innerHTML = `FPS: ${fps}`;
@@ -69,13 +78,13 @@ async function onFileChange(event: Event) {
 
     gameboy.run();
 
-    vramContext.imageSmoothingEnabled = false;
-    vramContext.putImageData(characterImageData(), 0, 0);
-    vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
-
-    backgroundContext.imageSmoothingEnabled = false;
-    backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
-    backgroundContext.drawImage( backgroundCanvas, 0, 0, 2*backgroundCanvas.width, 2*backgroundCanvas.height );
+    // vramContext.imageSmoothingEnabled = false;
+    // vramContext.putImageData(characterImageData(), 0, 0);
+    // vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
+    //
+    // backgroundContext.imageSmoothingEnabled = false;
+    // backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
+    // backgroundContext.drawImage( backgroundCanvas, 0, 0, 2*backgroundCanvas.width, 2*backgroundCanvas.height );
 
   }
 }

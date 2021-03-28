@@ -1,6 +1,6 @@
 import { CartridgeType } from "./cartridge-type.enum";
-import { EnhancedImageData } from "../helpers/enhanced-image-data";
-import { getBit } from "../helpers/binary-helpers";
+import { EnhancedImageData } from "@/helpers/enhanced-image-data";
+import { getBit } from "@/helpers/binary-helpers";
 
 let gameDataView: DataView;
 let gameBytes: Uint8Array;
