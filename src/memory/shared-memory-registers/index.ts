@@ -8,8 +8,13 @@ import { lineYCompareRegister } from "@/memory/shared-memory-registers/lcd-displ
 import { scrollXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/scroll-x-register";
 import { scrollYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/scroll-y-register";
 import { objectAttributeMemoryRegisters } from "./lcd-display-registers/object-attribute-memory-registers";
+import { dmaTransferRegister } from "@/memory/shared-memory-registers/lcd-display-registers/dma-transfer-register";
+import { objectPaletteRegisters } from "@/memory/shared-memory-registers/lcd-display-registers/object-palette-registers";
+import { controllerDataRegister } from "./port-mode-registers/controller-data-register";
 
 export {
+  controllerDataRegister,
+
   interruptEnableRegister,
   interruptRequestRegister,
 
@@ -21,4 +26,6 @@ export {
   scrollXRegister,
   scrollYRegister,
   objectAttributeMemoryRegisters,
+  dmaTransferRegister,
+  objectPaletteRegisters
 }

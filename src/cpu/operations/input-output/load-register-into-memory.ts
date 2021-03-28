@@ -14,81 +14,17 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
 // ****************
 // * Load (HL), R
 // ****************
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), A',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.A),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.A);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), B',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.B),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.B);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), C',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.C),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.C);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), D',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.D),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.D);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), E',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.E),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.E);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), H',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.H),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.H);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  registerToMemoryInstructions.push({
-    instruction: 'LD (HL), L',
-    byteDefinition: getLoadHLRByteDefinition(RegisterCode.L),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      memory.writeByte(registers.HL, registers.L);
-      registers.programCounter += this.byteLength
-    }
+  cpu.registers.baseRegisters.forEach(register => {
+    registerToMemoryInstructions.push({
+      byteDefinition: getLoadHLRByteDefinition(register.code),
+      instruction: `LD (HL), ${register.name}`,
+      cycleTime: 2,
+      byteLength: 1,
+      execute() {
+        memory.writeByte(registers.HL.value, register.value);
+        registers.programCounter.value += this.byteLength
+      }
+    })
   });
 
 // ****************
@@ -100,8 +36,8 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeByte(0xff00 + registers.C, registers.A);
-      registers.programCounter += this.byteLength
+      memory.writeByte(0xff00 + registers.C.value, registers.A.value);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -111,16 +47,16 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
 // ****************
   registerToMemoryInstructions.push({
     get instruction() {
-      const baseAddress = memory.readByte(registers.programCounter + 1);
+      const baseAddress = memory.readByte(registers.programCounter.value + 1);
       return `LD (0x${baseAddress.toString(16)}), A`;
     },
     byteDefinition: 0b11100000,
     cycleTime: 3,
     byteLength: 2,
     execute() {
-      const baseAddress = memory.readByte(registers.programCounter + 1);
-      memory.writeByte(0xff00 + baseAddress, registers.A);
-      registers.programCounter += this.byteLength
+      const baseAddress = memory.readByte(registers.programCounter.value + 1);
+      memory.writeByte(0xff00 + baseAddress, registers.A.value);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -130,16 +66,16 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
 // ****************
   registerToMemoryInstructions.push({
     get instruction() {
-      const memoryAddress = memory.readWord(registers.programCounter + 1);
+      const memoryAddress = memory.readWord(registers.programCounter.value + 1);
       return `LD (0x${memoryAddress.toString(16)}), A`;
     },
     byteDefinition: 0b11_101_010,
     cycleTime: 4,
     byteLength: 3,
     execute() {
-      const memoryAddress = memory.readWord(registers.programCounter + 1);
-      memory.writeByte(memoryAddress, registers.A);
-      registers.programCounter += this.byteLength
+      const memoryAddress = memory.readWord(registers.programCounter.value + 1);
+      memory.writeByte(memoryAddress, registers.A.value);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -153,8 +89,8 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeWord(registers.BC, registers.A);
-      registers.programCounter += this.byteLength
+      memory.writeWord(registers.BC.value, registers.A.value);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -164,8 +100,8 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeWord(registers.DE, registers.A);
-      registers.programCounter += this.byteLength
+      memory.writeWord(registers.DE.value, registers.A.value);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -179,9 +115,9 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeByte(registers.HL, registers.A);
-      registers.HL++;
-      registers.programCounter += this.byteLength
+      memory.writeByte(registers.HL.value, registers.A.value);
+      registers.HL.value++;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -195,9 +131,9 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeByte(registers.HL, registers.A);
-      registers.HL--;
-      registers.programCounter += this.byteLength
+      memory.writeByte(registers.HL.value, registers.A.value);
+      registers.HL.value--;
+      registers.programCounter.value += this.byteLength
     }
   });
 

@@ -8,19 +8,19 @@ export function createJumpOperations(cpu: CPU): Operation[] {
 
   jumpOperations.push({
     get instruction() {
-      return `JP 0x${memory.readWord(registers.programCounter + 1).toString(16)}`
+      return `JP 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`
     },
     byteDefinition: 0b11_000_011,
     cycleTime: 4,
     byteLength: 3,
     execute() {
-      registers.programCounter = memory.readWord(registers.programCounter + 1);
+      registers.programCounter.value = memory.readWord(registers.programCounter.value + 1);
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      return `JP NZ, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`
+      return `JP NZ, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`
     },
     byteDefinition: 0b11_000_010,
     get cycleTime() {
@@ -29,16 +29,16 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 3,
     execute() {
       if (!registers.flags.isResultZero) {
-        registers.programCounter = memory.readWord(registers.programCounter + 1);
+        registers.programCounter.value = memory.readWord(registers.programCounter.value + 1);
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      return `JP Z, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`
+      return `JP Z, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`
     },
     byteDefinition: 0b11_001_010,
     get cycleTime() {
@@ -47,16 +47,16 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 3,
     execute() {
       if (registers.flags.isResultZero) {
-        registers.programCounter = memory.readWord(registers.programCounter + 1);
+        registers.programCounter.value = memory.readWord(registers.programCounter.value + 1);
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      return `JP NC, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`
+      return `JP NC, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`
     },
     byteDefinition: 0b11_010_010,
     get cycleTime() {
@@ -65,16 +65,16 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 3,
     execute() {
       if (!registers.flags.isCarry) {
-        registers.programCounter = memory.readWord(registers.programCounter + 1);
+        registers.programCounter.value = memory.readWord(registers.programCounter.value + 1);
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      return `JP C, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`
+      return `JP C, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`
     },
     byteDefinition: 0b11_011_010,
     get cycleTime() {
@@ -83,16 +83,16 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 3,
     execute() {
       if (registers.flags.isCarry) {
-        registers.programCounter = memory.readWord(registers.programCounter + 1);
+        registers.programCounter.value = memory.readWord(registers.programCounter.value + 1);
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      const value = memory.readSignedByte(registers.programCounter + 1);
+      const value = memory.readSignedByte(registers.programCounter.value + 1);
       if (value >= 0) {
         return `JR 0x${value.toString(16)}`;
       } else {
@@ -103,13 +103,13 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     cycleTime: 3,
     byteLength: 2,
     execute() {
-      registers.programCounter = registers.programCounter + memory.readSignedByte(registers.programCounter + 1);
+      registers.programCounter.value = registers.programCounter.value + memory.readSignedByte(registers.programCounter.value + 1);
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      const value = memory.readSignedByte(registers.programCounter + 1);
+      const value = memory.readSignedByte(registers.programCounter.value + 1);
       if (value >= 0) {
         return `JR NZ 0x${value.toString(16)}`;
       } else {
@@ -121,17 +121,17 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 2,
     execute() {
       if (!registers.flags.isResultZero) {
-        const jumpDistance = memory.readSignedByte(registers.programCounter + 1);
-        registers.programCounter = registers.programCounter + jumpDistance + this.byteLength;
+        const jumpDistance = memory.readSignedByte(registers.programCounter.value + 1);
+        registers.programCounter.value = registers.programCounter.value + jumpDistance + this.byteLength;
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      const value = memory.readSignedByte(registers.programCounter + 1);
+      const value = memory.readSignedByte(registers.programCounter.value + 1);
       if (value >= 0) {
         return `JR  Z 0x${value.toString(16)}`;
       } else {
@@ -143,16 +143,16 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 2,
     execute() {
       if (registers.flags.isResultZero) {
-        registers.programCounter = registers.programCounter + (memory.readSignedByte(registers.programCounter + 1));
+        registers.programCounter.value = registers.programCounter.value + (memory.readSignedByte(registers.programCounter.value + 1));
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      const value = memory.readSignedByte(registers.programCounter + 1);
+      const value = memory.readSignedByte(registers.programCounter.value + 1);
       if (value >= 0) {
         return `JR  NC 0x${value.toString(16)}`;
       } else {
@@ -164,16 +164,16 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 2,
     execute() {
       if (!registers.flags.isCarry) {
-        registers.programCounter = registers.programCounter + memory.readSignedByte(registers.programCounter + 1);
+        registers.programCounter.value = registers.programCounter.value + memory.readSignedByte(registers.programCounter.value + 1);
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
 
   jumpOperations.push({
     get instruction() {
-      const value = memory.readSignedByte(registers.programCounter + 1);
+      const value = memory.readSignedByte(registers.programCounter.value + 1);
       if (value >= 0) {
         return `JR C 0x${value.toString(16)}`;
       } else {
@@ -185,9 +185,9 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     byteLength: 2,
     execute() {
       if (registers.flags.isCarry) {
-        registers.programCounter = registers.programCounter + memory.readSignedByte(registers.programCounter + 1);
+        registers.programCounter.value = registers.programCounter.value + memory.readSignedByte(registers.programCounter.value + 1);
       } else {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
       }
     }
   });
@@ -198,7 +198,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      registers.programCounter = registers.HL;
+      registers.programCounter.value = registers.HL.value;
     }
   });
 

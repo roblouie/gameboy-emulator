@@ -25,81 +25,17 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     return (rCode << 3) + 0b100;
   }
 
-  incrementOperations.push({
-    instruction: 'INC A',
-    byteDefinition: getIncRByteDefinition(RegisterCode.A),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.A = incrementAndSetFlags(registers.A);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC B',
-    byteDefinition: getIncRByteDefinition(RegisterCode.B),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.B = incrementAndSetFlags(registers.B);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC C',
-    byteDefinition: getIncRByteDefinition(RegisterCode.C),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.C = incrementAndSetFlags(registers.C);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC D',
-    byteDefinition: getIncRByteDefinition(RegisterCode.D),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.D = incrementAndSetFlags(registers.D);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC E',
-    byteDefinition: getIncRByteDefinition(RegisterCode.E),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.E = incrementAndSetFlags(registers.E);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC H',
-    byteDefinition: getIncRByteDefinition(RegisterCode.H),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.H = incrementAndSetFlags(registers.H);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC L',
-    byteDefinition: getIncRByteDefinition(RegisterCode.L),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.L = incrementAndSetFlags(registers.L);
-      registers.programCounter += this.byteLength
-    }
+  cpu.registers.baseRegisters.forEach(register => {
+    incrementOperations.push({
+      byteDefinition: getIncRByteDefinition(register.code),
+      instruction: `INC ${register.name}`,
+      cycleTime: 1,
+      byteLength: 1,
+      execute() {
+        register.value = incrementAndSetFlags(register.value);
+        registers.programCounter.value += this.byteLength;
+      }
+    })
   });
 
 
@@ -113,10 +49,10 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     cycleTime: 3,
     byteLength: 1,
     execute() {
-      const value = memory.readByte(registers.HL);
+      const value = memory.readByte(registers.HL.value);
       const incremented = incrementAndSetFlags(value);
-      memory.writeByte(registers.HL, incremented);
-      registers.programCounter += this.byteLength
+      memory.writeByte(registers.HL.value, incremented);
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -134,8 +70,8 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.BC++;
-      registers.programCounter += this.byteLength
+      registers.BC.value++;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -145,8 +81,8 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.DE++;
-      registers.programCounter += this.byteLength
+      registers.DE.value++;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -156,8 +92,8 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.HL++;
-      registers.programCounter += this.byteLength
+      registers.HL.value++;
+      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -167,8 +103,8 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.SP++;
-      registers.programCounter += this.byteLength
+      registers.stackPointer.value++;
+      registers.programCounter.value += this.byteLength
     }
   });
 

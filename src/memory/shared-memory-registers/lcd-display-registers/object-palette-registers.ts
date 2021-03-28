@@ -1,9 +1,16 @@
 import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-export class ObjectPalette0Register implements SingleByteMemoryRegister {
-  offset = 0xff48;
-  name = 'OBP0';
+export class ObjectPaletteRegister implements SingleByteMemoryRegister {
+  static StartOffset = 0xff48;
+
+  offset: number;
+  name: string
+
+  constructor(index: number) {
+    this.offset = ObjectPaletteRegister.StartOffset + index;
+    this.name = 'OBP' + index;
+  }
 
   get value() {
     return memory.readByte(this.offset);
@@ -23,3 +30,5 @@ export class ObjectPalette0Register implements SingleByteMemoryRegister {
     return [color0, color1, color2, color3];
   }
 }
+
+export const objectPaletteRegisters = [new ObjectPaletteRegister(0), new ObjectPaletteRegister(1)];

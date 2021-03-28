@@ -3,11 +3,11 @@ import { CPURegisters } from "./registers";
 const registers = new CPURegisters();
 
 test('Setting register overflows properly', () => {
-  registers.A = 255;
-  expect(registers.A).toBe(255);
+  registers.A.value = 255;
+  expect(registers.A.value).toBe(255);
 
-  registers.A += 2;
-  expect(registers.A).toBe(1);
+  registers.A.value += 2;
+  expect(registers.A.value).toBe(1);
 });
 
 test.each([

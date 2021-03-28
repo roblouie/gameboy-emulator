@@ -19,7 +19,7 @@ Gameboy cpu registers are as follows:
 |     SP     |
 +------------+
 
-Register A is the accumulator and stores the results of arithmetic and logic operations.
+CpuRegister A is the accumulator and stores the results of arithmetic and logic operations.
 
 Registers besides A and F are auxiliary to the accumulator, or as pairs (BC, DE, HL) can be used as data pointers.
 
@@ -30,7 +30,7 @@ instruction.
 SP: Stack Pointer
 16 bit register that holds the starting address of the stack
 
-Register F stores flags as follows:
+CpuRegister F stores flags as follows:
 
   7   6   5   4    3   2   1   0
 +---+---+---+----+---+---+---+---+
@@ -42,405 +42,63 @@ N is subtraction flag, should be set following the execution of any subtraction 
 H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 2 wraps to 0x11, and flag should be set
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
+import { CpuRegister } from "@/cpu/registers/cpu-register";
+import { RegisterCode } from "@/cpu/registers/register-code.enum";
+import { RegisterPairCode } from "@/cpu/registers/register-pair-code";
+import { CpuFlagRegister } from "@/cpu/registers/CpuFlagRegister";
+
 export class CPURegisters {
-  flags: FFlags;
   private registersBuffer: ArrayBuffer;
   private registersView: DataView;
+
+  baseRegisters: CpuRegister[];
+
+  F: CpuFlagRegister;
+  A: CpuRegister;
+  C: CpuRegister;
+  B: CpuRegister;
+  E: CpuRegister;
+  D: CpuRegister;
+  L: CpuRegister;
+  H: CpuRegister;
+
+  AF: CpuRegister;
+  BC: CpuRegister;
+  DE: CpuRegister;
+  HL: CpuRegister;
+
+  programCounter: CpuRegister;
+  stackPointer: CpuRegister;
 
   constructor() {
     this.registersBuffer = new ArrayBuffer(12);
     this.registersView = new DataView(this.registersBuffer);
-    this.flags = new FFlags(this);
+    this.F = new CpuFlagRegister('F', 0, this.registersBuffer, 0);
+    this.A = new CpuRegister('A', 1, this.registersBuffer, RegisterCode.A);
+    this.C = new CpuRegister('C', 2, this.registersBuffer, RegisterCode.C);
+    this.B = new CpuRegister('B', 3, this.registersBuffer, RegisterCode.B);
+    this.E = new CpuRegister('E', 4, this.registersBuffer, RegisterCode.E);
+    this.D = new CpuRegister('D', 5, this.registersBuffer, RegisterCode.D);
+    this.L = new CpuRegister('L', 6, this.registersBuffer, RegisterCode.L);
+    this.H = new CpuRegister('H', 7, this.registersBuffer, RegisterCode.H);
+
+    this.AF = new CpuRegister('AF', 0, this.registersBuffer, RegisterPairCode.AF, 2);
+    this.BC = new CpuRegister('BC', 2, this.registersBuffer, RegisterPairCode.BC, 2);
+    this.DE = new CpuRegister('DE', 4, this.registersBuffer, RegisterPairCode.DE, 2);
+    this.HL = new CpuRegister('HL', 6, this.registersBuffer, RegisterPairCode.HL, 2);
+
+    this.programCounter = new CpuRegister('PC', 8, this.registersBuffer, RegisterPairCode.AF, 2);
+    this.stackPointer = new CpuRegister('SP', 10, this.registersBuffer, RegisterPairCode.AF, 2);
+
+    this.baseRegisters = [this.A, this.B, this.C, this.D, this.E, this.H, this.L];
+  }
+
+  get flags() {
+    return this.F;
   }
 
   reset() {
     this.registersBuffer = new ArrayBuffer(12);
     this.registersView = new DataView(this.registersBuffer);
   }
-
-  get F() {
-    return this.registersView.getUint8(0);
-  }
-  set F(byte: number) {
-    this.registersView.setUint8(0, byte);
-  }
-
-  get A() {
-    return this.registersView.getUint8(1);
-  }
-  set A(byte: number) {
-    this.registersView.setUint8(1, byte);
-  }
-
-  get C() {
-    return this.registersView.getUint8(2);
-  }
-  set C(byte: number) {
-    this.registersView.setUint8(2, byte);
-  }
-
-  get B() {
-    return this.registersView.getUint8(3);
-  }
-  set B(byte: number) {
-    this.registersView.setUint8(3, byte);
-  }
-
-  get E() {
-    return this.registersView.getUint8(4);
-  }
-  set E(byte: number) {
-    this.registersView.setUint8(4, byte);
-  }
-
-  get D() {
-    return this.registersView.getUint8(5);
-  }
-  set D(byte: number) {
-    this.registersView.setUint8(5, byte);
-  }
-
-  get L() {
-    return this.registersView.getUint8(6);
-  }
-  set L(byte: number) {
-    this.registersView.setUint8(6, byte);
-  }
-
-  get H() {
-    return this.registersView.getUint8(7);
-  }
-  set H(byte: number) {
-    this.registersView.setUint8(7, byte);
-  }
-
-  // Auxiliary register pairs
-  get AF() {
-    return this.registersView.getUint16(0, true);
-  }
-  set AF(twoBytes: number) {
-    this.registersView.setUint16(0, twoBytes, true);
-  }
-
-  get BC() {
-    return this.registersView.getUint16(2, true);
-  }
-  set BC(twoBytes: number) {
-    this.registersView.setUint16(2, twoBytes, true);
-  }
-
-  get DE() {
-    return this.registersView.getUint16(4, true);
-  }
-  set DE(twoBytes: number) {
-    this.registersView.setUint16(4, twoBytes, true);
-  }
-
-  get HL() {
-    return this.registersView.getUint16(6, true);
-  }
-  set HL(twoBytes: number) {
-    this.registersView.setUint16(6, twoBytes, true);
-  }
-
-  get programCounter() {
-    return this.registersView.getUint16(8, true);
-  }
-  set programCounter(twoBytes: number) {
-    this.registersView.setUint16(8, twoBytes, true);
-  }
-  get PC() {
-    return this.programCounter;
-  }
-  set PC(twoBytes: number) {
-    this.programCounter = twoBytes;
-  }
-
-  get stackPointer() {
-    return this.registersView.getUint16(10, true);
-  }
-  set stackPointer(twoBytes: number) {
-    this.registersView.setUint16(10, twoBytes, true);
-  }
-  get SP() {
-    return this.stackPointer;
-  }
-  set SP(twoBytes: number) {
-    this.stackPointer = twoBytes;
-  }
 }
-
-class FFlags {
-  parentRegisters: CPURegisters;
-  
-  constructor(registers: CPURegisters) {
-    this.parentRegisters = registers;  
-  }
-
-  get Z() {
-    return (this.parentRegisters.F >> 7);
-  }
-  set Z(newValue: number) {
-    if (newValue === 1) {
-      this.parentRegisters.F |= 1 << 7;
-    } else {
-      this.parentRegisters.F &= ~(1 << 7);
-    }
-  }
-  get isResultZero() {
-    return this.Z === 1;
-  }
-  set isResultZero(newValue: boolean) {
-    this.Z = newValue ? 1 : 0;
-  }
-
-
-  get N() {
-    return ((this.parentRegisters.F >> 6) & 1);
-  }
-  set N(newValue: number) {
-    if (newValue === 1) {
-      this.parentRegisters.F |= 1 << 6;
-    } else {
-      this.parentRegisters.F &= ~(1 << 6);
-    }
-  }
-  get isSubtraction() {
-    return this.N === 1;
-  }
-  set isSubtraction(newValue: boolean) {
-    this.N = newValue ? 1 : 0;
-  }
-
-
-  get H() {
-    return ((this.parentRegisters.F >> 5) & 1);
-  }
-  set H(newValue: number) {
-    if (newValue === 1) {
-      this.parentRegisters.F |= 1 << 5;
-    } else {
-      this.parentRegisters.F &= ~(1 << 5);
-    }
-  }
-  get isHalfCarry() {
-    return this.H === 1;
-  }
-  set isHalfCarry(newValue: boolean) {
-    this.H = newValue ? 1 : 0;
-  }
-
-
-  get CY() {
-    return ((this.parentRegisters.F >> 4) & 1);
-  }
-  set CY(newValue: number) {
-    if (newValue === 1) {
-      this.parentRegisters.F |= 1 << 4;
-    } else {
-      this.parentRegisters.F &= ~(1 << 4);
-    }
-  }
-  get isCarry() {
-    return this.CY === 1;
-  }
-  set isCarry(newValue: boolean) {
-    this.CY = newValue ? 1 : 0;
-  }
-}
-
-// const registersBuffer = new ArrayBuffer(12);
-// const registersView = new DataView(registersBuffer);
-// const registersBytes = new Uint8Array(registersBuffer);
-
-// const registersOld = {
-//   reset() {
-//     registersBytes.fill(0);
-//   },
-//
-//   get F() {
-//     return registersView.getUint8(0);
-//   },
-//   set F(byte: number) {
-//     registersView.setUint8(0, byte);
-//   },
-//
-//   get A() {
-//     return registersView.getUint8(1);
-//   },
-//   set A(byte: number) {
-//     registersView.setUint8(1, byte);
-//   },
-//
-//   get C() {
-//     return registersView.getUint8(2);
-//   },
-//   set C(byte: number) {
-//     registersView.setUint8(2, byte);
-//   },
-//
-//   get B() {
-//     return registersView.getUint8(3);
-//   },
-//   set B(byte: number) {
-//     registersView.setUint8(3, byte);
-//   },
-//
-//   get E() {
-//     return registersView.getUint8(4);
-//   },
-//   set E(byte: number) {
-//     registersView.setUint8(4, byte);
-//   },
-//
-//   get D() {
-//     return registersView.getUint8(5);
-//   },
-//   set D(byte: number) {
-//     registersView.setUint8(5, byte);
-//   },
-//
-//   get L() {
-//     return registersView.getUint8(6);
-//   },
-//   set L(byte: number) {
-//     registersView.setUint8(6, byte);
-//   },
-//
-//   get H() {
-//     return registersView.getUint8(7);
-//   },
-//   set H(byte: number) {
-//     registersView.setUint8(7, byte);
-//   },
-//
-//   // Auxiliary register pairs
-//   get AF() {
-//     return registersView.getUint16(0, true);
-//   },
-//   set AF(twoBytes: number) {
-//     registersView.setUint16(0, twoBytes, true);
-//   },
-//
-//   get BC() {
-//     return registersView.getUint16(2, true);
-//   },
-//   set BC(twoBytes: number) {
-//     registersView.setUint16(2, twoBytes, true);
-//   },
-//
-//   get DE() {
-//     return registersView.getUint16(4, true);
-//   },
-//   set DE(twoBytes: number) {
-//     registersView.setUint16(4, twoBytes, true);
-//   },
-//
-//   get HL() {
-//     return registersView.getUint16(6, true);
-//   },
-//   set HL(twoBytes: number) {
-//     registersView.setUint16(6, twoBytes, true);
-//   },
-//
-//   get programCounter() {
-//     return registersView.getUint16(8, true);
-//   },
-//   set programCounter(twoBytes: number) {
-//     registersView.setUint16(8, twoBytes, true);
-//   },
-//   get PC() {
-//     return this.programCounter;
-//   },
-//   set PC(twoBytes: number) {
-//     this.programCounter = twoBytes;
-//   },
-//
-//   get stackPointer() {
-//     return registersView.getUint16(10, true);
-//   },
-//   set stackPointer(twoBytes: number) {
-//     registersView.setUint16(10, twoBytes, true);
-//   },
-//   get SP() {
-//     return this.stackPointer;
-//   },
-//   set SP(twoBytes: number) {
-//     this.stackPointer = twoBytes;
-//   },
-//
-//   // Helper methods for F register with friendly named booleans and documented names with 0/1;
-//   flags: {
-//     get Z() {
-//       return (registers.F >> 7);
-//     },
-//     set Z(newValue: number) {
-//       if (newValue === 1) {
-//         registers.F |= 1 << 7;
-//       } else {
-//         registers.F &= ~(1 << 7);
-//       }
-//     },
-//     get isResultZero() {
-//       return this.Z === 1;
-//     },
-//     set isResultZero(newValue: boolean) {
-//       this.Z = newValue ? 1 : 0;
-//     },
-//
-//
-//     get N() {
-//       return ((registers.F >> 6) & 1);
-//     },
-//     set N(newValue: number) {
-//       if (newValue === 1) {
-//         registers.F |= 1 << 6;
-//       } else {
-//         registers.F &= ~(1 << 6);
-//       }
-//     },
-//     get isSubtraction() {
-//       return this.N === 1;
-//     },
-//     set isSubtraction(newValue: boolean) {
-//       this.N = newValue ? 1 : 0;
-//     },
-//
-//
-//     get H() {
-//       return ((registers.F >> 5) & 1);
-//     },
-//     set H(newValue: number) {
-//       if (newValue === 1) {
-//         registers.F |= 1 << 5;
-//       } else {
-//         registers.F &= ~(1 << 5);
-//       }
-//     },
-//     get isHalfCarry() {
-//       return this.H === 1;
-//     },
-//     set isHalfCarry(newValue: boolean) {
-//       this.H = newValue ? 1 : 0;
-//     },
-//
-//
-//     get CY() {
-//       return ((registers.F >> 4) & 1);
-//     },
-//     set CY(newValue: number) {
-//       if (newValue === 1) {
-//         registers.F |= 1 << 4;
-//       } else {
-//         registers.F &= ~(1 << 4);
-//       }
-//     },
-//     get isCarry() {
-//       return this.CY === 1;
-//     },
-//     set isCarry(newValue: boolean) {
-//       this.CY = newValue ? 1 : 0;
-//     }
-//   }
-// }
-

@@ -1,7 +1,7 @@
 import { MultiByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
+export class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
   static StartOffset = 0xfe00;
   static EndOffset = 0xfe9f;
   static BytesPerRegister = 4;

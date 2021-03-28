@@ -14,7 +14,7 @@ export function getInterruptOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       cycleTime: 1,
       execute() {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
         cpu.isInterruptMasterEnable = true;
       }
     },
@@ -25,7 +25,7 @@ export function getInterruptOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       cycleTime: 1,
       execute() {
-        registers.programCounter += this.byteLength;
+        registers.programCounter.value += this.byteLength;
         cpu.isInterruptMasterEnable = false;
       }
     }

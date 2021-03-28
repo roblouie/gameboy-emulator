@@ -12,14 +12,14 @@ export function getSixteenBitTransferOperations(cpu: CPU) {
 // ****************
 sixteenBitTransferOperations.push({
   get instruction() {
-    return `LD (0x${memory.readWord(registers.programCounter + 1).toString(16)}), SP`;
+    return `LD (0x${memory.readWord(registers.programCounter.value + 1).toString(16)}), SP`;
   },
   byteDefinition: 0b00_001_000,
   cycleTime: 5,
   byteLength: 3,
   execute() {
-    registers.SP = memory.readWord(registers.programCounter + 1);
-    registers.programCounter += this.byteLength;
+    registers.stackPointer.value = memory.readWord(registers.programCounter.value + 1);
+    registers.programCounter.value += this.byteLength;
   }
 });
 
@@ -32,53 +32,53 @@ sixteenBitTransferOperations.push({
 
   sixteenBitTransferOperations.push({
     get instruction() {
-      return `LD BC, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
+      return `LD BC, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`;
     },
     byteDefinition: getLoadDDNNByteDefinition(RegisterPairCode.BC),
     cycleTime: 3,
     byteLength: 3,
     execute() {
-      registers.BC = memory.readWord(registers.programCounter + 1);
-      registers.programCounter += this.byteLength;
+      registers.BC.value = memory.readWord(registers.programCounter.value + 1);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
   sixteenBitTransferOperations.push({
     get instruction() {
-      return `LD DE, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
+      return `LD DE, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`;
     },
     byteDefinition: getLoadDDNNByteDefinition(RegisterPairCode.DE),
     cycleTime: 3,
     byteLength: 3,
     execute() {
-      registers.DE = memory.readWord(registers.programCounter + 1);
-      registers.programCounter += this.byteLength;
+      registers.DE.value = memory.readWord(registers.programCounter.value + 1);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
   sixteenBitTransferOperations.push({
     get instruction() {
-      return `LD HL, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
+      return `LD HL, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`;
     },
     byteDefinition: getLoadDDNNByteDefinition(RegisterPairCode.HL),
     cycleTime: 3,
     byteLength: 3,
     execute() {
-      registers.HL = memory.readWord(registers.programCounter + 1);
-      registers.programCounter += this.byteLength;
+      registers.HL.value = memory.readWord(registers.programCounter.value + 1);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
   sixteenBitTransferOperations.push({
     get instruction() {
-      return `LD SP, 0x${memory.readWord(registers.programCounter + 1).toString(16)}`;
+      return `LD SP, 0x${memory.readWord(registers.programCounter.value + 1).toString(16)}`;
     },
     byteDefinition: getLoadDDNNByteDefinition(RegisterPairCode.SP),
     cycleTime: 3,
     byteLength: 3,
     execute() {
-      registers.SP = memory.readWord(registers.programCounter + 1);
-      registers.programCounter += this.byteLength;
+      registers.stackPointer.value = memory.readWord(registers.programCounter.value + 1);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -91,8 +91,8 @@ sixteenBitTransferOperations.push({
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      registers.SP = registers.HL;
-      registers.programCounter += this.byteLength;
+      registers.stackPointer.value = registers.HL.value;
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -110,8 +110,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 4,
     execute() {
-      cpu.pushToStack(registers.BC);
-      registers.programCounter += this.byteLength;
+      cpu.pushToStack(registers.BC.value);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -122,8 +122,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 4,
     execute() {
-      cpu.pushToStack(registers.DE);
-      registers.programCounter += this.byteLength;
+      cpu.pushToStack(registers.DE.value);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -133,8 +133,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 4,
     execute() {
-      cpu.pushToStack(registers.HL);
-      registers.programCounter += this.byteLength;
+      cpu.pushToStack(registers.HL.value);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -144,8 +144,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 4,
     execute() {
-      cpu.pushToStack(registers.AF);
-      registers.programCounter += this.byteLength;
+      cpu.pushToStack(registers.AF.value);
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -163,8 +163,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 3,
     execute() {
-      registers.BC = cpu.popFromStack();
-      registers.programCounter += this.byteLength;
+      registers.BC.value = cpu.popFromStack();
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -174,8 +174,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 3,
     execute() {
-      registers.DE = cpu.popFromStack();
-      registers.programCounter += this.byteLength;
+      registers.DE.value = cpu.popFromStack();
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -185,8 +185,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 3,
     execute() {
-      registers.HL = cpu.popFromStack();
-      registers.programCounter += this.byteLength;
+      registers.HL.value = cpu.popFromStack();
+      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -196,8 +196,8 @@ sixteenBitTransferOperations.push({
     byteLength: 1,
     cycleTime: 3,
     execute() {
-      registers.AF = cpu.popFromStack();
-      registers.programCounter += this.byteLength;
+      registers.AF.value = cpu.popFromStack();
+      registers.programCounter.value += this.byteLength;
     }
   });
 
