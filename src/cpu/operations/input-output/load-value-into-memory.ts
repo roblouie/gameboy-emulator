@@ -7,15 +7,15 @@ export function createValueToMemoryInstructions(cpu: CPU): Operation[] {
 
   return [{
     get instruction() {
-      return `LD (HL), 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `LD (HL), 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b110110,
     cycleTime: 3,
     byteLength: 2,
     execute() {
-      const value = memory.readByte(registers.programCounter.value + 1);
+      const value = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
       memory.writeByte(registers.HL.value, value);
-      registers.programCounter.value += this.byteLength;
     }
   }];
 }

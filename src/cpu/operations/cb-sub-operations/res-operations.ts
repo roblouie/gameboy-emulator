@@ -24,7 +24,6 @@ export function getResSubOperations(cpu: CPU): Operation[] {
         byteLength: 2,
         execute() {
           register.value = clearBit(register.value, bitPosition);
-          registers.programCounter.value += this.byteLength;
         }
       })
     }
@@ -49,7 +48,6 @@ export function getResSubOperations(cpu: CPU): Operation[] {
         const value = memory.readByte(registers.HL.value);
         const bitSet = clearBit(value, bitPosition);
         memory.writeByte(registers.HL.value, bitSet);
-        registers.programCounter.value += this.byteLength;
       }
     })
   }

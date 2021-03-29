@@ -35,7 +35,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       execute() {
         registers.A.value = addAndSetFlags(registers.A.value, register.value);
-        registers.programCounter.value += this.byteLength
       }
     });
   });
@@ -46,14 +45,15 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // ****************
   addOperations.push({
     get instruction() {
-      return `ADD A, 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `ADD A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11000110,
     cycleTime: 2,
     byteLength: 2,
     execute() {
-      registers.A.value = addAndSetFlags(registers.A.value, memory.readByte(registers.programCounter.value + 1));
-      registers.programCounter.value += this.byteLength
+      const valueToAdd = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
+      registers.A.value = addAndSetFlags(registers.A.value, valueToAdd);
     }
   });
 
@@ -69,7 +69,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
     execute() {
       const value = memory.readByte(registers.HL.value);
       registers.A.value = addAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -89,22 +88,21 @@ export function createAddOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       execute() {
         registers.A.value = addAndSetFlags(registers.A.value, register.value + registers.flags.CY);
-        registers.programCounter.value += this.byteLength;
       }
     });
   });
 
   addOperations.push({
     get instruction() {
-      return `ADC A, 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `ADC A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_001_110,
     cycleTime: 2,
     byteLength: 2,
     execute() {
-      const value = memory.readByte(registers.programCounter.value + 1);
+      const value = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
       registers.A.value = addAndSetFlags(registers.A.value, value + registers.flags.CY);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -116,7 +114,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
     execute() {
       const value = memory.readByte(registers.HL.value);
       registers.A.value = addAndSetFlags(registers.A.value, value + registers.flags.CY);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -144,7 +141,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.BC.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -155,7 +151,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.DE.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -166,7 +161,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.HL.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -177,7 +171,6 @@ export function createAddOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.stackPointer.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -187,20 +180,20 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // ****************
   addOperations.push({
     get instruction() {
-      return `ADD SP, 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `ADD SP, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_101_000,
     cycleTime: 4,
     byteLength: 2,
     execute() {
-      const newValue = registers.stackPointer.value + memory.readByte(registers.programCounter.value + 1);
+      const newValue = registers.stackPointer.value + memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
       registers.flags.isResultZero = false;
       registers.flags.isSubtraction = false;
       registers.flags.isHalfCarry = (newValue & 0xfff) < (registers.stackPointer.value & 0xfff);
       registers.flags.isCarry = (newValue & 0xf000) < (registers.stackPointer.value & 0xf000);
 
       registers.stackPointer.value = newValue;
-      registers.programCounter.value += this.byteLength
     }
   });
 

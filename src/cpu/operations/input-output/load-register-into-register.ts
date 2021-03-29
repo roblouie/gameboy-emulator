@@ -22,7 +22,6 @@ export function createRegisterToRegisterOperations(cpu: CPU): Operation[] {
         cycleTime: 2,
         execute() {
           firstRegister.value = secondRegister.value;
-          registers.programCounter.value += this.byteLength;
         },
       })
     })

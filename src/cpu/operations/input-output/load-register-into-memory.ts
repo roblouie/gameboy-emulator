@@ -22,7 +22,6 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       execute() {
         memory.writeByte(registers.HL.value, register.value);
-        registers.programCounter.value += this.byteLength
       }
     })
   });
@@ -37,7 +36,6 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       memory.writeByte(0xff00 + registers.C.value, registers.A.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -47,16 +45,16 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
 // ****************
   registerToMemoryInstructions.push({
     get instruction() {
-      const baseAddress = memory.readByte(registers.programCounter.value + 1);
+      const baseAddress = memory.readByte(registers.programCounter.value);
       return `LD (0x${baseAddress.toString(16)}), A`;
     },
     byteDefinition: 0b11100000,
     cycleTime: 3,
     byteLength: 2,
     execute() {
-      const baseAddress = memory.readByte(registers.programCounter.value + 1);
+      const baseAddress = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
       memory.writeByte(0xff00 + baseAddress, registers.A.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -66,16 +64,16 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
 // ****************
   registerToMemoryInstructions.push({
     get instruction() {
-      const memoryAddress = memory.readWord(registers.programCounter.value + 1);
+      const memoryAddress = memory.readWord(registers.programCounter.value);
       return `LD (0x${memoryAddress.toString(16)}), A`;
     },
     byteDefinition: 0b11_101_010,
     cycleTime: 4,
     byteLength: 3,
     execute() {
-      const memoryAddress = memory.readWord(registers.programCounter.value + 1);
+      const memoryAddress = memory.readWord(registers.programCounter.value);
+      registers.programCounter.value += 2;
       memory.writeByte(memoryAddress, registers.A.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -90,7 +88,6 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       memory.writeWord(registers.BC.value, registers.A.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -101,7 +98,6 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       memory.writeWord(registers.DE.value, registers.A.value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -116,8 +112,7 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       memory.writeByte(registers.HL.value, registers.A.value);
-      registers.HL.value++;
-      registers.programCounter.value += this.byteLength
+      registers.HL.value = registers.HL.value + 1;
     }
   });
 
@@ -132,8 +127,7 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       memory.writeByte(registers.HL.value, registers.A.value);
-      registers.HL.value--;
-      registers.programCounter.value += this.byteLength
+      registers.HL.value = registers.HL.value - 1;
     }
   });
 

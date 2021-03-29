@@ -46,9 +46,7 @@ export class Gameboy {
           updateRegisterStateCache(cpu);
           const operationIndex = memory.readByte(cpu.registers.programCounter.value);
           updateInstructionCache(cpu.operations[operationIndex].instruction);
-          // console.log(registerStateCache);
-          // console.log(instructionCache);
-          // debugger;
+          debug;
         }
       }
 

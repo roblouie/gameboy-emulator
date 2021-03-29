@@ -16,8 +16,6 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
       registers.A.value = ~registers.A.value;
       registers.flags.isHalfCarry = true;
       registers.flags.isSubtraction = true;
-
-      registers.programCounter.value += this.byteLength;
     }
   })
 
@@ -27,7 +25,7 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      registers.programCounter.value += this.byteLength;
+
     }
   });
 

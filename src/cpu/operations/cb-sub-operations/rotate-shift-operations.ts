@@ -32,7 +32,6 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
         byteLength: 2,
         execute() {
           register.value = swapAndSetFlags(register.value);
-          registers.programCounter.value += this.byteLength;
         }
       })
     });
@@ -45,7 +44,6 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     execute() {
       const value = memory.readByte(registers.HL.value);
       memory.writeByte(registers.HL.value, swapAndSetFlags(value));
-      registers.programCounter.value += this.byteLength;
     }
   });
 

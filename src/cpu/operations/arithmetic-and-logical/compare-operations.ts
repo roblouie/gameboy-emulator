@@ -30,22 +30,21 @@ export function createCompareOperations(cpu: CPU) {
       byteLength: 1,
       execute() {
         compareAndSetFlags(registers.A.value, register.value);
-        registers.programCounter.value += this.byteLength;
       }
     });
   });
 
   compareOperations.push({
     get instruction() {
-      return `CP 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `CP 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_111_110,
     cycleTime: 2,
     byteLength: 2,
     execute() {
-      const value = memory.readByte(registers.programCounter.value + 1);
+      const value = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
       compareAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -57,7 +56,6 @@ export function createCompareOperations(cpu: CPU) {
     execute() {
       const value = memory.readByte(registers.HL.value);
       compareAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
