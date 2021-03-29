@@ -18,9 +18,9 @@ export function updateRegisterStateCache(cpu: CPU) {
   registerStateCache.unshift(`
     A: ${registers.A.value},
     PC: ${registers.programCounter.value},
-    D: ${registers.D.value}
-    E: ${registers.E.value}
-    BC: ${registers.BC.value}
+    B: ${registers.B.value}
+    C: ${registers.C.value}
+    HL: ${registers.HL.value}
   `);
 
   if (registerStateCache.length > instructionCacheSize) {

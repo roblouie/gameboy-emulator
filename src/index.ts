@@ -102,13 +102,15 @@ async function onFileChange(event: Event) {
         // fpsDiv.innerHTML = `FPS: ${fps}`;
         fpsDiv.innerHTML = memory.readByte(0xc0a0) + ', ' + memory.readByte(0xc0a1);
       }
+
+      // vramContext.imageSmoothingEnabled = false;
+      // vramContext.putImageData(characterImageData(), 0, 0);
+      // vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
     });
 
     gameboy.run();
 
-    // vramContext.imageSmoothingEnabled = false;
-    // vramContext.putImageData(characterImageData(), 0, 0);
-    // vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
+
     //
     // backgroundContext.imageSmoothingEnabled = false;
     // backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);

@@ -33,7 +33,6 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       execute() {
         register.value = incrementAndSetFlags(register.value);
-        registers.programCounter.value += this.byteLength;
       }
     })
   });
@@ -52,7 +51,6 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
       const value = memory.readByte(registers.HL.value);
       const incremented = incrementAndSetFlags(value);
       memory.writeByte(registers.HL.value, incremented);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -71,7 +69,6 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.BC.value++;
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -82,7 +79,6 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.DE.value++;
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -93,7 +89,6 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.HL.value++;
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -104,7 +99,6 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       registers.stackPointer.value++;
-      registers.programCounter.value += this.byteLength
     }
   });
 

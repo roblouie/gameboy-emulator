@@ -18,8 +18,6 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
       registers.flags.N = 0;
 
       registers.A.value = (registers.A.value << 1) + bit7;
-
-      registers.programCounter.value += this.byteLength;
     }
   });
 
@@ -36,8 +34,6 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
       registers.flags.N = 0;
 
       registers.A.value = result;
-
-      registers.programCounter.value += this.byteLength;
     }
   });
 

@@ -36,6 +36,14 @@ export class CPU {
     const operation = this.operations[operationIndex];
     const cycleTime = operation.cycleTime;
 
+    this.registers.programCounter.value++;
+
+    // if (this.registers.programCounter.value === 41) {
+    //   console.log(instructionCache);
+    //   console.log(registerStateCache);
+    //   debugger;
+    // }
+
     operation.execute();
 
     return cycleTime;
@@ -46,14 +54,19 @@ export class CPU {
   }
 
   pushToStack(word: number) {
-    this.registers.stackPointer.value -= 2;
-    memory.writeWord(this.registers.stackPointer.value, word);
+    this.registers.stackPointer.value--;
+    memory.writeByte(this.registers.stackPointer.value, word >> 8);
+    this.registers.stackPointer.value--;
+    memory.writeByte(this.registers.stackPointer.value, word & 0xff);
   }
 
   popFromStack() {
-    const value = memory.readWord(this.registers.stackPointer.value);
-    this.registers.stackPointer.value += 2;
-    return value;
+    const lowByte = memory.readByte(this.registers.stackPointer.value);
+    this.registers.stackPointer.value++;
+    const highByte = memory.readByte(this.registers.stackPointer.value);
+    this.registers.stackPointer.value++;
+
+    return (highByte << 8) | lowByte;
   }
 
   private handleInterrupts() {

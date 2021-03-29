@@ -32,22 +32,21 @@ export function createAndOperations(cpu: CPU) {
       byteLength: 1,
       execute() {
         registers.A.value = andAndSetFlags(registers.A.value, register.value);
-        registers.programCounter.value += this.byteLength;
       }
     });
   });
 
   andOperations.push({
     get instruction() {
-      return `AND 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `AND 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_100_110,
     cycleTime: 2,
     byteLength: 2,
     execute() {
-      const value = memory.readByte(registers.programCounter.value + 1);
+      const value = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
       registers.A.value = andAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
     }
   });
 
@@ -61,7 +60,6 @@ export function createAndOperations(cpu: CPU) {
     execute() {
       const value = memory.readByte(registers.HL.value);
       registers.A.value = andAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
     }
   });
 

@@ -31,7 +31,6 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
         byteLength: 2,
         execute() {
           getBitAndSetFlags(bitPosition, register.value);
-          registers.programCounter.value += this.byteLength;
         }
       })
     }
@@ -54,7 +53,6 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
       execute() {
         const value = memory.readByte(registers.HL.value);
         getBitAndSetFlags(value, bitPosition);
-        registers.programCounter.value += this.byteLength;
       }
     })
   }

@@ -17,14 +17,14 @@ export function createValueToRegisterOperations(cpu: CPU) {
   cpu.registers.baseRegisters.forEach(register => {
     valueToRegisterInstructions.push({
       get instruction() {
-        return `LD ${register.name}, 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+        return `LD ${register.name}, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
       },
       byteDefinition: getLoadRNByteDefinition(register.code),
       cycleTime: 2,
       byteLength: 2,
       execute() {
-        register.value = memory.readByte(registers.programCounter.value + 1);
-        registers.programCounter.value += this.byteLength;
+        register.value = memory.readByte(registers.programCounter.value);
+        registers.programCounter.value++;
       }
     });
   });

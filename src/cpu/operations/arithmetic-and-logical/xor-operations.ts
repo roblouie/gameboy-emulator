@@ -32,22 +32,21 @@ export function createXorOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       execute() {
         registers.A.value = xorAndSetFlags(registers.A.value, register.value);
-        registers.programCounter.value += this.byteLength;
       }
     });
   });
 
   xorOperations.push({
     get instruction() {
-      return `XOR 0x${memory.readByte(registers.programCounter.value + 1).toString(16)}`;
+      return `XOR 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_101_110,
     cycleTime: 2,
     byteLength: 2,
     execute() {
-      const value = memory.readByte(registers.programCounter.value + 1);
-      registers.A.value = xorAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
+      const value = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
+      registers.A.value = xorAndSetFlags(registers.A.value, value)
     }
   });
 
@@ -59,7 +58,6 @@ export function createXorOperations(cpu: CPU): Operation[] {
     execute() {
       const value = memory.readByte(registers.HL.value);
       registers.A.value = xorAndSetFlags(registers.A.value, value);
-      registers.programCounter.value += this.byteLength
     }
   });
 

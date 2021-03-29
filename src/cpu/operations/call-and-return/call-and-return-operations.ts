@@ -9,15 +9,17 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 
   callAndReturnOperations.push({
     get instruction() {
-      const toAddress = memory.readWord(registers.programCounter.value + 1);
+      const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL 0x${toAddress.toString(16)}`;
     },
     byteDefinition: 0b11_001_101,
     byteLength: 3,
     cycleTime: 6,
     execute() {
-      const callToAddress = memory.readWord(registers.programCounter.value + 1);
-      const returnToAddress = registers.programCounter.value + this.byteLength;
+      const callToAddress = memory.readWord(registers.programCounter.value);
+      registers.programCounter.value += 2;
+      const returnToAddress = registers.programCounter.value;
+      //TODO: Refactor to use cpu push to stack
       registers.stackPointer.value--;
       memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
       registers.stackPointer.value--;
@@ -37,7 +39,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 
   callAndReturnOperations.push({
     get instruction() {
-      const toAddress = memory.readWord(registers.programCounter.value + 1);
+      const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL NZ, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.NZ),
@@ -47,8 +49,10 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     },
     execute() {
       if (!registers.flags.isResultZero) {
-        const toAddress = memory.readWord(registers.programCounter.value + 1);
-        const returnToAddress = registers.programCounter.value + this.byteLength;
+        const toAddress = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value += 2;
+        const returnToAddress = registers.programCounter.value;
+        // TODO: Refactor to use cpu push to stack
         registers.stackPointer.value--;
         memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
         registers.stackPointer.value--;
@@ -56,14 +60,14 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 
         registers.programCounter.value = toAddress;
       } else {
-        registers.programCounter.value += this.byteLength;
+        registers.programCounter.value += 2; // Skip to next operation after the word value following this one
       }
     }
   });
 
   callAndReturnOperations.push({
     get instruction() {
-      const toAddress = memory.readWord(registers.programCounter.value + 1);
+      const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL Z, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.Z),
@@ -73,8 +77,10 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     },
     execute() {
       if (registers.flags.isResultZero) {
-        const toAddress = memory.readWord(registers.programCounter.value + 1);
-        const returnToAddress = registers.programCounter.value + this.byteLength;
+        const toAddress = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value++;
+        const returnToAddress = registers.programCounter.value;
+        //TODO: Refactor to use cpu push to stack;
         registers.stackPointer.value--;
         memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
         registers.stackPointer.value--;
@@ -82,14 +88,14 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 
         registers.programCounter.value = toAddress;
       } else {
-        registers.programCounter.value += this.byteLength;
+        registers.programCounter.value += 2; // Skip to next operation after the word value following this one
       }
     }
   });
 
   callAndReturnOperations.push({
     get instruction() {
-      const toAddress = memory.readWord(registers.programCounter.value + 1);
+      const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL NC, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.NC),
@@ -99,8 +105,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     },
     execute() {
       if (!registers.flags.isCarry) {
-        const toAddress = memory.readWord(registers.programCounter.value + 1);
-        const returnToAddress = registers.programCounter.value + this.byteLength;
+        const toAddress = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value++;
+        const returnToAddress = registers.programCounter.value;
         registers.stackPointer.value--;
         memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
         registers.stackPointer.value--;
@@ -108,14 +115,14 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 
         registers.programCounter.value = toAddress;
       } else {
-        registers.programCounter.value += this.byteLength;
+        registers.programCounter.value += 2;
       }
     }
   });
 
   callAndReturnOperations.push({
     get instruction() {
-      const toAddress = memory.readWord(registers.programCounter.value + 1);
+      const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL C, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.C),
@@ -125,7 +132,8 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     },
     execute() {
       if (registers.flags.isCarry) {
-        const toAddress = memory.readWord(registers.programCounter.value + 1);
+        const toAddress = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value++;
         const returnToAddress = registers.programCounter.value + this.byteLength;
         registers.stackPointer.value--;
         memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
@@ -134,7 +142,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 
         registers.programCounter.value = toAddress;
       } else {
-        registers.programCounter.value += this.byteLength;
+        registers.programCounter.value += 2;
       }
     }
   });
@@ -182,8 +190,6 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (!registers.flags.isResultZero) {
         registers.programCounter.value = cpu.popFromStack();
-      } else {
-        registers.programCounter.value += this.byteLength;
       }
     }
   });
@@ -198,8 +204,6 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (registers.flags.isResultZero) {
         registers.programCounter.value = cpu.popFromStack();
-      } else {
-        registers.programCounter.value += this.byteLength;
       }
     }
   });
@@ -214,8 +218,6 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (!registers.flags.isCarry) {
         registers.programCounter.value = cpu.popFromStack();
-      } else {
-        registers.programCounter.value += this.byteLength;
       }
     }
   });
@@ -230,8 +232,6 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (registers.flags.isCarry) {
         registers.programCounter.value = cpu.popFromStack();
-      } else {
-        registers.programCounter.value += this.byteLength;
       }
     }
   });
@@ -244,6 +244,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     return (0b11 << 6) + (operand << 3) + 0b111;
   }
 
+  // Confirm this logic.
   const operandToAddress = [
     0x0000,
     0x0008,
@@ -262,6 +263,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       cycleTime: 4,
       execute() {
+        cpu.pushToStack(registers.programCounter.value);
         registers.programCounter.value = operandToAddress[operand];
       }
     });

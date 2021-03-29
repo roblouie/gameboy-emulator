@@ -24,7 +24,6 @@ export function getSetSubOperations(cpu: CPU): Operation[] {
         byteLength: 2,
         execute() {
           register.value = setBit(register.value, bitPosition, 1);
-          registers.programCounter.value += this.byteLength;
         }
       })
     }
@@ -48,7 +47,6 @@ export function getSetSubOperations(cpu: CPU): Operation[] {
         const value = memory.readByte(registers.HL.value);
         const bitSet = setBit(value, bitPosition, 1);
         memory.writeByte(registers.HL.value, bitSet);
-        registers.programCounter.value += this.byteLength;
       }
     })
   }

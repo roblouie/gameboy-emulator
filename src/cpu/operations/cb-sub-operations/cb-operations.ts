@@ -46,24 +46,22 @@ export function getCBOperations(cpu: CPU): Operation[] {
 
   return [{
     get instruction() {
-      const instructionByteCode = memory.readByte(registers.programCounter.value + 1);
+      const instructionByteCode = memory.readByte(registers.programCounter.value);
       return subOperations[instructionByteCode].instruction;
     },
     byteDefinition: 0b11_001_011,
     get cycleTime() {
-      const instructionByteCode = memory.readByte(registers.programCounter.value + 1);
-      if (subOperations[instructionByteCode] === undefined) {
-        debugger;
-      }
+      const instructionByteCode = memory.readByte(registers.programCounter.value);
       return subOperations[instructionByteCode].cycleTime;
     },
     get byteLength() {
-      const instructionByteCode = memory.readByte(registers.programCounter.value + 1);
+      const instructionByteCode = memory.readByte(registers.programCounter.value);
       return subOperations[instructionByteCode].byteLength
     },
-    get execute() {
-      const instructionByteCode = memory.readByte(registers.programCounter.value + 1);
-      return subOperations[instructionByteCode].execute;
+    execute() {
+      const instructionByteCode = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
+      return subOperations[instructionByteCode].execute();
     }
   }]
 }
