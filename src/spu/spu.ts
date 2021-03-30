@@ -16,6 +16,8 @@ export class Spu {
 
   private isOscillatorStarted = false;
 
+  private SM3DisableTime = 10000;
+  private isSM3Reset = true;
 
   constructor() {
     this.S1MGain.gain.value = this.gainValue;
@@ -43,14 +45,16 @@ export class Spu {
     if (this.previousTime === 0) {
       this.previousTime = currentTime;
     }
-    const timeDifference = currentTime = this.previousTime;
+    const timeDifference = currentTime - this.previousTime;
 
-    this.checkIfModesInitialized()
+    this.checkIfModesInitialized(currentTime);
+    this.checkSoundMode3Length(currentTime);
+
     this.previousTime = currentTime;
   }
 
 
-  private checkIfModesInitialized() {
+  private checkIfModesInitialized(currentTime: number) {
     if (sound1ModeRegisters.highOrderFrequency.isInitialize) {
       this.setOscillatorFrequency(sound1ModeRegisters.lowOrderFrequency.offset, this.S1MOscillator);
       this.setEnvelope(sound1ModeRegisters.envelopeControl.lengthOfEnvelopInSeconds, this.S1MGain, sound1ModeRegisters.envelopeControl.isEnvelopeRising);
@@ -65,8 +69,16 @@ export class Spu {
 
     if (sound3ModeRegisters.higherOrderFrequency.isInitialize) {
       this.setOscillatorFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MOscillator)
-      this.S3MGain.gain.value = this.gainValue;
-      this.S3MGain.gain.setValueAtTime(0, this.audioCtx.currentTime + sound3ModeRegisters.soundLength.lengthInSeconds);
+
+      if (sound3ModeRegisters.higherOrderFrequency.isContinuousSelection && this.S3MGain.gain.value === 0) {
+        this.S3MGain.gain.value = this.gainValue;
+      } else if (this.isSM3Reset) {
+        this.S3MGain.gain.value = this.gainValue;
+        this.SM3DisableTime = currentTime + sound3ModeRegisters.soundLength.lengthInSeconds * 1000;
+        sound3ModeRegisters.disableOutput.isOutputEnabled = true;
+        this.isSM3Reset = false;
+      }
+
       sound3ModeRegisters.higherOrderFrequency.isInitialize = false;
     }
   }
@@ -83,6 +95,14 @@ export class Spu {
     } else {
       gainNode.gain.value = this.gainValue;
       gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, lengthInSeconds);
+    }
+  }
+
+  private checkSoundMode3Length(currentTime: number) {
+    if (currentTime >= this.SM3DisableTime && this.S3MGain.gain.value !== 0) {
+      sound3ModeRegisters.disableOutput.isOutputEnabled = false;
+      this.S3MGain.gain.value = 0;
+      this.isSM3Reset = true;
     }
   }
 }
