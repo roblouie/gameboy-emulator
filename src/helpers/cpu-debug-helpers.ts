@@ -1,15 +1,17 @@
 import { CPU } from "@/cpu/cpu";
 
 export const instructionCache: string[] = [];
-const instructionCacheSize = 1600;
+const instructionCacheSize = 8000;
 
 export const registerStateCache: string[] = [];
 
-export function updateInstructionCache(instruction: string) {
-  instructionCache.unshift(instruction);
+export function updateInstructionCache(instruction: string, programCounterVal: number, af: number, bc: number, de: number, hl: number) {
+  instructionCache.unshift(`${programCounterVal.toString(16)}: ${instruction} --AF: ${af.toString(16).padStart(4, '0')} --BC: ${bc.toString(16).padStart(4, '0')} --DE: ${de.toString(16).padStart(4, '0')} --HL: ${hl.toString(16).padStart(4, '0')}`);
 
   if (instructionCache.length > instructionCacheSize) {
     instructionCache.pop();
+    console.log(instructionCache.reverse());
+    debugger
   }
 }
 

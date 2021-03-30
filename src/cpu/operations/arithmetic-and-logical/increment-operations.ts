@@ -8,8 +8,7 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
   const { registers } = cpu;
 
   function incrementAndSetFlags(accumulatorVal: number) {
-    const newValue = accumulatorVal + 1;
-    registers.flags.isCarry = (newValue & 0xf0) < (accumulatorVal & 0xf0);
+    const newValue = (accumulatorVal + 1) & 0xff;
     registers.flags.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
     registers.flags.isSubtraction = false;
     registers.flags.isResultZero = newValue === 0;
