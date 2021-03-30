@@ -45,24 +45,44 @@ export class Spu {
     }
     const timeDifference = currentTime = this.previousTime;
 
-    this.setOscillatorFrequency()
-
+    this.checkIfModesInitialized()
     this.previousTime = currentTime;
   }
 
 
-  private setOscillatorFrequency() {
-    const S1MRawFrequencyValue = memory.readWord(sound1ModeRegisters.lowOrderFrequency.offset) & 0b11111111111;
-    this.S1MOscillator.frequency.value = this.calculateOscillatorFrequency(S1MRawFrequencyValue);
+  private checkIfModesInitialized() {
+    if (sound1ModeRegisters.highOrderFrequency.isInitialize) {
+      this.setOscillatorFrequency(sound1ModeRegisters.lowOrderFrequency.offset, this.S1MOscillator);
+      this.setEnvelope(sound1ModeRegisters.envelopeControl.lengthOfEnvelopInSeconds, this.S1MGain, sound1ModeRegisters.envelopeControl.isEnvelopeRising);
+      sound1ModeRegisters.highOrderFrequency.isInitialize = false;
+    }
 
-    const S2MRawFrequencyValue = memory.readWord(sound2ModeRegisters.lowOrderFrequency.offset) & 0b11111111111;
-    this.S2MOscillator.frequency.value = this.calculateOscillatorFrequency(S2MRawFrequencyValue);
+    if (sound2ModeRegisters.highOrderFrequency.isInitialize) {
+      this.setOscillatorFrequency(sound2ModeRegisters.lowOrderFrequency.offset, this.S2MOscillator);
+      this.setEnvelope(sound2ModeRegisters.envelopeControl.lengthOfEnvelopInSeconds, this.S2MGain, sound2ModeRegisters.envelopeControl.isEnvelopeRising)
+      sound2ModeRegisters.highOrderFrequency.isInitialize = false;
+    }
 
-    const S3MRawFrequencyValue = memory.readWord(sound3ModeRegisters.lowOrderFrequency.offset) & 0b11111111111;
-    this.S3MOscillator.frequency.value = this.calculateOscillatorFrequency(S3MRawFrequencyValue);
+    if (sound3ModeRegisters.higherOrderFrequency.isInitialize) {
+      this.setOscillatorFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MOscillator)
+      this.S3MGain.gain.value = this.gainValue;
+      this.S3MGain.gain.setValueAtTime(0, this.audioCtx.currentTime + sound3ModeRegisters.soundLength.lengthInSeconds);
+      sound3ModeRegisters.higherOrderFrequency.isInitialize = false;
+    }
   }
 
-  private calculateOscillatorFrequency(rawValue: number) {
-    return (4194304 / (32 * (2048 - rawValue)))
+  private setOscillatorFrequency(memoryOffset: number, oscillator: OscillatorNode) {
+    const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
+    oscillator.frequency.value = (4194304 / (32 * (2048 - rawValue)))
+  }
+
+  private setEnvelope(lengthInSeconds: number, gainNode: GainNode, isRising: boolean) {
+    if (isRising) {
+      gainNode.gain.value = 0;
+      gainNode.gain.setTargetAtTime(this.gainValue, this.audioCtx.currentTime, lengthInSeconds);
+    } else {
+      gainNode.gain.value = this.gainValue;
+      gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, lengthInSeconds);
+    }
   }
 }
