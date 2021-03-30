@@ -7,8 +7,8 @@ export class LowOrderFrequencyRegister implements SingleByteMemoryRegister {
   name: string;
 
   constructor(offset: number, name: string) {
-    this.offset = offset,
-    this.name = name,
+    this.offset = offset;
+    this.name = name;
   }
 
   get value() {
