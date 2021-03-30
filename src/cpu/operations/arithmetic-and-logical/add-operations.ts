@@ -1,8 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
-import { RegisterPairCode } from "@/cpu/registers/register-pair-code";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createAddOperations(cpu: CPU): Operation[] {
   const addOperations: Operation[] = [];
@@ -21,7 +20,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // ****************
 // * Add A, r
 // ****************
-  function getAddARByteDefinition(rCode: RegisterCode) {
+  function getAddARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10000000 + rCode;
   }
 
@@ -76,7 +75,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // ****************
 // * Add carry A, s
 // ****************
-  function getAddCarryARByteDefinition(rCode: RegisterCode) {
+  function getAddCarryARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10001000 + rCode;
   }
 
@@ -130,48 +129,20 @@ export function createAddOperations(cpu: CPU): Operation[] {
     return newValue;
   }
 
-  function getAddHLSSByteDefinition(rpCode: RegisterPairCode) {
+  function getAddHLSSByteDefinition(rpCode: CpuRegister.PairCode) {
     return (rpCode << 4) + 0b1001;
   }
 
-  addOperations.push({
-    instruction: 'ADD HL, BC',
-    byteDefinition: getAddHLSSByteDefinition(RegisterPairCode.BC),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.BC.value);
-    }
-  });
-
-  addOperations.push({
-    instruction: 'ADD HL, DE',
-    byteDefinition: getAddHLSSByteDefinition(RegisterPairCode.DE),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.DE.value);
-    }
-  });
-
-  addOperations.push({
-    instruction: 'ADD HL, HL',
-    byteDefinition: getAddHLSSByteDefinition(RegisterPairCode.HL),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.HL.value);
-    }
-  });
-
-  addOperations.push({
-    instruction: 'ADD HL, SP',
-    byteDefinition: getAddHLSSByteDefinition(RegisterPairCode.SP),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL.value = add16BitAndSetFlags(registers.HL.value, registers.stackPointer.value);
-    }
+  registers.registerPairs.forEach(registerPair => {
+    addOperations.push({
+      instruction: `ADD HL, ${registerPair.name}`,
+      byteDefinition: getAddHLSSByteDefinition(registerPair.code),
+      cycleTime: 2,
+      byteLength: 1,
+      execute() {
+        registers.HL.value = add16BitAndSetFlags(registers.HL.value, registerPair.value);
+      }
+    });
   });
 
 

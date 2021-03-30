@@ -6,7 +6,7 @@ export class CpuRegister {
   private dataView: DataView;
   private readonly byteSize: 1 | 2;
 
-  constructor(name: string, offset: number, data: ArrayBuffer, code: number, byteSize: 1 | 2 = 1) {
+  constructor(name: string, offset: number, data: ArrayBuffer, code: CpuRegister.Code | CpuRegister.PairCode, byteSize: 1 | 2 = 1) {
     this.name = name;
     this.offset = offset;
     this.dataView = new DataView(data);
@@ -28,5 +28,25 @@ export class CpuRegister {
     } else {
       this.dataView.setUint16(this.offset, newValue, true);
     }
+  }
+}
+
+export namespace CpuRegister {
+  export enum Code {
+    A = 0b111,
+    B = 0b000,
+    C = 0b001,
+    D = 0b010,
+    E = 0b011,
+    H = 0b100,
+    L = 0b101,
+  }
+
+  export enum PairCode {
+    BC,
+    DE,
+    HL,
+    AF,
+    SP = 3,
   }
 }

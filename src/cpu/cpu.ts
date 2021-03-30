@@ -1,4 +1,4 @@
-import { CPURegisters } from "./registers/registers";
+import { CpuRegisterCollection } from "./registers/cpu-register-collection";
 import { memory } from "@/memory/memory";
 import * as arithmeticAndLogicalOperations from '@/cpu/operations/arithmetic-and-logical';
 import * as inputOutputOperations from '@/cpu/operations/input-output';
@@ -10,13 +10,13 @@ import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose
 import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
-import { getCBOperations } from "@/cpu/operations/cb-sub-operations/cb-operations";
+import { getCBOperations } from "@/cpu/operations/cb-operations/cb-operations";
 
 
 export class CPU {
   isInterruptMasterEnable = false;
   operations: Operation[];
-  registers: CPURegisters;
+  registers: CpuRegisterCollection;
 
   private static VBlankInterruptAddress = 0x0040;
   private static LCDStatusInterruptAddress = 0x0048;
@@ -25,7 +25,7 @@ export class CPU {
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
   constructor() {
-    this.registers = new CPURegisters();
+    this.registers = new CpuRegisterCollection();
     this.operations = this.initializeOperations();
   }
 
@@ -37,13 +37,6 @@ export class CPU {
     const cycleTime = operation.cycleTime;
 
     this.registers.programCounter.value++;
-
-    // if (this.registers.programCounter.value === 41) {
-    //   console.log(instructionCache);
-    //   console.log(registerStateCache);
-    //   debugger;
-    // }
-
     operation.execute();
 
     return cycleTime;
@@ -54,19 +47,14 @@ export class CPU {
   }
 
   pushToStack(word: number) {
-    this.registers.stackPointer.value--;
-    memory.writeByte(this.registers.stackPointer.value, word >> 8);
-    this.registers.stackPointer.value--;
-    memory.writeByte(this.registers.stackPointer.value, word & 0xff);
+    this.registers.stackPointer.value -= 2;
+    memory.writeWord(this.registers.stackPointer.value, word);
   }
 
   popFromStack() {
-    const lowByte = memory.readByte(this.registers.stackPointer.value);
-    this.registers.stackPointer.value++;
-    const highByte = memory.readByte(this.registers.stackPointer.value);
-    this.registers.stackPointer.value++;
-
-    return (highByte << 8) | lowByte;
+    const value = memory.readWord(this.registers.stackPointer.value);
+    this.registers.stackPointer.value += 2;
+    return value;
   }
 
   private handleInterrupts() {

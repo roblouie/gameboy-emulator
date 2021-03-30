@@ -1,8 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
-import { RegisterPairCode } from "@/cpu/registers/register-pair-code";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createIncrementOperations(cpu: CPU): Operation[] {
   const incrementOperations: Operation[] = [];
@@ -21,7 +20,7 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
 // ****************
 // * INC r
 // ****************
-  function getIncRByteDefinition(rCode: RegisterCode) {
+  function getIncRByteDefinition(rCode: CpuRegister.Code) {
     return (rCode << 3) + 0b100;
   }
 
@@ -58,48 +57,20 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
 // ****************
 // * INC ss
 // ****************
-  function getIncSSByteDefinition(rpCode: RegisterPairCode) {
+  function getIncSSByteDefinition(rpCode: CpuRegister.PairCode) {
     return (rpCode << 4) + 0b0011;
   }
 
-  incrementOperations.push({
-    instruction: 'INC BC',
-    byteDefinition: getIncSSByteDefinition(RegisterPairCode.BC),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.BC.value++;
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC DE',
-    byteDefinition: getIncSSByteDefinition(RegisterPairCode.DE),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.DE.value++;
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC HL',
-    byteDefinition: getIncSSByteDefinition(RegisterPairCode.HL),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL.value++;
-    }
-  });
-
-  incrementOperations.push({
-    instruction: 'INC SP',
-    byteDefinition: getIncSSByteDefinition(RegisterPairCode.SP),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.stackPointer.value++;
-    }
+  registers.registerPairs.forEach(registerPair => {
+    incrementOperations.push({
+      instruction: `INC ${registerPair.name}`,
+      byteDefinition: getIncSSByteDefinition(registerPair.code),
+      cycleTime: 2,
+      byteLength: 1,
+      execute() {
+        registerPair.value++;
+      }
+    });
   });
 
   return incrementOperations;

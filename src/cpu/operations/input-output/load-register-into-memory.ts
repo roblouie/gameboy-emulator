@@ -1,13 +1,13 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
   const registerToMemoryInstructions: Operation[] = [];
   const { registers } = cpu;
 
-  function getLoadHLRByteDefinition(code: RegisterCode) {
+  function getLoadHLRByteDefinition(code: CpuRegister.Code) {
     return (0b1110 << 3) + code;
   }
 

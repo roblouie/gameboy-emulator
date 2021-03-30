@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createSubtractOperations(cpu: CPU) {
   const subtractOperations: Operation[] = [];
@@ -20,7 +20,7 @@ export function createSubtractOperations(cpu: CPU) {
 // ****************
 // * Subtract s
 // ****************
-  function getSubARByteDefinition(rCode: RegisterCode) {
+  function getSubARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_010_000 + rCode;
   }
 
@@ -64,7 +64,7 @@ export function createSubtractOperations(cpu: CPU) {
 // ***********************
 // * Subtract Carry A, s
 // ***********************
-  function getASubtractCarryARByteDefinition(rCode: RegisterCode) {
+  function getASubtractCarryARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_011_000 + rCode;
   }
 

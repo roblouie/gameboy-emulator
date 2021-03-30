@@ -1,13 +1,13 @@
-import { RegisterCode } from "../../registers/register-code.enum";
 import { Operation } from "../operation.model";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createMemoryContentsToRegisterOperations(cpu: CPU): Operation[] {
   const memoryContentsToRegisterInstructions: Operation[] = [];
   const { registers } = cpu;
 
-  function getLoadRHLByteDefinition(rCode: RegisterCode) {
+  function getLoadRHLByteDefinition(rCode: CpuRegister.Code) {
     return (1 << 6) + (rCode << 3) + 0b110;
   }
 
@@ -27,7 +27,7 @@ export function createMemoryContentsToRegisterOperations(cpu: CPU): Operation[] 
   });
 
 // ****************
-// * Load A, (RR)
+// * Load A, (R) / (RR)
 // ****************
   memoryContentsToRegisterInstructions.push({
     instruction: 'LD A, (BC)',
@@ -83,10 +83,8 @@ export function createMemoryContentsToRegisterOperations(cpu: CPU): Operation[] 
 // ****************
   memoryContentsToRegisterInstructions.push({
     get instruction() {
-      //TODO: Refactor to read word
-      const firstByte = memory.readByte(registers.programCounter.value).toString(16);
-      const secondByte = memory.readByte(registers.programCounter.value + 1).toString(16);
-      return `LD A, (0x${firstByte + secondByte})`;
+      const value = memory.readWord(registers.programCounter.value);
+      return `LD A, (0x${value.toString(16)})`;
     },
     byteDefinition: 0b11111010,
     cycleTime: 4,

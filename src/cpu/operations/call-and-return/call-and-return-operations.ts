@@ -1,7 +1,13 @@
 import { Operation } from "../operation.model";
-import { FlagCondition } from "../../registers/flag-condition.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+
+enum FlagCondition {
+  NZ,
+  Z,
+  NC,
+  C
+}
 
 export function getCallAndReturnOperations(cpu: CPU): Operation[] {
   const callAndReturnOperations: Operation[] = [];
@@ -18,12 +24,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       const callToAddress = memory.readWord(registers.programCounter.value);
       registers.programCounter.value += 2;
+
       const returnToAddress = registers.programCounter.value;
-      //TODO: Refactor to use cpu push to stack
-      registers.stackPointer.value--;
-      memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
-      registers.stackPointer.value--;
-      memory.writeByte(registers.stackPointer.value, returnToAddress & 0xff);
+      cpu.pushToStack(returnToAddress);
 
       registers.programCounter.value = callToAddress;
     }
@@ -51,12 +54,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
       if (!registers.flags.isResultZero) {
         const toAddress = memory.readWord(registers.programCounter.value);
         registers.programCounter.value += 2;
+
         const returnToAddress = registers.programCounter.value;
-        // TODO: Refactor to use cpu push to stack
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress & 0xff);
+        cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
       } else {
@@ -79,12 +79,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
       if (registers.flags.isResultZero) {
         const toAddress = memory.readWord(registers.programCounter.value);
         registers.programCounter.value++;
+
         const returnToAddress = registers.programCounter.value;
-        //TODO: Refactor to use cpu push to stack;
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress & 0xff);
+        cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
       } else {
@@ -107,11 +104,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
       if (!registers.flags.isCarry) {
         const toAddress = memory.readWord(registers.programCounter.value);
         registers.programCounter.value++;
+
         const returnToAddress = registers.programCounter.value;
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress & 0xff);
+        cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
       } else {
@@ -134,11 +129,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
       if (registers.flags.isCarry) {
         const toAddress = memory.readWord(registers.programCounter.value);
         registers.programCounter.value++;
+
         const returnToAddress = registers.programCounter.value + this.byteLength;
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress >> 8);
-        registers.stackPointer.value--;
-        memory.writeByte(registers.stackPointer.value, returnToAddress & 0xff);
+        cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
       } else {
@@ -244,7 +237,6 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     return (0b11 << 6) + (operand << 3) + 0b111;
   }
 
-  // Confirm this logic.
   const operandToAddress = [
     0x0000,
     0x0008,
