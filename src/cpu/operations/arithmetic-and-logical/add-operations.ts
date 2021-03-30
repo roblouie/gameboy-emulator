@@ -8,7 +8,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
   const { registers } = cpu;
 
   function addAndSetFlags(accumulatorVal: number, toAdd: number) {
-    const newValue = accumulatorVal + toAdd;
+    const newValue = (accumulatorVal + toAdd) & 0xff;
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
     registers.flags.isSubtraction = false;

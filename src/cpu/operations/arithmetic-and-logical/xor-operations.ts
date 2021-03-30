@@ -8,7 +8,7 @@ export function createXorOperations(cpu: CPU): Operation[] {
   const { registers } = cpu;
 
   function xorAndSetFlags(accumulatorVal: number, toXor: number) {
-    const newValue = accumulatorVal ^ toXor;
+    const newValue = (accumulatorVal ^ toXor) & 0xff;
     registers.flags.isCarry = false;
     registers.flags.isHalfCarry = false;
     registers.flags.isSubtraction = false;

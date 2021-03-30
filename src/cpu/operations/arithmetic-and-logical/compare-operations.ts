@@ -8,7 +8,7 @@ export function createCompareOperations(cpu: CPU) {
   const { registers } = cpu;
 
   function compareAndSetFlags(accumulatorVal: number, toSubtract: number) {
-    const newValue = accumulatorVal - toSubtract;
+    const newValue = (accumulatorVal - toSubtract) & 0xff;
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (accumulatorVal & 0x0f) < (toSubtract & 0x0f);
     registers.flags.isSubtraction = true;

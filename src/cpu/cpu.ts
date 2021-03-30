@@ -10,8 +10,6 @@ import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose
 import {
   instructionCache,
   registerStateCache,
-  updateInstructionCache,
-  updateRegisterStateCache
 } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
@@ -30,6 +28,8 @@ export class CPU {
   private static SerialTransferCompletionInterruptAddress = 0x0058;
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
+  private isHalted = false;
+
   constructor() {
     this.registers = new CpuRegisterCollection();
     this.operations = this.initializeOperations();
@@ -39,14 +39,28 @@ export class CPU {
   tick(): number {
     this.handleInterrupts();
 
+    if (this.isHalted) {
+      return 1;
+    }
+
     const operation = this.getOperation();
+    //debug
+    // updateRegisterStateCache(this);
+    // updateInstructionCache(operation.instruction);
+    // end debug
     operation.execute();
+
+
 
     return operation.cycleTime;
   }
 
   reset() {
     this.registers.reset();
+  }
+
+  halt() {
+    this.isHalted = true;
   }
 
   pushToStack(word: number) {
@@ -80,6 +94,8 @@ export class CPU {
     if (!this.isInterruptMasterEnable || firedInterrupts === 0) {
       return;
     }
+
+    this.isHalted = false;
 
     this.pushToStack(this.registers.programCounter.value);
 

@@ -8,7 +8,7 @@ export function createOrOperations(cpu: CPU) {
   const { registers } = cpu;
 
   function orAndSetFlags(accumulatorVal: number, toOr: number) {
-    const newValue = accumulatorVal | toOr;
+    const newValue = (accumulatorVal | toOr) & 0xff;
     registers.flags.isCarry = false;
     registers.flags.isHalfCarry = false;
     registers.flags.isSubtraction = false;
