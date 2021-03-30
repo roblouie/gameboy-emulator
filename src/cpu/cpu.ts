@@ -9,7 +9,7 @@ import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotat
 import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
 import {
   instructionCache,
-  registerStateCache,
+  registerStateCache, updateInstructionCache, updateRegisterStateCache,
 } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
@@ -46,7 +46,14 @@ export class CPU {
     const operation = this.getOperation();
     //debug
     // updateRegisterStateCache(this);
-    // updateInstructionCache(operation.instruction);
+    // updateInstructionCache(
+    //   operation.instruction,
+    //   this.registers.programCounter.value,
+    //   this.registers.AF.value,
+    //   this.registers.BC.value,
+    //   this.registers.DE.value,
+    //   this.registers.HL.value,
+    // );
     // end debug
     operation.execute();
 

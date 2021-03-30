@@ -12,7 +12,6 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
     registers.flags.isSubtraction = true;
-    registers.flags.isCarry = (newValue & 0xf0) > (originalValue & 0xf0);
 
     return newValue;
   }

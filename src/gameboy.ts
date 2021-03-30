@@ -10,6 +10,7 @@ import { memory } from "@/memory/memory";
 import { CartridgeEntryPointOffset } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
 import { Spu } from "./spu/spu";
+import { lcdControlRegister } from "@/memory/shared-memory-registers";
 
 const cpu = new CPU();
 const gpu = new GPU();
@@ -38,6 +39,7 @@ export class Gameboy {
     cpu.registers.C.value = 0x13;
     cpu.registers.E.value = 0xD8;
     cpu.registers.A.value = 1;
+    lcdControlRegister.value = 0x83; // initial value from official guide
 
     const runFrame = (currentTime: number) => {
       while (cycles <= GPU.CyclesPerFrame) {

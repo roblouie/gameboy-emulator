@@ -12,7 +12,7 @@ export function createCompareOperations(cpu: CPU) {
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (accumulatorVal & 0x0f) < (toSubtract & 0x0f);
     registers.flags.isSubtraction = true;
-    registers.flags.isCarry = (accumulatorVal & 0xf0) < (toSubtract & 0xf0);
+    registers.flags.isCarry = accumulatorVal < toSubtract;
   }
 
 // ****************
