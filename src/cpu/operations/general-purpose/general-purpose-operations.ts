@@ -7,7 +7,17 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
 
 // TODO: Implement DAA
 
-// TODO: Implement CPL
+  generalPurposeOperations.push({
+    instruction: 'CPL',
+    byteDefinition: 0b00_101_111,
+    cycleTime: 1,
+    byteLength: 1,
+    execute() {
+      registers.A.value = ~registers.A.value;
+      registers.flags.isHalfCarry = true;
+      registers.flags.isSubtraction = true;
+    }
+  })
 
   generalPurposeOperations.push({
     instruction: 'NOP',
@@ -15,7 +25,17 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      registers.programCounter += this.byteLength;
+
+    }
+  });
+
+  generalPurposeOperations.push({
+    instruction: 'CCF',
+    byteDefinition: 0x3f,
+    cycleTime: 4,
+    byteLength: 1,
+    execute() {
+      registers.flags.isCarry = !registers.flags.isCarry;
     }
   });
 

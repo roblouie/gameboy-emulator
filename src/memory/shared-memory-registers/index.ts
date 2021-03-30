@@ -14,8 +14,13 @@ import { sound3ModeRegisters } from "./sound-registers/sound-3-mode/sound-3-mode
 import { sound4ModeRegisters } from "./sound-registers/sound-4-mode/sound-4-mode-registers";
 import { soundControlRegister } from "./sound-registers/sound-control-registers/sound-control-registers";
 
+import { dmaTransferRegister } from "@/memory/shared-memory-registers/lcd-display-registers/dma-transfer-register";
+import { objectPaletteRegisters } from "@/memory/shared-memory-registers/lcd-display-registers/object-palette-registers";
+import { controllerDataRegister } from "./port-mode-registers/controller-data-register";
 
 export {
+  controllerDataRegister,
+
   interruptEnableRegister,
   interruptRequestRegister,
 
@@ -33,4 +38,6 @@ export {
   sound3ModeRegisters,
   sound4ModeRegisters,
   soundControlRegister,
+  dmaTransferRegister,
+  objectPaletteRegisters
 }

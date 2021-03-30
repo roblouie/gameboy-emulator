@@ -5,8 +5,6 @@ import { CPU } from "@/cpu/cpu";
 // after the instruction following EI/DI executes. Currently they just change the flag
 // immediately.
 export function getInterruptOperations(cpu: CPU): Operation[] {
-  const { registers } = cpu;
-
   return [
     {
       instruction: 'EI',
@@ -14,7 +12,6 @@ export function getInterruptOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       cycleTime: 1,
       execute() {
-        registers.programCounter += this.byteLength;
         cpu.isInterruptMasterEnable = true;
       }
     },
@@ -25,7 +22,6 @@ export function getInterruptOperations(cpu: CPU): Operation[] {
       byteLength: 1,
       cycleTime: 1,
       execute() {
-        registers.programCounter += this.byteLength;
         cpu.isInterruptMasterEnable = false;
       }
     }

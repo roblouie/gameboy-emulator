@@ -7,38 +7,14 @@ import {
   lcdControlRegister,
   lcdStatusRegister,
   lineYRegister,
+  objectAttributeMemoryRegisters,
+  objectPaletteRegisters,
   scrollXRegister,
   scrollYRegister
 } from "@/memory/shared-memory-registers";
 import { LcdStatusMode } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-mode.enum";
 
-const CyclesPerHBlank = 204;
-const CyclesPerScanlineOam = 80;
-const CyclesPerScanlineVram = 172;
-const CyclesPerScanline = CyclesPerHBlank + CyclesPerScanlineOam + CyclesPerScanlineVram;
-
-const CyclesPerVBlank = 4560;
-const ScanlinesPerFrame = 144;
-export const CyclesPerFrame = (CyclesPerScanline * ScanlinesPerFrame) + CyclesPerVBlank;
-
-const ScreenWidth = 160;
-const ScreenHeight = 144;
-const MaxOffscreenLine = 154;
-
-const CharacterDataStart = 0x8000;
-const CharacterDataEnd = 0x97ff;
-
-const BackgroundDisplayData1Start = 0x9800;
-const BackgroundDisplayData1End = 0x9bff;
-
-const BackgroundDisplayData2Start = 0x9c00;
-const BackgroundDisplayData2End = 0x9fff;
-
-interface AddressRange {
-  start: number,
-  end: number,
-}
-
+//TODO: Move colors to its own file, posibly create new class for custom colors
 const colors = [
   255, // white
   192, // light gray
@@ -46,24 +22,40 @@ const colors = [
   0, // black
 ]
 
-export const gpu = {
-  cycleCounter: 0,
-  screen: new EnhancedImageData(ScreenWidth, ScreenHeight),
+export class GPU {
+  static ScreenWidth = 160;
+  static ScreenHeight = 144;
+  private static HeightIncludingOffscreen = 154;
+
+  private static CyclesPerHBlank = 204;
+  private static CyclesPerScanlineOam = 80;
+  private static CyclesPerScanlineVram = 172;
+  private static CyclesPerScanline = GPU.CyclesPerHBlank + GPU.CyclesPerScanlineOam + GPU.CyclesPerScanlineVram;
+  private static CyclesPerVBlank = 4560;
+  private static ScanlinesPerFrame = 144;
+  static CyclesPerFrame = (GPU.CyclesPerScanline * GPU.ScanlinesPerFrame) + GPU.CyclesPerVBlank;
+
+  screen: EnhancedImageData;
+  private cycleCounter = 0;
+
+  constructor() {
+    this.screen = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
+  }
 
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
     switch (lcdStatusRegister.mode) {
       case LcdStatusMode.SearchingOAM:
-        if (this.cycleCounter >= CyclesPerScanlineOam) {
-          this.cycleCounter %= CyclesPerScanlineOam;
+        if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
+          this.cycleCounter %= GPU.CyclesPerScanlineOam;
           lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
         }
         break;
 
       case LcdStatusMode.TransferringDataToLCD:
-        if (this.cycleCounter >= CyclesPerScanlineVram) {
-          this.cycleCounter %= CyclesPerScanlineVram;
+        if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
+          this.cycleCounter %= GPU.CyclesPerScanlineVram;
 
           // TODO: Trigger HBlank Interrupt
           // TODO: Deal with LY Coincidence
@@ -73,14 +65,14 @@ export const gpu = {
         break;
 
       case LcdStatusMode.EnableCPUAccessToVRAM:
-        if (this.cycleCounter >= CyclesPerHBlank) {
-          this.drawBackgroundLine(lineYRegister.value);
+        if (this.cycleCounter >= GPU.CyclesPerHBlank) {
+          this.drawScanline();
 
-          this.cycleCounter %= CyclesPerHBlank;
+          this.cycleCounter %= GPU.CyclesPerHBlank;
 
           lineYRegister.value++;
 
-          if (lineYRegister.value === ScreenHeight) {
+          if (lineYRegister.value === GPU.ScreenHeight) {
             lcdStatusRegister.mode = LcdStatusMode.InVBlank;
             interruptRequestRegister.setVBlankInterruptRequest();
           } else {
@@ -90,22 +82,29 @@ export const gpu = {
         break;
 
       case LcdStatusMode.InVBlank:
-        if (this.cycleCounter >= CyclesPerScanline) {
+        if (this.cycleCounter >= GPU.CyclesPerScanline) {
           lineYRegister.value++;
 
-          this.cycleCounter %= CyclesPerScanline;
+          this.cycleCounter %= GPU.CyclesPerScanline;
 
-          if (lineYRegister.value === MaxOffscreenLine) {
+          if (lineYRegister.value === GPU.HeightIncludingOffscreen) {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
             lineYRegister.value = 0;
           }
         }
         break;
     }
-  },
+  }
 
-  drawBackgroundLine(currentLine: number) {
+  drawScanline() {
+    this.drawBackgroundLine();
+    this.drawSpriteLine();
+  }
+
+  // TODO: Refactor to do a pixel at a time?
+  drawBackgroundLine() {
     let backgroundTileMap: Uint8Array | Int8Array;
+    const bytesPerCharacter = 2;
     const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
     const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
 
@@ -118,56 +117,106 @@ export const gpu = {
 
     const palette = backgroundPaletteRegister.backgroundPalette;
 
-    const scrolledY = (currentLine + scrollYRegister.value) & 0xff;
+    const scrolledY = (lineYRegister.value + scrollYRegister.value) & 0xff;
 
-    for (let screenX = 0; screenX < ScreenWidth; screenX++) {
+    for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
       const scrolledX = (screenX + scrollXRegister.value) & 0xff;
-      const tileMapIndex = getTileIndexFromPixelLocation(scrolledX, scrolledY);
-      const tilePixelPosition = getUpperLeftPixelLocationOfTile(tileMapIndex);
+      const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
+      const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
 
       const xPosInTile = scrolledX - tilePixelPosition.x;
       const yPosInTile = scrolledY - tilePixelPosition.y;
 
-      const bytePositionInTile = yPosInTile * 2;
+      const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
       const tileCharIndex = backgroundTileMap[tileMapIndex];
       const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
-      const currentTileBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
-      const lowerByte = memory.readByte(currentTileBytePosition);
-      const higherByte = memory.readByte(currentTileBytePosition + 1);
+      const currentTileLineBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
+      const lowerByte = memory.readByte(currentTileLineBytePosition);
+      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
-      const shadeLower = getBit(lowerByte, xPosInTile);
-      const shadeHigher = getBit(higherByte, xPosInTile);
+      const paletteIndex = this.getPixelInTileLineLeftToRight(xPosInTile, lowerByte, higherByte);
 
-      const paletteColor = palette[shadeLower + shadeHigher];
+      const paletteColor = palette[paletteIndex];
       const color = colors[paletteColor];
 
-      this.screen.setPixel(screenX, currentLine, color, color, color);
+      this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
     }
-  },
+  }
 
   drawSpriteLine() {
+    const spriteOffsetX = -8;
+    const spriteOffsetY = -16;
+    const characterDataStart = 0x8000;
+    const bytesPerCharacter = 2;
+    const charactersPerTile = 8; // TODO: Update to account for 16px high tiles, which are not yet implemented
+    const bytesPerTile = bytesPerCharacter * charactersPerTile;
 
+    objectAttributeMemoryRegisters.forEach(oamRegister => {
+      if (oamRegister.xPosition === 0 || oamRegister.yPosition == 0) {
+        return;
+      }
+
+      const spriteX = oamRegister.xPosition + spriteOffsetX;
+      const spriteY = oamRegister.yPosition + spriteOffsetY;
+
+      const scanlineIntersectsYAt = spriteY - lineYRegister.value;
+
+      const isIntersectingY = scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lcdControlRegister.objectHeight;
+      if (!isIntersectingY) {
+        return;
+      }
+
+      const bytePositionInTile = scanlineIntersectsYAt * bytesPerCharacter;
+      const tileCharBytePosition = oamRegister.characterCode * bytesPerTile;
+      const currentTileLineBytePosition = characterDataStart + tileCharBytePosition + bytePositionInTile;
+
+      const lowerByte = memory.readByte(currentTileLineBytePosition);
+      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+
+      for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
+        const paletteIndex = this.getPixelInTileLineLeftToRight(xPixelInTile, lowerByte, higherByte);
+
+        const palette = objectPaletteRegisters[oamRegister.paletteNumber].palette;
+        const paletteColor = palette[paletteIndex];
+        const color = colors[paletteColor];
+
+        if (color !== 0) {
+          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color);
+        }
+      }
+    });
   }
-}
 
-function getTileIndexFromPixelLocation(x: number, y: number) {
-  const tileSize = 8;
-  const backgroundNumberOfTilesPerSide = 32;
+  private getTileIndexFromPixelLocation(x: number, y: number) {
+    const tileSize = 8;
+    const backgroundNumberOfTilesPerSide = 32;
 
-  const tileX = Math.floor(x / tileSize);
-  const tileY = Math.floor(y / tileSize);
+    const tileX = Math.floor(x / tileSize);
+    const tileY = Math.floor(y / tileSize);
 
-  return (tileY * backgroundNumberOfTilesPerSide) + tileX;
-}
+    return (tileY * backgroundNumberOfTilesPerSide) + tileX;
+  }
 
-function getUpperLeftPixelLocationOfTile(tile: number) {
-  const tileSize = 8;
-  const backgroundNumberOfTilesPerSide = 32;
+  private getUpperLeftPixelLocationOfTile(tile: number) {
+    const tileSize = 8;
+    const backgroundNumberOfTilesPerSide = 32;
 
-  const posY = Math.floor(tile / backgroundNumberOfTilesPerSide);
-  const posX = tile - posY * backgroundNumberOfTilesPerSide;
+    const posY = Math.floor(tile / backgroundNumberOfTilesPerSide);
+    const posX = tile - posY * backgroundNumberOfTilesPerSide;
 
-  return { x: posX * tileSize, y: posY * tileSize };
+    return { x: posX * tileSize, y: posY * tileSize };
+  }
+
+  private getPixelInTileLineLeftToRight(xPosition: number, lowerByte: number, higherByte: number) {
+    // the pixel at position 0 in a byte is the rightmost pixel, but when drawing on canvas, we
+    // go from left to right, so 0 is the leftmost pixel. By subtracting 7 (the last index in the byte)
+    // we can effectively swap the order.
+    const xPixelInTile = 7 - xPosition;
+    const shadeLower = getBit(lowerByte, xPixelInTile);
+    const shadeHigher = getBit(higherByte, xPixelInTile);
+
+    return shadeLower + shadeHigher;
+  }
 }

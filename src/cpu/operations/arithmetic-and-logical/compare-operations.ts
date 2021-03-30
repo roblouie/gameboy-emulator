@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createCompareOperations(cpu: CPU) {
   const compareOperations: Operation[] = [];
@@ -18,98 +18,33 @@ export function createCompareOperations(cpu: CPU) {
 // ****************
 // * Compare s
 // ****************
-  function getCpARByteDefinition(rCode: RegisterCode) {
+  function getCpARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_111_000 + rCode;
   }
 
-  compareOperations.push({
-    instruction: 'CP A',
-    byteDefinition: getCpARByteDefinition(RegisterCode.A),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.A);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  compareOperations.push({
-    instruction: 'CP B',
-    byteDefinition: getCpARByteDefinition(RegisterCode.B),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.B);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  compareOperations.push({
-    instruction: 'CP C',
-    byteDefinition: getCpARByteDefinition(RegisterCode.C),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.C);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  compareOperations.push({
-    instruction: 'CP D',
-    byteDefinition: getCpARByteDefinition(RegisterCode.D),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.D);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  compareOperations.push({
-    instruction: 'CP E',
-    byteDefinition: getCpARByteDefinition(RegisterCode.E),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.E);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  compareOperations.push({
-    instruction: 'CP H',
-    byteDefinition: getCpARByteDefinition(RegisterCode.H),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.H);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  compareOperations.push({
-    instruction: 'CP L',
-    byteDefinition: getCpARByteDefinition(RegisterCode.L),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      compareAndSetFlags(registers.A, registers.L);
-      registers.programCounter += this.byteLength
-    }
+  cpu.registers.baseRegisters.forEach(register => {
+    compareOperations.push({
+      instruction: `CP ${register.name}`,
+      byteDefinition: getCpARByteDefinition(register.code),
+      cycleTime: 1,
+      byteLength: 1,
+      execute() {
+        compareAndSetFlags(registers.A.value, register.value);
+      }
+    });
   });
 
   compareOperations.push({
     get instruction() {
-      return `CP 0x${memory.readByte(registers.programCounter + 1).toString(16)}`;
+      return `CP 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_111_110,
     cycleTime: 2,
     byteLength: 2,
     execute() {
-      const value = memory.readByte(registers.programCounter + 1);
-      compareAndSetFlags(registers.A, value);
-      registers.programCounter += this.byteLength
+      const value = memory.readByte(registers.programCounter.value);
+      registers.programCounter.value++;
+      compareAndSetFlags(registers.A.value, value);
     }
   });
 
@@ -119,9 +54,8 @@ export function createCompareOperations(cpu: CPU) {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      const value = memory.readByte(registers.HL);
-      compareAndSetFlags(registers.A, value);
-      registers.programCounter += this.byteLength
+      const value = memory.readByte(registers.HL.value);
+      compareAndSetFlags(registers.A.value, value);
     }
   });
 

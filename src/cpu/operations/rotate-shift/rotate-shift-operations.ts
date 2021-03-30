@@ -11,15 +11,13 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      const bit7 = registers.A >> 7;
+      const bit7 = registers.A.value >> 7;
       registers.flags.CY = bit7;
       registers.flags.H = 0;
       registers.flags.Z = 0;
       registers.flags.N = 0;
 
-      registers.A = (registers.A << 1) + bit7;
-
-      registers.programCounter += this.byteLength;
+      registers.A.value = (registers.A.value << 1) + bit7;
     }
   });
 
@@ -29,15 +27,47 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      const bit7 = registers.A >> 7;
-      const result = (registers.A << 1) + registers.flags.CY;
+      const bit7 = registers.A.value >> 7;
+      const result = (registers.A.value << 1) + registers.flags.CY;
       registers.flags.CY = bit7;
       registers.flags.H = 0;
       registers.flags.N = 0;
+      registers.flags.Z = 0;
 
-      registers.A = result;
+      registers.A.value = result;
+    }
+  });
 
-      registers.programCounter += this.byteLength;
+  rotateShiftOperations.push({
+    instruction: 'RRCA',
+    byteDefinition: 0b00_001_111,
+    cycleTime: 1,
+    byteLength: 1,
+    execute() {
+      const bit0 = registers.A.value & 0b1;
+      registers.flags.CY = bit0;
+      registers.flags.H = 0;
+      registers.flags.Z = 0;
+      registers.flags.N = 0;
+
+      registers.A.value = (registers.A.value >> 1) + (bit0 << 7);
+    }
+  });
+
+  rotateShiftOperations.push({
+    instruction: 'RRA',
+    byteDefinition: 0b00_011_111,
+    cycleTime: 1,
+    byteLength: 1,
+    execute() {
+      const bit0 = registers.A.value & 0b1;
+      const result = (registers.A.value >> 1) + (registers.flags.CY << 7);
+      registers.flags.CY = bit0;
+      registers.flags.H = 0;
+      registers.flags.N = 0;
+      registers.flags.Z = 0;
+
+      registers.A.value = result;
     }
   });
 

@@ -1,8 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
-import { RegisterPairCode } from "../../registers/register-pair-code";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createDecrementOperations(cpu: CPU): Operation[] {
   const decrementOperations: Operation[] = [];
@@ -19,87 +18,22 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
   }
 
 // ****************
-// * INC r
+// * Dec r
 // ****************
-  function getDecRByteDefinition(rCode: RegisterCode) {
+  function getDecRByteDefinition(rCode: CpuRegister.Code) {
     return (rCode << 3) + 0b101;
   }
 
-  decrementOperations.push({
-    instruction: 'DEC A',
-    byteDefinition: getDecRByteDefinition(RegisterCode.A),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.A = decrementAndSetFlags(registers.A);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC B',
-    byteDefinition: getDecRByteDefinition(RegisterCode.B),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.B = decrementAndSetFlags(registers.B);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC C',
-    byteDefinition: getDecRByteDefinition(RegisterCode.C),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.C = decrementAndSetFlags(registers.C);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC D',
-    byteDefinition: getDecRByteDefinition(RegisterCode.D),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.D = decrementAndSetFlags(registers.D);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC E',
-    byteDefinition: getDecRByteDefinition(RegisterCode.E),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.E = decrementAndSetFlags(registers.E);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC H',
-    byteDefinition: getDecRByteDefinition(RegisterCode.H),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.H = decrementAndSetFlags(registers.H);
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC L',
-    byteDefinition: getDecRByteDefinition(RegisterCode.L),
-    cycleTime: 1,
-    byteLength: 1,
-    execute() {
-      registers.L = decrementAndSetFlags(registers.L);
-      registers.programCounter += this.byteLength
-    }
+  cpu.registers.baseRegisters.forEach(register => {
+    decrementOperations.push({
+      instruction: `DEC ${register.name}`,
+      byteDefinition: getDecRByteDefinition(register.code),
+      cycleTime: 1,
+      byteLength: 1,
+      execute() {
+        register.value = decrementAndSetFlags(register.value);
+      }
+    });
   });
 
 
@@ -113,10 +47,9 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     cycleTime: 3,
     byteLength: 1,
     execute() {
-      const value = memory.readByte(registers.HL);
+      const value = memory.readByte(registers.HL.value);
       const incremented = decrementAndSetFlags(value);
-      memory.writeByte(registers.HL, incremented);
-      registers.programCounter += this.byteLength
+      memory.writeByte(registers.HL.value, incremented);
     }
   });
 
@@ -124,52 +57,20 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
 // ****************
 // * DEC ss
 // ****************
-  function getDecSSByteDefinition(rpCode: RegisterPairCode) {
+  function getDecSSByteDefinition(rpCode: CpuRegister.PairCode) {
     return (rpCode << 4) + 0b1011;
   }
 
-  decrementOperations.push({
-    instruction: 'DEC BC',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.BC),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.BC--;
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC DE',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.DE),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.DE--;
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC HL',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.HL),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL--;
-      registers.programCounter += this.byteLength
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC SP',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.SP),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.SP--;
-      registers.programCounter += this.byteLength
-    }
+  registers.registerPairs.forEach(registerPair => {
+    decrementOperations.push({
+      instruction: `DEC ${registerPair.name}`,
+      byteDefinition: getDecSSByteDefinition(registerPair.code),
+      cycleTime: 2,
+      byteLength: 1,
+      execute() {
+        registerPair.value--;
+      }
+    });
   });
 
   return decrementOperations;

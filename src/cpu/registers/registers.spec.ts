@@ -1,13 +1,13 @@
-import { CPURegisters } from "./registers";
+import { CpuRegisterCollection } from "./cpu-register-collection";
 
-const registers = new CPURegisters();
+const registers = new CpuRegisterCollection();
 
 test('Setting register overflows properly', () => {
-  registers.A = 255;
-  expect(registers.A).toBe(255);
+  registers.A.value = 255;
+  expect(registers.A.value).toBe(255);
 
-  registers.A += 2;
-  expect(registers.A).toBe(1);
+  registers.A.value += 2;
+  expect(registers.A.value).toBe(1);
 });
 
 test.each([

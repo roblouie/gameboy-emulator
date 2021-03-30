@@ -1,4 +1,4 @@
-import { CPURegisters } from "./registers/registers";
+import { CpuRegisterCollection } from "./registers/cpu-register-collection";
 import { memory } from "@/memory/memory";
 import * as arithmeticAndLogicalOperations from '@/cpu/operations/arithmetic-and-logical';
 import * as inputOutputOperations from '@/cpu/operations/input-output';
@@ -7,16 +7,16 @@ import { getInterruptOperations } from "@/cpu/operations/interupts/interupt-oper
 import { createJumpOperations } from "@/cpu/operations/jump/jump-operations";
 import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
 import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
-import { createBitOperations } from "@/cpu/operations/bit/bit-operations";
 import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
+import { getCBOperations } from "@/cpu/operations/cb-operations/cb-operations";
 
 
 export class CPU {
   isInterruptMasterEnable = false;
   operations: Operation[];
-  registers: CPURegisters;
+  registers: CpuRegisterCollection;
 
   private static VBlankInterruptAddress = 0x0040;
   private static LCDStatusInterruptAddress = 0x0048;
@@ -25,17 +25,21 @@ export class CPU {
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
   constructor() {
-    this.registers = new CPURegisters();
+    this.registers = new CpuRegisterCollection();
     this.operations = this.initializeOperations();
   }
 
   tick(): number {
     this.handleInterrupts();
 
-    const operationIndex = memory.readByte(this.registers.programCounter);
-    this.operations[operationIndex].execute();
+    const operationIndex = memory.readByte(this.registers.programCounter.value);
+    const operation = this.operations[operationIndex];
+    const cycleTime = operation.cycleTime;
 
-    return this.operations[operationIndex].cycleTime;
+    this.registers.programCounter.value++;
+    operation.execute();
+
+    return cycleTime;
   }
 
   reset() {
@@ -43,13 +47,13 @@ export class CPU {
   }
 
   pushToStack(word: number) {
-    this.registers.stackPointer -= 2;
-    memory.writeWord(this.registers.stackPointer, word);
+    this.registers.stackPointer.value -= 2;
+    memory.writeWord(this.registers.stackPointer.value, word);
   }
 
   popFromStack() {
-    const value = memory.readWord(this.registers.stackPointer);
-    this.registers.stackPointer += 2;
+    const value = memory.readWord(this.registers.stackPointer.value);
+    this.registers.stackPointer.value += 2;
     return value;
   }
 
@@ -60,33 +64,33 @@ export class CPU {
       return;
     }
 
-    this.pushToStack(this.registers.programCounter);
+    this.pushToStack(this.registers.programCounter.value);
 
     const interruptFlags = interruptRequestRegister.getInterruptFlags(firedInterrupts);
 
     if (interruptFlags.isVerticalBlanking) {
       interruptRequestRegister.clearVBlankInterruptRequest();
-      this.registers.programCounter = CPU.VBlankInterruptAddress;
+      this.registers.programCounter.value = CPU.VBlankInterruptAddress;
     }
 
     else if (interruptFlags.isLCDStatus) {
       interruptRequestRegister.clearLCDStatusInterruptRequest();
-      this.registers.programCounter = CPU.LCDStatusInterruptAddress;
+      this.registers.programCounter.value = CPU.LCDStatusInterruptAddress;
     }
 
     else if (interruptFlags.isTimerOverflow) {
       interruptRequestRegister.clearTimerOverflowInterruptRequest();
-      this.registers.programCounter = CPU.TimerOverflowInterruptAddress;
+      this.registers.programCounter.value = CPU.TimerOverflowInterruptAddress;
     }
 
     else if (interruptFlags.isSerialTransferCompletion) {
       interruptRequestRegister.clearSerialTransferInterruptRequest();
-      this.registers.programCounter = CPU.SerialTransferCompletionInterruptAddress;
+      this.registers.programCounter.value = CPU.SerialTransferCompletionInterruptAddress;
     }
 
     else if (interruptFlags.isP10P13NegativeEdge) {
       interruptRequestRegister.clearP10P13NegativeEdgeInterruptRequest();
-      this.registers.programCounter = CPU.P10P13InputSignalLowInterruptAddress;
+      this.registers.programCounter.value = CPU.P10P13InputSignalLowInterruptAddress;
     }
 
     this.isInterruptMasterEnable = false;
@@ -112,7 +116,7 @@ export class CPU {
 
       ...createRotateShiftOperations(this),
       ...createJumpOperations(this),
-      ...createBitOperations(this),
+      ...getCBOperations(this),
       ...createGeneralPurposeOperations(this),
       ...getCallAndReturnOperations(this),
       ...getInterruptOperations(this),
@@ -137,7 +141,7 @@ export class CPU {
             // Log out last X instructions so we see how we got to the unimplemented op code
             console.log(instructionCache);
             console.log(registerStateCache);
-            registers.programCounter = 0x100; // just restart the rom to stop infinite looping
+            registers.programCounter.value = 0x100; // just restart the rom to stop infinite looping
             console.log(`Opcode ${this.byteDefinition} not implemented`);
             debugger;
           }

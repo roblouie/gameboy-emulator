@@ -16,11 +16,11 @@ export function updateInstructionCache(instruction: string) {
 export function updateRegisterStateCache(cpu: CPU) {
   const { registers } = cpu;
   registerStateCache.unshift(`
-    A: ${registers.A},
-    PC: ${registers.programCounter},
-    D: ${registers.D}
-    E: ${registers.E}
-    BC: ${registers.BC}
+    A: ${registers.A.value},
+    PC: ${registers.programCounter.value},
+    B: ${registers.B.value}
+    C: ${registers.C.value}
+    HL: ${registers.HL.value}
   `);
 
   if (registerStateCache.length > instructionCacheSize) {
