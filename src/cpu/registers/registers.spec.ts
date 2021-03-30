@@ -1,6 +1,6 @@
-import { CPURegisters } from "./registers";
+import { CpuRegisterCollection } from "./cpu-register-collection";
 
-const registers = new CPURegisters();
+const registers = new CpuRegisterCollection();
 
 test('Setting register overflows properly', () => {
   registers.A.value = 255;

@@ -29,5 +29,15 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
     }
   });
 
+  generalPurposeOperations.push({
+    instruction: 'CCF',
+    byteDefinition: 0x3f,
+    cycleTime: 4,
+    byteLength: 1,
+    execute() {
+      registers.flags.isCarry = !registers.flags.isCarry;
+    }
+  });
+
   return generalPurposeOperations;
 }

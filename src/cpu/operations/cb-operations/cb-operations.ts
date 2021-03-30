@@ -1,9 +1,9 @@
 import { CPU } from "@/cpu/cpu";
 import { Operation } from "@/cpu/operations/operation.model";
-import { getRotateShiftSubOperations } from "@/cpu/operations/cb-sub-operations/rotate-shift-operations";
-import { getBitSubOperations } from "@/cpu/operations/cb-sub-operations/bit-operations";
-import { getSetSubOperations } from "@/cpu/operations/cb-sub-operations/set-operations";
-import { getResSubOperations } from "@/cpu/operations/cb-sub-operations/res-operations";
+import { getRotateShiftSubOperations } from "@/cpu/operations/cb-operations/rotate-shift-operations";
+import { getBitSubOperations } from "@/cpu/operations/cb-operations/bit-operations";
+import { getSetSubOperations } from "@/cpu/operations/cb-operations/set-operations";
+import { getResSubOperations } from "@/cpu/operations/cb-operations/res-operations";
 import { memory } from "@/memory/memory";
 import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 
@@ -45,11 +45,11 @@ export function getCBOperations(cpu: CPU): Operation[] {
   const { registers } = cpu;
 
   return [{
+    byteDefinition: 0b11_001_011,
     get instruction() {
       const instructionByteCode = memory.readByte(registers.programCounter.value);
       return subOperations[instructionByteCode].instruction;
     },
-    byteDefinition: 0b11_001_011,
     get cycleTime() {
       const instructionByteCode = memory.readByte(registers.programCounter.value);
       return subOperations[instructionByteCode].cycleTime;

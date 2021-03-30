@@ -1,8 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
-import { RegisterPairCode } from "../../registers/register-pair-code";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createDecrementOperations(cpu: CPU): Operation[] {
   const decrementOperations: Operation[] = [];
@@ -21,7 +20,7 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
 // ****************
 // * Dec r
 // ****************
-  function getDecRByteDefinition(rCode: RegisterCode) {
+  function getDecRByteDefinition(rCode: CpuRegister.Code) {
     return (rCode << 3) + 0b101;
   }
 
@@ -58,48 +57,20 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
 // ****************
 // * DEC ss
 // ****************
-  function getDecSSByteDefinition(rpCode: RegisterPairCode) {
+  function getDecSSByteDefinition(rpCode: CpuRegister.PairCode) {
     return (rpCode << 4) + 0b1011;
   }
 
-  decrementOperations.push({
-    instruction: 'DEC BC',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.BC),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.BC.value--;
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC DE',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.DE),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.DE.value--;
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC HL',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.HL),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.HL.value--;
-    }
-  });
-
-  decrementOperations.push({
-    instruction: 'DEC SP',
-    byteDefinition: getDecSSByteDefinition(RegisterPairCode.SP),
-    cycleTime: 2,
-    byteLength: 1,
-    execute() {
-      registers.stackPointer.value--;
-    }
+  registers.registerPairs.forEach(registerPair => {
+    decrementOperations.push({
+      instruction: `DEC ${registerPair.name}`,
+      byteDefinition: getDecSSByteDefinition(registerPair.code),
+      cycleTime: 2,
+      byteLength: 1,
+      execute() {
+        registerPair.value--;
+      }
+    });
   });
 
   return decrementOperations;

@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createOrOperations(cpu: CPU) {
   const orOperations: Operation[] = [];
@@ -20,7 +20,7 @@ export function createOrOperations(cpu: CPU) {
 // ****************
 // * Or s
 // ****************
-  function getOrARByteDefinition(rCode: RegisterCode) {
+  function getOrARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_110_000 + rCode;
   }
 

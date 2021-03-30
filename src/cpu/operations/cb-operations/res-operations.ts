@@ -1,8 +1,8 @@
 import { CPU } from "@/cpu/cpu";
 import { Operation } from "@/cpu/operations/operation.model";
-import { RegisterCode } from "@/cpu/registers/register-code.enum";
 import { clearBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function getResSubOperations(cpu: CPU): Operation[] {
   const subOperations: Operation[] = [];
@@ -11,7 +11,7 @@ export function getResSubOperations(cpu: CPU): Operation[] {
   // ****************
   // * Res b, A
   // ****************
-  function getResBAByteDefinition(bitPosition: number, registerCode: RegisterCode) {
+  function getResBAByteDefinition(bitPosition: number, registerCode: CpuRegister.Code) {
     return (0b10 << 6) + (bitPosition << 3) + registerCode;
   }
 
@@ -19,7 +19,7 @@ export function getResSubOperations(cpu: CPU): Operation[] {
     for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
       subOperations.push({
         byteDefinition: getResBAByteDefinition(bitPosition, register.code),
-        instruction: `BIT ${bitPosition}, ${register.name}`,
+        instruction: `RES ${bitPosition}, ${register.name}`,
         cycleTime: 2,
         byteLength: 2,
         execute() {

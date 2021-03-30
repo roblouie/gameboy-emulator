@@ -1,6 +1,6 @@
 import { CpuRegister } from "@/cpu/registers/cpu-register";
 
-export class CpuFlagRegister extends  CpuRegister{
+export class CpuFlagRegister extends CpuRegister{
   
   get Z() {
     return (this.value >> 7);

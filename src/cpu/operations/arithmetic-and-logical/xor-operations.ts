@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createXorOperations(cpu: CPU): Operation[] {
   const xorOperations: Operation[] = [];
@@ -20,7 +20,7 @@ export function createXorOperations(cpu: CPU): Operation[] {
 // ****************
 // * Xor s
 // ****************
-  function getXorARByteDefinition(rCode: RegisterCode) {
+  function getXorARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_101_000 + rCode;
   }
 

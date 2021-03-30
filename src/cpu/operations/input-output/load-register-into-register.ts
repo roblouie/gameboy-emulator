@@ -1,6 +1,6 @@
-import { RegisterCode } from "../../registers/register-code.enum";
 import { Operation } from "../operation.model"
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createRegisterToRegisterOperations(cpu: CPU): Operation[] {
   const registerToRegisterInstructions: Operation[] = [];
@@ -9,7 +9,7 @@ export function createRegisterToRegisterOperations(cpu: CPU): Operation[] {
   // ****************
   // * Load R, R1
   // ****************
-  function getLoadRR1ByteDefinition(rCode: RegisterCode, rCode2: RegisterCode) {
+  function getLoadRR1ByteDefinition(rCode: CpuRegister.Code, rCode2: CpuRegister.Code) {
     return (1 << 6) + (rCode << 3) + rCode2;
   }
 

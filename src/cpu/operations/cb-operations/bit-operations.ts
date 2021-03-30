@@ -1,8 +1,8 @@
 import { CPU } from "@/cpu/cpu";
 import { Operation } from "@/cpu/operations/operation.model";
-import { RegisterCode } from "@/cpu/registers/register-code.enum";
 import { getBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function getBitSubOperations(cpu: CPU): Operation[] {
   const subOperations: Operation[] = [];
@@ -18,7 +18,7 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
   // ****************
   // * Bit b, A
   // ****************
-  function getBitBAByteDefinition(bitPosition: number, registerCode: RegisterCode) {
+  function getBitBAByteDefinition(bitPosition: number, registerCode: CpuRegister.Code) {
     return (0b01 << 6) + (bitPosition << 3) + registerCode;
   }
 

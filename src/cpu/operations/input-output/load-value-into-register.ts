@@ -1,7 +1,7 @@
-import { RegisterCode } from "../../registers/register-code.enum";
 import { Operation } from "../operation.model";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createValueToRegisterOperations(cpu: CPU) {
   const { registers } = cpu;
@@ -10,7 +10,7 @@ export function createValueToRegisterOperations(cpu: CPU) {
 // ****************
 // * Load R, N
 // ****************
-  function getLoadRNByteDefinition(rCode: RegisterCode) {
+  function getLoadRNByteDefinition(rCode: CpuRegister.Code) {
     return (rCode << 3) + 0b110;
   }
 

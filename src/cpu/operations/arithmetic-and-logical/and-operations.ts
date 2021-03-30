@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createAndOperations(cpu: CPU) {
   const andOperations: Operation[] = [];
@@ -20,7 +20,7 @@ export function createAndOperations(cpu: CPU) {
 // ****************
 // * And s
 // ****************
-  function getAndARByteDefinition(rCode: RegisterCode) {
+  function getAndARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_100_000 + rCode;
   }
 

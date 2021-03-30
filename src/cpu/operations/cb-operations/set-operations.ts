@@ -1,8 +1,8 @@
 import { CPU } from "@/cpu/cpu";
 import { Operation } from "@/cpu/operations/operation.model";
-import { RegisterCode } from "@/cpu/registers/register-code.enum";
 import { setBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function getSetSubOperations(cpu: CPU): Operation[] {
   const subOperations: Operation[] = [];
@@ -11,7 +11,7 @@ export function getSetSubOperations(cpu: CPU): Operation[] {
   // ****************R
   // * Set b, A
   // ****************
-  function getSetBAByteDefinition(bitPosition: number, registerCode: RegisterCode) {
+  function getSetBAByteDefinition(bitPosition: number, registerCode: CpuRegister.Code) {
     return (0b11 << 6) + (bitPosition << 3) + registerCode;
   }
 

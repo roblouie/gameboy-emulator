@@ -1,4 +1,4 @@
-import { CyclesPerFrame, gpu } from "@/gpu/gpu";
+import { GPU } from "@/gpu/gpu";
 import { CPU } from "@/cpu/cpu";
 import {
   instructionCache,
@@ -11,6 +11,7 @@ import { CartridgeEntryPointOffset } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
 
 const cpu = new CPU();
+const gpu = new GPU();
 
 export class Gameboy {
   frameFinishedCallback?: Function;
@@ -37,7 +38,7 @@ export class Gameboy {
     cpu.registers.A.value = 1;
 
     const runFrame = (currentTime: number) => {
-      while (cycles < CyclesPerFrame) {
+      while (cycles < GPU.CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
         cycles += cycleForTick;
@@ -57,7 +58,7 @@ export class Gameboy {
       this.fps = 1000 / (currentTime - previousTime);
       previousTime = currentTime;
 
-      cycles = cycles % CyclesPerFrame;
+      cycles = cycles % GPU.CyclesPerFrame;
 
       requestAnimationFrame(runFrame);
     }

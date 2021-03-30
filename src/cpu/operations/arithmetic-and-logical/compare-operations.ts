@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
-import { RegisterCode } from "../../registers/register-code.enum";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
+import { CpuRegister } from "@/cpu/registers/cpu-register";
 
 export function createCompareOperations(cpu: CPU) {
   const compareOperations: Operation[] = [];
@@ -18,7 +18,7 @@ export function createCompareOperations(cpu: CPU) {
 // ****************
 // * Compare s
 // ****************
-  function getCpARByteDefinition(rCode: RegisterCode) {
+  function getCpARByteDefinition(rCode: CpuRegister.Code) {
     return 0b10_111_000 + rCode;
   }
 
