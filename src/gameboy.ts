@@ -9,9 +9,11 @@ import {
 import { memory } from "@/memory/memory";
 import { CartridgeEntryPointOffset } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
+import { Spu } from "./spu/spu";
 
 const cpu = new CPU();
 const gpu = new GPU();
+const spu = new Spu();
 
 export class Gameboy {
   frameFinishedCallback?: Function;
@@ -50,7 +52,7 @@ export class Gameboy {
 
       this.fps = 1000 / (currentTime - previousTime);
       previousTime = currentTime;
-
+      spu.tick(cycles, currentTime)
       cycles = cycles % GPU.CyclesPerFrame;
 
       requestAnimationFrame(runFrame);
