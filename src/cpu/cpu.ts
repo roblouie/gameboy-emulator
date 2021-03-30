@@ -7,15 +7,21 @@ import { getInterruptOperations } from "@/cpu/operations/interupts/interupt-oper
 import { createJumpOperations } from "@/cpu/operations/jump/jump-operations";
 import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
 import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
-import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
+import {
+  instructionCache,
+  registerStateCache,
+  updateInstructionCache,
+  updateRegisterStateCache
+} from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
-import { getCBOperations } from "@/cpu/operations/cb-operations/cb-operations";
+import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
 
 
 export class CPU {
   isInterruptMasterEnable = false;
   operations: Operation[];
+  cbSubOperations: Operation[];
   registers: CpuRegisterCollection;
 
   private static VBlankInterruptAddress = 0x0040;
@@ -27,19 +33,16 @@ export class CPU {
   constructor() {
     this.registers = new CpuRegisterCollection();
     this.operations = this.initializeOperations();
+    this.cbSubOperations = getCBSubOperations(this);
   }
 
   tick(): number {
     this.handleInterrupts();
 
-    const operationIndex = memory.readByte(this.registers.programCounter.value);
-    const operation = this.operations[operationIndex];
-    const cycleTime = operation.cycleTime;
-
-    this.registers.programCounter.value++;
+    const operation = this.getOperation();
     operation.execute();
 
-    return cycleTime;
+    return operation.cycleTime;
   }
 
   reset() {
@@ -55,6 +58,20 @@ export class CPU {
     const value = memory.readWord(this.registers.stackPointer.value);
     this.registers.stackPointer.value += 2;
     return value;
+  }
+
+  private getOperation() {
+    const operationIndex = memory.readByte(this.registers.programCounter.value);
+    this.registers.programCounter.value++;
+    const operation = this.operations[operationIndex];
+
+    if (operation.byteDefinition === 0xcb) {
+      const cbOperationIndex = memory.readByte(this.registers.programCounter.value);
+      this.registers.programCounter.value++;
+      return this.cbSubOperations[cbOperationIndex];
+    } else {
+      return operation
+    }
   }
 
   private handleInterrupts() {
@@ -116,7 +133,6 @@ export class CPU {
 
       ...createRotateShiftOperations(this),
       ...createJumpOperations(this),
-      ...getCBOperations(this),
       ...createGeneralPurposeOperations(this),
       ...getCallAndReturnOperations(this),
       ...getInterruptOperations(this),

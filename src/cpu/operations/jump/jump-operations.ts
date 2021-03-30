@@ -103,7 +103,9 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     cycleTime: 3,
     byteLength: 2,
     execute() {
-      registers.programCounter.value = registers.programCounter.value + memory.readSignedByte(registers.programCounter.value);
+      const jumpDistance = memory.readSignedByte(registers.programCounter.value);
+      registers.programCounter.value++;
+      registers.programCounter.value = registers.programCounter.value + jumpDistance;
     }
   });
 
@@ -134,7 +136,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
-        return `JR  Z 0x${value.toString(16)}`;
+        return `JR Z 0x${value.toString(16)}`;
       } else {
         return `JR Z -0x${(value * -1).toString(16)}`;
       }
@@ -157,7 +159,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
-        return `JR  NC 0x${value.toString(16)}`;
+        return `JR NC 0x${value.toString(16)}`;
       } else {
         return `JR NC -0x${(value * -1).toString(16)}`;
       }

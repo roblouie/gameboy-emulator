@@ -154,7 +154,7 @@ export class GPU {
     const bytesPerTile = bytesPerCharacter * charactersPerTile;
 
     objectAttributeMemoryRegisters.forEach(oamRegister => {
-      if (oamRegister.xPosition === 0 || oamRegister.yPosition == 0) {
+      if (oamRegister.xPosition === 0 || oamRegister.yPosition == 0 || oamRegister.xPosition) {
         return;
       }
 
