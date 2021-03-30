@@ -154,12 +154,14 @@ export class GPU {
     const bytesPerTile = bytesPerCharacter * charactersPerTile;
 
     objectAttributeMemoryRegisters.forEach(oamRegister => {
-      if (oamRegister.xPosition === 0 || oamRegister.yPosition == 0 ) {
+      const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
+
+      if (xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
         return;
       }
 
-      const spriteX = oamRegister.xPosition + spriteOffsetX;
-      const spriteY = oamRegister.yPosition + spriteOffsetY;
+      const spriteX = xPosition + spriteOffsetX;
+      const spriteY = yPosition + spriteOffsetY;
 
       const scanlineIntersectsYAt = spriteY - lineYRegister.value;
 
@@ -169,7 +171,7 @@ export class GPU {
       }
 
       const bytePositionInTile = scanlineIntersectsYAt * bytesPerCharacter;
-      const tileCharBytePosition = oamRegister.characterCode * bytesPerTile;
+      const tileCharBytePosition = characterCode * bytesPerTile;
       const currentTileLineBytePosition = characterDataStart + tileCharBytePosition + bytePositionInTile;
 
       const lowerByte = memory.readByte(currentTileLineBytePosition);
@@ -178,7 +180,7 @@ export class GPU {
       for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
         const paletteIndex = this.getPixelInTileLineLeftToRight(xPixelInTile, lowerByte, higherByte);
 
-        const palette = objectPaletteRegisters[oamRegister.paletteNumber].palette;
+        const palette = objectPaletteRegisters[paletteNumber].palette;
         const paletteColor = palette[paletteIndex];
         const color = colors[paletteColor];
 

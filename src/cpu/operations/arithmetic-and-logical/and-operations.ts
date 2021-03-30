@@ -8,7 +8,7 @@ export function createAndOperations(cpu: CPU) {
   const { registers } = cpu;
 
   function andAndSetFlags(accumulatorVal: number, toAnd: number) {
-    const newValue = accumulatorVal & toAnd;
+    const newValue = (accumulatorVal & toAnd) & 0xff;
     registers.flags.isCarry = false;
     registers.flags.isHalfCarry = true;
     registers.flags.isSubtraction = false;

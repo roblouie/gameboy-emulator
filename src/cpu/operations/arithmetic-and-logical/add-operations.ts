@@ -8,11 +8,11 @@ export function createAddOperations(cpu: CPU): Operation[] {
   const { registers } = cpu;
 
   function addAndSetFlags(accumulatorVal: number, toAdd: number) {
-    const newValue = accumulatorVal + toAdd;
+    const newValue = (accumulatorVal + toAdd) & 0xff;
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
     registers.flags.isSubtraction = false;
-    registers.flags.isCarry = (newValue & 0xf0) < (accumulatorVal & 0xf0);
+    registers.flags.isCarry = newValue < accumulatorVal;
 
     return newValue;
   }
@@ -121,10 +121,10 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // * Add HL, ss
 // ****************
   function add16BitAndSetFlags(originalValue: number, toAdd: number) {
-    const newValue = originalValue + toAdd;
+    const newValue = (originalValue + toAdd) & 0xffff;
     registers.flags.isHalfCarry = (newValue & 0xfff) < (originalValue & 0xfff);
     registers.flags.isSubtraction = false;
-    registers.flags.isCarry = (newValue & 0xf000) < (originalValue & 0xf000);
+    registers.flags.isCarry = newValue < originalValue;
 
     return newValue;
   }

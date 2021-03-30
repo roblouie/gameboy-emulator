@@ -8,11 +8,11 @@ export function createSubtractOperations(cpu: CPU) {
   const { registers } = cpu;
 
   function subtractAndSetFlags(originalValue: number, toSubtract: number) {
-    const newValue = originalValue - toSubtract;
+    const newValue = (originalValue - toSubtract) & 0xff;
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
     registers.flags.isSubtraction = true;
-    registers.flags.isCarry = (newValue & 0xf0) > (originalValue & 0xf0);
+    registers.flags.isCarry = newValue > originalValue;
 
     return newValue;
   }

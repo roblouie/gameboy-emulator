@@ -8,11 +8,10 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
   const { registers } = cpu;
 
   function decrementAndSetFlags(originalValue: number) {
-    const newValue = originalValue - 1;
+    const newValue = (originalValue - 1) & 0xff;
     registers.flags.isResultZero = newValue === 0;
     registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
     registers.flags.isSubtraction = true;
-    registers.flags.isCarry = (newValue & 0xf0) > (originalValue & 0xf0);
 
     return newValue;
   }

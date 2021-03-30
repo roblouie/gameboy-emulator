@@ -85,6 +85,10 @@ async function onFileChange(event: Event) {
         gameboy.input.isPressingRight = false;
       }
 
+      if (event.code === 'Enter') {
+        gameboy.input.isPressingStart = true;
+      }
+
 
 
       // if (event.key === 'ArrowDown') {

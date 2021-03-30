@@ -32,10 +32,20 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
   generalPurposeOperations.push({
     instruction: 'CCF',
     byteDefinition: 0x3f,
-    cycleTime: 4,
+    cycleTime: 1,
     byteLength: 1,
     execute() {
       registers.flags.isCarry = !registers.flags.isCarry;
+    }
+  });
+
+  generalPurposeOperations.push({
+    instruction: 'HALT',
+    byteDefinition: 0x76,
+    cycleTime: 1,
+    byteLength: 1,
+    execute() {
+      cpu.halt();
     }
   });
 
