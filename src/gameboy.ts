@@ -38,17 +38,10 @@ export class Gameboy {
     cpu.registers.A.value = 1;
 
     const runFrame = (currentTime: number) => {
-      while (cycles < GPU.CyclesPerFrame) {
+      while (cycles <= GPU.CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
         cycles += cycleForTick;
-
-        if (debug) {
-          updateRegisterStateCache(cpu);
-          const operationIndex = memory.readByte(cpu.registers.programCounter.value);
-          updateInstructionCache(cpu.operations[operationIndex].instruction);
-          debug;
-        }
       }
 
       if (this.frameFinishedCallback) {
