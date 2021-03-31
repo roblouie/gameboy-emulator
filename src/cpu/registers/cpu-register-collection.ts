@@ -44,6 +44,7 @@ CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wra
  */
 import { CpuRegister } from "@/cpu/registers/cpu-register";
 import { CpuFlagRegister } from "@/cpu/registers/cpu-flag-register";
+import { CpuFlagRegisterPair } from "@/cpu/registers/cpu-flag-register-pair";
 
 export class CpuRegisterCollection {
   private registersBuffer: ArrayBuffer;
@@ -81,7 +82,7 @@ export class CpuRegisterCollection {
     this.L = new CpuRegister('L', 6, this.registersBuffer, CpuRegister.Code.L);
     this.H = new CpuRegister('H', 7, this.registersBuffer, CpuRegister.Code.H);
 
-    this.AF = new CpuRegister('AF', 0, this.registersBuffer, CpuRegister.PairCode.AF, 2);
+    this.AF = new CpuFlagRegisterPair('AF', 0, this.registersBuffer, CpuRegister.PairCode.AF, 2);
     this.BC = new CpuRegister('BC', 2, this.registersBuffer, CpuRegister.PairCode.BC, 2);
     this.DE = new CpuRegister('DE', 4, this.registersBuffer, CpuRegister.PairCode.DE, 2);
     this.HL = new CpuRegister('HL', 6, this.registersBuffer, CpuRegister.PairCode.HL, 2);
