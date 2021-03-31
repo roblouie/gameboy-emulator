@@ -1,7 +1,7 @@
-import { memory } from "@/memory/memory";
+import { memory } from '@/memory/memory';
 import { SingleByteMemoryRegister } from "../memory-register";
 
-export class PitchControlRegister implements SingleByteMemoryRegister {
+export class LengthAndDutyCycleRegister implements SingleByteMemoryRegister {
   offset: number;
   name: string;
 
@@ -20,5 +20,9 @@ export class PitchControlRegister implements SingleByteMemoryRegister {
 
   get soundLength() {
     return this.value & 0b111111;
+  }
+
+  get soundLengthInSeconds() {
+    return this.soundLength * (1 / 64)
   }
 }

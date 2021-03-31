@@ -1,3 +1,4 @@
+import { setBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
 import { SingleByteMemoryRegister } from "../memory-register";
 
@@ -20,6 +21,11 @@ export class HighOrderFrequencyRegister implements SingleByteMemoryRegister {
 
   get isInitialize() {
     return this.value >> 7 === 1;
+  }
+
+  set isInitialize(value: boolean) {
+    const newValue = setBit(this.value, 7, value ? 1 : 0);
+    memory.writeByte(this.offset, newValue);
   }
 
   get isContinuousSelection() {
