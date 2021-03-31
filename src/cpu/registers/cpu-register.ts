@@ -3,8 +3,8 @@ export class CpuRegister {
   offset: number;
   code: number;
 
-  private dataView: DataView;
-  private readonly byteSize: 1 | 2;
+  protected dataView: DataView;
+  protected readonly byteSize: 1 | 2;
 
   constructor(name: string, offset: number, data: ArrayBuffer, code: CpuRegister.Code | CpuRegister.PairCode, byteSize: 1 | 2 = 1) {
     this.name = name;
