@@ -11,13 +11,14 @@ export class Spu {
   private S3MGain = this.audioCtx.createGain();
   private S1MOscillator = this.audioCtx.createOscillator();
   private S2MOscillator = this.audioCtx.createOscillator();
-  private S3MOscillator = this.audioCtx.createOscillator();
+  private S3MBufferSource = this.audioCtx.createBufferSource();
   private gainValue = .03;
 
   private isOscillatorStarted = false;
 
   private SM3DisableTime = 10000;
   private isSM3Reset = true;
+  private isSM3CustomWavSet = false;
 
   constructor() {
     this.S1MGain.gain.value = this.gainValue;
@@ -25,11 +26,11 @@ export class Spu {
     this.S3MGain.gain.value = this.gainValue;
     this.S1MOscillator.type = 'square';
     this.S2MOscillator.type = 'square';
-    this.S3MOscillator.type = 'sawtooth';
+
 
     this.S1MOscillator.connect(this.S1MGain);
     this.S2MOscillator.connect(this.S2MGain);
-    this.S3MOscillator.connect(this.S3MGain);
+    this.S3MBufferSource.connect(this.S3MGain);
     this.S1MGain.connect(this.audioCtx.destination);
     this.S2MGain.connect(this.audioCtx.destination);
     this.S3MGain.connect(this.audioCtx.destination);
@@ -39,7 +40,6 @@ export class Spu {
     if (!this.isOscillatorStarted) {
       this.S1MOscillator.start();
       this.S2MOscillator.start();
-      this.S3MOscillator.start();
       this.isOscillatorStarted = true;
     }
     if (this.previousTime === 0) {
@@ -58,6 +58,7 @@ export class Spu {
     if (sound1ModeRegisters.highOrderFrequency.isInitialize) {
       this.setOscillatorFrequency(sound1ModeRegisters.lowOrderFrequency.offset, this.S1MOscillator);
       this.setEnvelope(sound1ModeRegisters.envelopeControl.lengthOfEnvelopInSeconds, this.S1MGain, sound1ModeRegisters.envelopeControl.isEnvelopeRising);
+      this.setSweepShift();
       sound1ModeRegisters.highOrderFrequency.isInitialize = false;
     }
 
@@ -68,9 +69,12 @@ export class Spu {
     }
 
     if (sound3ModeRegisters.higherOrderFrequency.isInitialize) {
-      this.setOscillatorFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MOscillator)
-
+      this.setAudioBufferFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MBufferSource)
+      if (!this.isSM3CustomWavSet) {
+        this.setupAudioBufferSource();
+      }
       if (sound3ModeRegisters.higherOrderFrequency.isContinuousSelection && this.S3MGain.gain.value === 0) {
+        
         this.S3MGain.gain.value = this.gainValue;
       } else if (this.isSM3Reset) {
         this.S3MGain.gain.value = this.gainValue;
@@ -88,6 +92,12 @@ export class Spu {
     oscillator.frequency.value = (4194304 / (32 * (2048 - rawValue)))
   }
 
+  private setAudioBufferFrequency(memoryOffset: number, audioBuffer: AudioBufferSourceNode) {
+    const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
+    audioBuffer.playbackRate.value = ((4194304 / (32 * (2048 - rawValue))) / 100000);
+  }
+
+
   private setEnvelope(lengthInSeconds: number, gainNode: GainNode, isRising: boolean) {
     if (isRising) {
       gainNode.gain.value = 0;
@@ -97,6 +107,7 @@ export class Spu {
       gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, lengthInSeconds);
     }
   }
+  
 
   private checkSoundMode3Length(currentTime: number) {
     if (currentTime >= this.SM3DisableTime && this.S3MGain.gain.value !== 0) {
@@ -104,5 +115,34 @@ export class Spu {
       this.S3MGain.gain.value = 0;
       this.isSM3Reset = true;
     }
+  }
+
+  private setSweepShift() {
+    if (sound1ModeRegisters.sweepControl.isSweepInrease) {
+      const shiftExponent = Math.pow(2, sound1ModeRegisters.sweepControl.sweepShiftNumber)
+      const pitchTarget = this.S1MOscillator.frequency.value + (this.S1MOscillator.frequency.value / shiftExponent);
+      this.S1MOscillator.frequency.linearRampToValueAtTime(pitchTarget, this.audioCtx.currentTime + sound1ModeRegisters.sweepControl.sweepTimeInSeconds)
+    } else {
+      const shiftExponent = Math.pow(2, sound1ModeRegisters.sweepControl.sweepShiftNumber)
+      const pitchTarget = this.S1MOscillator.frequency.value - (this.S1MOscillator.frequency.value / shiftExponent);
+      this.S1MOscillator.frequency.linearRampToValueAtTime(pitchTarget, this.audioCtx.currentTime + sound1ModeRegisters.sweepControl.sweepTimeInSeconds)
+    }
+  }
+
+  private setupAudioBufferSource() {
+    const arrayBuffer = [];
+    const memoryAddress = 0xff30;
+    for (let i = 0; i < 15; i++) {
+      const currentByte = memory.readByte(memoryAddress + i);
+      arrayBuffer.push(((currentByte >> 4) - 7) / 7);
+      arrayBuffer.push(((currentByte & 0b1111) - 7) / 7);
+    }
+    const S3MAudioBuffer = this.audioCtx.createBuffer(1, arrayBuffer.length, 33333);
+    this.S3MBufferSource.buffer = S3MAudioBuffer;
+    console.log(arrayBuffer);
+    this.S3MBufferSource.loop = true;
+
+    this.S3MBufferSource.start();
+    this.isSM3CustomWavSet = true;
   }
 }
