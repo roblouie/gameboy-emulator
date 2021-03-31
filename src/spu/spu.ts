@@ -69,12 +69,12 @@ export class Spu {
     }
 
     if (sound3ModeRegisters.higherOrderFrequency.isInitialize) {
-      this.setAudioBufferFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MBufferSource)
       // currently running this here to make sure the game has enough time to set the values in memory for the custom sound.
       // I'm assuming that games can change the sound loaded in here, so this will need to be re-checked in the future.
       if (!this.isSM3CustomWavSet) {
         this.setupAudioBufferSource();
       }
+      this.setAudioBufferFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MBufferSource)
       if (sound3ModeRegisters.higherOrderFrequency.isContinuousSelection && this.S3MGain.gain.value === 0) {
         this.S3MGain.gain.value = this.gainValue;
       } else if (this.isSM3Reset) {
