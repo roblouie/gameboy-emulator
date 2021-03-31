@@ -3,6 +3,7 @@ import { sound1ModeRegisters, sound2ModeRegisters, sound3ModeRegisters } from '@
 
 
 export class Spu {
+  gainValue = .03;
   private previousTime = 0;
   
   private audioCtx = new AudioContext();
@@ -12,7 +13,6 @@ export class Spu {
   private S1MOscillator = this.audioCtx.createOscillator();
   private S2MOscillator = this.audioCtx.createOscillator();
   private S3MBufferSource = this.audioCtx.createBufferSource();
-  private gainValue = .03;
 
   private isOscillatorStarted = false;
 
@@ -53,7 +53,7 @@ export class Spu {
     this.previousTime = currentTime;
   }
 
-
+  // main check routine performed each tick, checking to see if the initialize bit has been set by the game
   private checkIfModesInitialized(currentTime: number) {
     if (sound1ModeRegisters.highOrderFrequency.isInitialize) {
       this.setOscillatorFrequency(sound1ModeRegisters.lowOrderFrequency.offset, this.S1MOscillator);
@@ -70,11 +70,12 @@ export class Spu {
 
     if (sound3ModeRegisters.higherOrderFrequency.isInitialize) {
       this.setAudioBufferFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MBufferSource)
+      // currently running this here to make sure the game has enough time to set the values in memory for the custom sound.
+      // I'm assuming that games can change the sound loaded in here, so this will need to be re-checked in the future.
       if (!this.isSM3CustomWavSet) {
         this.setupAudioBufferSource();
       }
       if (sound3ModeRegisters.higherOrderFrequency.isContinuousSelection && this.S3MGain.gain.value === 0) {
-        
         this.S3MGain.gain.value = this.gainValue;
       } else if (this.isSM3Reset) {
         this.S3MGain.gain.value = this.gainValue;
@@ -82,21 +83,15 @@ export class Spu {
         sound3ModeRegisters.disableOutput.isOutputEnabled = true;
         this.isSM3Reset = false;
       }
-
       sound3ModeRegisters.higherOrderFrequency.isInitialize = false;
     }
   }
 
+  // shared features for S1M and S2M
   private setOscillatorFrequency(memoryOffset: number, oscillator: OscillatorNode) {
     const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
     oscillator.frequency.value = (4194304 / (32 * (2048 - rawValue)))
   }
-
-  private setAudioBufferFrequency(memoryOffset: number, audioBuffer: AudioBufferSourceNode) {
-    const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
-    audioBuffer.playbackRate.value = ((4194304 / (32 * (2048 - rawValue))) / 100000);
-  }
-
 
   private setEnvelope(lengthInSeconds: number, gainNode: GainNode, isRising: boolean) {
     if (isRising) {
@@ -107,16 +102,8 @@ export class Spu {
       gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, lengthInSeconds);
     }
   }
-  
 
-  private checkSoundMode3Length(currentTime: number) {
-    if (currentTime >= this.SM3DisableTime && this.S3MGain.gain.value !== 0) {
-      sound3ModeRegisters.disableOutput.isOutputEnabled = false;
-      this.S3MGain.gain.value = 0;
-      this.isSM3Reset = true;
-    }
-  }
-
+  // sweep shift for S1M only
   private setSweepShift() {
     if (sound1ModeRegisters.sweepControl.isSweepInrease) {
       const shiftExponent = Math.pow(2, sound1ModeRegisters.sweepControl.sweepShiftNumber)
@@ -129,20 +116,35 @@ export class Spu {
     }
   }
 
+  // S3M functionality
   private setupAudioBufferSource() {
-    const arrayBuffer = [];
-    const memoryAddress = 0xff30;
-    for (let i = 0; i < 15; i++) {
-      const currentByte = memory.readByte(memoryAddress + i);
-      arrayBuffer.push(((currentByte >> 4) - 7) / 7);
-      arrayBuffer.push(((currentByte & 0b1111) - 7) / 7);
+    const S3MAudioBuffer = this.audioCtx.createBuffer(1, 32, 3200);
+    const arrayBuffer = S3MAudioBuffer.getChannelData(0);
+
+    for (let i = 0; i < 16; i++) {
+      const currentByte = memory.readByte(0xff30 + i);
+      arrayBuffer[i * 2]  = ((currentByte >> 4) - 8) / 7;
+      arrayBuffer[i * 2 + 1] = ((currentByte & 0b1111) - 8) / 7;
     }
-    const S3MAudioBuffer = this.audioCtx.createBuffer(1, arrayBuffer.length, 33333);
+
     this.S3MBufferSource.buffer = S3MAudioBuffer;
-    console.log(arrayBuffer);
     this.S3MBufferSource.loop = true;
+    this.S3MBufferSource.loopEnd = .001
 
     this.S3MBufferSource.start();
     this.isSM3CustomWavSet = true;
+  }
+
+  private setAudioBufferFrequency(memoryOffset: number, audioBuffer: AudioBufferSourceNode) {
+    const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
+    audioBuffer.playbackRate.value = ((4194304 / (32 * (2048 - rawValue))) / 2000);
+  }
+
+  private checkSoundMode3Length(currentTime: number) {
+    if (currentTime >= this.SM3DisableTime && this.S3MGain.gain.value !== 0) {
+      sound3ModeRegisters.disableOutput.isOutputEnabled = false;
+      this.S3MGain.gain.value = 0;
+      this.isSM3Reset = true;
+    }
   }
 }
