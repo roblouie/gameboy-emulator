@@ -11,10 +11,12 @@ export class Spu {
   private S2MGain = this.audioCtx.createGain();
   private S3MGain = this.audioCtx.createGain();
   private S1MOscillator = this.audioCtx.createOscillator();
-  private S2MOscillator = this.audioCtx.createOscillator();
+  private S2MBufferSource = this.audioCtx.createBufferSource();
   private S3MBufferSource = this.audioCtx.createBufferSource();
 
   private isOscillatorStarted = false;
+
+  private isS2MDutyCycleSet = false;
 
   private SM3DisableTime = 10000;
   private isSM3Reset = true;
@@ -25,11 +27,9 @@ export class Spu {
     this.S2MGain.gain.value = this.gainValue;
     this.S3MGain.gain.value = this.gainValue;
     this.S1MOscillator.type = 'square';
-    this.S2MOscillator.type = 'square';
-
 
     this.S1MOscillator.connect(this.S1MGain);
-    this.S2MOscillator.connect(this.S2MGain);
+    this.S2MBufferSource.connect(this.S2MGain);
     this.S3MBufferSource.connect(this.S3MGain);
     this.S1MGain.connect(this.audioCtx.destination);
     this.S2MGain.connect(this.audioCtx.destination);
@@ -39,7 +39,7 @@ export class Spu {
   tick(cycles: number, currentTime: number) {
     if (!this.isOscillatorStarted) {
       this.S1MOscillator.start();
-      this.S2MOscillator.start();
+      this.S2MBufferSource.start();
       this.isOscillatorStarted = true;
     }
     if (this.previousTime === 0) {
@@ -63,7 +63,11 @@ export class Spu {
     }
 
     if (sound2ModeRegisters.highOrderFrequency.isInitialize) {
-      this.setOscillatorFrequency(sound2ModeRegisters.lowOrderFrequency.offset, this.S2MOscillator);
+      if (!this.isS2MDutyCycleSet) {
+        this.setSquareWaveDutyCycle(sound2ModeRegisters.lengthAndDutyCycle.waveformDutyCycle, this.S2MBufferSource)
+        this.isS2MDutyCycleSet = true;
+      }
+      this.setAudioBufferFrequency(sound2ModeRegisters.lowOrderFrequency.offset, this.S2MBufferSource, 2000);
       this.setEnvelope(sound2ModeRegisters.envelopeControl.lengthOfEnvelopInSeconds, this.S2MGain, sound2ModeRegisters.envelopeControl.isEnvelopeRising)
       sound2ModeRegisters.highOrderFrequency.isInitialize = false;
     }
@@ -72,9 +76,9 @@ export class Spu {
       // currently running this here to make sure the game has enough time to set the values in memory for the custom sound.
       // I'm assuming that games can change the sound loaded in here, so this will need to be re-checked in the future.
       if (!this.isSM3CustomWavSet) {
-        this.setupAudioBufferSource();
+        this.setupCustomWaveform();
       }
-      this.setAudioBufferFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MBufferSource)
+      this.setAudioBufferFrequency(sound3ModeRegisters.lowOrderFrequency.offset, this.S3MBufferSource, 2000)
       if (sound3ModeRegisters.higherOrderFrequency.isContinuousSelection && this.S3MGain.gain.value === 0) {
         this.S3MGain.gain.value = this.gainValue;
       } else if (this.isSM3Reset) {
@@ -117,7 +121,7 @@ export class Spu {
   }
 
   // S3M functionality
-  private setupAudioBufferSource() {
+  private setupCustomWaveform() {
     const S3MAudioBuffer = this.audioCtx.createBuffer(1, 32, 3200);
     const arrayBuffer = S3MAudioBuffer.getChannelData(0);
 
@@ -135,9 +139,57 @@ export class Spu {
     this.isSM3CustomWavSet = true;
   }
 
-  private setAudioBufferFrequency(memoryOffset: number, audioBuffer: AudioBufferSourceNode) {
+  private setSquareWaveDutyCycle(dutyCycle: number, bufferSource: AudioBufferSourceNode) {
+    const arrayBuffer = this.audioCtx.createBuffer(1, 16, 3200);
+    let newBuffer = arrayBuffer.getChannelData(0);
+    for (let i = 0; i < 16; i++){
+      newBuffer[i] = -1;
+    }
+
+    switch (dutyCycle) {
+      case 0: 
+        newBuffer[0] = 1;
+        newBuffer[1] = 1;
+        break
+      case 1:
+        newBuffer[0] = 1;
+        newBuffer[1] = 1;
+        newBuffer[2] = 1;
+        newBuffer[3] = 1;
+        break
+      case 2:
+        newBuffer[0] = 1;
+        newBuffer[1] = 1;
+        newBuffer[2] = 1;
+        newBuffer[3] = 1;
+        newBuffer[4] = 1;
+        newBuffer[5] = 1;
+        newBuffer[6] = 1;
+        newBuffer[7] = 1;
+        break;
+      case 3: 
+        newBuffer[0] = 1;
+        newBuffer[1] = 1;
+        newBuffer[2] = 1;
+        newBuffer[3] = 1;
+        newBuffer[4] = 1;
+        newBuffer[5] = 1;
+        newBuffer[6] = 1;
+        newBuffer[7] = 1;
+        newBuffer[8] = 1;
+        newBuffer[9] = 1;
+        newBuffer[10] = 1;
+        newBuffer[11] = 1;
+        break;
+    }
+    bufferSource.buffer = arrayBuffer;
+    bufferSource.loop = true;
+    bufferSource.loopEnd = .0005;
+  }
+
+  private setAudioBufferFrequency(memoryOffset: number, audioBuffer: AudioBufferSourceNode, divisor: number) {
     const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
-    audioBuffer.playbackRate.value = ((4194304 / (32 * (2048 - rawValue))) / 2000);
+    audioBuffer.playbackRate.value = ((4194304 / (32 * (2048 - rawValue))) / divisor);
   }
 
   private checkSoundMode3Length(currentTime: number) {
