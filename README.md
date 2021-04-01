@@ -1,8 +1,8 @@
 ## TypeScript Gameboy Emulator
 
 
-###Blargg Test Suite Status:
-####Cpu Instructions
+### Blargg Test Suite Status:
+#### Cpu Instructions
 * 01 Special ✔️
 * 02 Interrupts ❌
   * Timer doesn't work, Failed #4
