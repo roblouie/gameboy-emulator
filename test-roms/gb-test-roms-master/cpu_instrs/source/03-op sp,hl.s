@@ -1,4 +1,4 @@
-; Tests SP/HL instructions
+ ; Tests SP/HL instructions
 
 ;.define PRINT_CHECKSUMS 1
 .include "shell.inc"

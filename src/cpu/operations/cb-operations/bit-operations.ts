@@ -8,7 +8,7 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
   const subOperations: Operation[] = [];
   const { registers } = cpu;
   
-  function getBitAndSetFlags(position: number, value: number) {
+  function getBitAndSetFlags(value: number, position: number) {
     const bit = getBit(value, position);
     registers.flags.isResultZero = !bit;
     registers.flags.isHalfCarry = true;
@@ -30,7 +30,7 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
         cycleTime: 2,
         byteLength: 2,
         execute() {
-          getBitAndSetFlags(bitPosition, register.value);
+          getBitAndSetFlags(register.value, bitPosition);
         }
       })
     }
