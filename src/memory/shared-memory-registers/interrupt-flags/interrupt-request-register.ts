@@ -26,11 +26,15 @@ class InterruptRequestRegister implements SingleByteMemoryRegister {
     this.value = setBit(this.value, 0, 1);
   }
 
+  setLcdStatusInterruptRequest() {
+    this.value = setBit(this.value, 1, 1);
+  }
+
   clearVBlankInterruptRequest() {
     this.value = clearBit(this.value, 0);
   }
 
-  clearLCDStatusInterruptRequest() {
+  clearLcdStatusInterruptRequest() {
     this.value = clearBit(this.value, 1);
   }
 

@@ -1,9 +1,9 @@
 import { SingleByteMemoryRegister } from "@/memory/shared-memory-registers/memory-register";
 import { memory } from "@/memory/memory";
 
-class InterruptEnableRegister implements SingleByteMemoryRegister {
-  offset = 0xffff;
-  name = 'IE';
+export class WindowYRegister implements SingleByteMemoryRegister {
+  offset = 0xff4a;
+  name = 'WY';
 
   get value() {
     return memory.readByte(this.offset);
@@ -14,4 +14,4 @@ class InterruptEnableRegister implements SingleByteMemoryRegister {
   }
 }
 
-export const interruptEnableRegister = new InterruptEnableRegister();
+export const windowYRegister = new WindowYRegister();

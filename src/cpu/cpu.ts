@@ -29,6 +29,7 @@ export class CPU {
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
   private isHalted = false;
+  private isStopped = false;
 
   constructor() {
     this.registers = new CpuRegisterCollection();
@@ -39,11 +40,15 @@ export class CPU {
   tick(): number {
     this.handleInterrupts();
 
-    if (this.isHalted) {
+    if (this.isHalted || this.isStopped) {
       return 1;
     }
 
     const operation = this.getOperation();
+
+    if (this.registers.programCounter.value === 0x2cd ||this.registers.programCounter.value === 0x2ce) {
+      // debugger;
+    }
     //debug
     // updateRegisterStateCache(this);
     // updateInstructionCache(
@@ -68,6 +73,10 @@ export class CPU {
 
   halt() {
     this.isHalted = true;
+  }
+
+  stop() {
+    this.isStopped = true;
   }
 
   pushToStack(word: number) {
@@ -103,6 +112,7 @@ export class CPU {
     }
 
     this.isHalted = false;
+    this.isStopped = false;
 
     this.pushToStack(this.registers.programCounter.value);
 
@@ -114,7 +124,7 @@ export class CPU {
     }
 
     else if (interruptFlags.isLCDStatus) {
-      interruptRequestRegister.clearLCDStatusInterruptRequest();
+      interruptRequestRegister.clearLcdStatusInterruptRequest();
       this.registers.programCounter.value = CPU.LCDStatusInterruptAddress;
     }
 
