@@ -103,8 +103,8 @@ async function onFileChange(event: Event) {
       context.putImageData(imageData, 0, 0);
       vramContext.drawImage(canvas, 0, 0, 640, 576);
       if (fpsDiv) {
-        // fpsDiv.innerHTML = `FPS: ${fps}`;
-        fpsDiv.innerHTML = memory.readByte(0xc0a0) + ', ' + memory.readByte(0xc0a1);
+        fpsDiv.innerHTML = `FPS: ${fps}`;
+        // fpsDiv.innerHTML = memory.readByte(0xc0a0) + ', ' + memory.readByte(0xc0a1);
       }
 
       // vramContext.imageSmoothingEnabled = false;

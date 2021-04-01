@@ -90,5 +90,15 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
     }
   });
 
+  generalPurposeOperations.push({
+    instruction: 'STOP',
+    byteDefinition: 0x10,
+    cycleTime: 1,
+    byteLength: 1,
+    execute() {
+      cpu.stop();
+    }
+  });
+
   return generalPurposeOperations;
 }
