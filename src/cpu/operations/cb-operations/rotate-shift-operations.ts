@@ -14,8 +14,14 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   function swapAndSetFlags(value: number) {
     const firstNibble = value & 0b1111;
     const secondNibble = value >> 4;
+    const result = (firstNibble << 4) + secondNibble;
 
-    return (firstNibble << 4) + secondNibble;
+    registers.flags.isResultZero = result === 0;
+    registers.flags.isSubtraction = false;
+    registers.flags.isHalfCarry = false;
+    registers.flags.isCarry = false;
+
+    return result;
   }
 
   function getSwapRByteDefinition(registerCode: CpuRegister.Code) {

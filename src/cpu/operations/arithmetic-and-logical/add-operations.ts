@@ -79,6 +79,16 @@ export function createAddOperations(cpu: CPU): Operation[] {
     return 0b10001000 + rCode;
   }
 
+  function addCarryAndSetFlags(accumulatorVal: number, toAdd: number, carryFlagValue: number) {
+    const newValue = (accumulatorVal + toAdd + carryFlagValue) & 0xff;
+    registers.flags.isResultZero = newValue === 0;
+    registers.flags.isHalfCarry = ((accumulatorVal & 0x0f) + (toAdd & 0x0f) + carryFlagValue) > 0xf;
+    registers.flags.isSubtraction = false;
+    registers.flags.isCarry = newValue < accumulatorVal + carryFlagValue;
+
+    return newValue;
+  }
+
   cpu.registers.baseRegisters.forEach(register => {
     addOperations.push({
       byteDefinition: getAddCarryARByteDefinition(register.code),
@@ -86,7 +96,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        registers.A.value = addAndSetFlags(registers.A.value, register.value + registers.flags.CY);
+        registers.A.value = addCarryAndSetFlags(registers.A.value, register.value, registers.flags.CY & 0xff);
       }
     });
   });
@@ -101,7 +111,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
     execute() {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.A.value = addAndSetFlags(registers.A.value, value + registers.flags.CY);
+      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
     }
   });
 
@@ -112,7 +122,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       const value = memory.readByte(registers.HL.value);
-      registers.A.value = addAndSetFlags(registers.A.value, value + registers.flags.CY);
+      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
     }
   });
 

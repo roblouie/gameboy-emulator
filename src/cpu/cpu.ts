@@ -46,9 +46,14 @@ export class CPU {
 
     const operation = this.getOperation();
 
-    if (this.registers.programCounter.value === 0x2cd ||this.registers.programCounter.value === 0x2ce) {
-      // debugger;
-    }
+    // if (this.registers.programCounter.value === 0xc4c1 ||this.registers.programCounter.value === 0xc4c2) {
+    //   debugger;
+    // }
+
+    // Stopping point for acid test
+    // if (this.registers.programCounter.value === 0x2cd ||this.registers.programCounter.value === 0x2ce) {
+    //   // debugger;
+    // }
     //debug
     // updateRegisterStateCache(this);
     // updateInstructionCache(
