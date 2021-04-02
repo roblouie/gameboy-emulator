@@ -5,7 +5,7 @@ import {
   backgroundPaletteRegister,
   interruptRequestRegister,
   lcdControlRegister,
-  lcdStatusRegister,
+  lcdStatusRegister, lineYCompareRegister,
   lineYRegister,
   objectAttributeMemoryRegisters,
   objectPaletteRegisters,
@@ -57,14 +57,20 @@ export class GPU {
         if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
           this.cycleCounter %= GPU.CyclesPerScanlineVram;
 
-          // TODO: Trigger HBlank Interrupt
-          // TODO: Deal with LY Coincidence
+          if (lcdStatusRegister.isHBlankInterruptSelected) {
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          }
 
-          lcdStatusRegister.mode = LcdStatusMode.EnableCPUAccessToVRAM;
+          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
+          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          }
+
+          lcdStatusRegister.mode = LcdStatusMode.InHBlank;
         }
         break;
 
-      case LcdStatusMode.EnableCPUAccessToVRAM:
+      case LcdStatusMode.InHBlank:
         if (this.cycleCounter >= GPU.CyclesPerHBlank) {
           this.drawScanline();
 
@@ -74,7 +80,7 @@ export class GPU {
 
           if (lineYRegister.value === GPU.ScreenHeight) {
             lcdStatusRegister.mode = LcdStatusMode.InVBlank;
-            interruptRequestRegister.setVBlankInterruptRequest();
+            interruptRequestRegister.triggerVBlankInterruptRequest();
           } else {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
           }
@@ -83,6 +89,16 @@ export class GPU {
 
       case LcdStatusMode.InVBlank:
         if (this.cycleCounter >= GPU.CyclesPerScanline) {
+
+          // Line Y compare can still fire while in vblank, as the line still increases, at the very least
+          // it definitely fires at 144 on transition to vblank so lines 0-144 at the very least must be checked.
+          // Putting it here as well as on transfer to vblank to account for that. Should be cleaned up with own
+          // function maybe?
+          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
+          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          }
+
           lineYRegister.value++;
 
           this.cycleCounter %= GPU.CyclesPerScanline;
@@ -97,8 +113,17 @@ export class GPU {
   }
 
   drawScanline() {
+    if (!lcdControlRegister.isLCDControllerOperating) {
+      return;
+    }
+
+
     this.drawBackgroundLine();
-    this.drawSpriteLine();
+
+
+    if (lcdControlRegister.isObjOn) {
+      this.drawSpriteLine();
+    }
   }
 
   // TODO: Refactor to do a pixel at a time?
@@ -120,28 +145,37 @@ export class GPU {
     const scrolledY = (lineYRegister.value + scrollYRegister.value) & 0xff;
 
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
-      const scrolledX = (screenX + scrollXRegister.value) & 0xff;
-      const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
-      const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
+      // If background off, write color 0 to background, should probably be
+      // refactored to avoid if/else with drawing
+      if (!lcdControlRegister.isBackgroundDisplayOn) {
+        const paletteColor = palette[0];
+        const color = colors[paletteColor];
 
-      const xPosInTile = scrolledX - tilePixelPosition.x;
-      const yPosInTile = scrolledY - tilePixelPosition.y;
+        this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
+      } else {
+        const scrolledX = (screenX + scrollXRegister.value) & 0xff;
+        const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
+        const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
 
-      const bytePositionInTile = yPosInTile * bytesPerCharacter;
+        const xPosInTile = scrolledX - tilePixelPosition.x;
+        const yPosInTile = scrolledY - tilePixelPosition.y;
 
-      const tileCharIndex = backgroundTileMap[tileMapIndex];
-      const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
+        const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
-      const currentTileLineBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
-      const lowerByte = memory.readByte(currentTileLineBytePosition);
-      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+        const tileCharIndex = backgroundTileMap[tileMapIndex];
+        const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
-      const paletteIndex = this.getPixelInTileLineLeftToRight(xPosInTile, lowerByte, higherByte);
+        const currentTileLineBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
+        const lowerByte = memory.readByte(currentTileLineBytePosition);
+        const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
-      const paletteColor = palette[paletteIndex];
-      const color = colors[paletteColor];
+        const paletteIndex = this.getPixelInTileLineLeftToRight(xPosInTile, lowerByte, higherByte);
 
-      this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
+        const paletteColor = palette[paletteIndex];
+        const color = colors[paletteColor];
+
+        this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
+      }
     }
   }
 
@@ -189,6 +223,12 @@ export class GPU {
         }
       }
     });
+  }
+
+  private drawWindowLine() {
+    let backgroundTileMap: Uint8Array | Int8Array;
+    const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
+    const characterDataRange = lcdControlRegister.windowCodeArea;
   }
 
   private getTileIndexFromPixelLocation(x: number, y: number) {

@@ -10,8 +10,8 @@ export function createSubtractOperations(cpu: CPU) {
   function subtractAndSetFlags(originalValue: number, toSubtract: number) {
     const newValue = (originalValue - toSubtract) & 0xff;
     registers.flags.isResultZero = newValue === 0;
-    registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
     registers.flags.isSubtraction = true;
+    registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
     registers.flags.isCarry = newValue > originalValue;
 
     return newValue;
@@ -68,6 +68,16 @@ export function createSubtractOperations(cpu: CPU) {
     return 0b10_011_000 + rCode;
   }
 
+  function subtractCarryAndSetFlags(accumulatorVal: number, toAdd: number, carryFlagValue: number) {
+    const newValue = (accumulatorVal - toAdd - carryFlagValue) & 0xff;
+    registers.flags.isResultZero = newValue === 0;
+    registers.flags.isHalfCarry = ((accumulatorVal & 0x0f) - (toAdd & 0x0f) - carryFlagValue) < 0;
+    registers.flags.isSubtraction = true;
+    registers.flags.isCarry = newValue > accumulatorVal - carryFlagValue;
+
+    return newValue;
+  }
+
   cpu.registers.baseRegisters.forEach(register => {
     subtractOperations.push({
       instruction: `SBC A, ${register.name}`,
@@ -75,7 +85,7 @@ export function createSubtractOperations(cpu: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        registers.A.value = subtractAndSetFlags(registers.A.value, register.value - registers.flags.CY);
+        registers.A.value = subtractCarryAndSetFlags(registers.A.value, register.value, registers.flags.CY);
       }
     });
   });
@@ -90,7 +100,7 @@ export function createSubtractOperations(cpu: CPU) {
     execute() {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.A.value = subtractAndSetFlags(registers.A.value, value - registers.flags.CY);
+      registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
     }
   });
 
@@ -101,7 +111,7 @@ export function createSubtractOperations(cpu: CPU) {
     byteLength: 1,
     execute() {
       const value = memory.readByte(registers.HL.value);
-      registers.A.value = subtractAndSetFlags(registers.A.value, value - registers.flags.CY);
+      registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
     }
   });
 

@@ -87,7 +87,7 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeWord(registers.BC.value, registers.A.value);
+      memory.writeByte(registers.BC.value, registers.A.value);
     }
   });
 
@@ -97,7 +97,7 @@ export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
     cycleTime: 2,
     byteLength: 1,
     execute() {
-      memory.writeWord(registers.DE.value, registers.A.value);
+      memory.writeByte(registers.DE.value, registers.A.value);
     }
   });
 

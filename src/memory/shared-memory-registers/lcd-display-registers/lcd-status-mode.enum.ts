@@ -1,5 +1,5 @@
 export enum LcdStatusMode {
-  EnableCPUAccessToVRAM,
+  InHBlank,
   InVBlank,
   SearchingOAM,
   TransferringDataToLCD

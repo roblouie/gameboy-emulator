@@ -69,7 +69,7 @@ export const memory = {
 
 function isAccessingCartridge(address: number): boolean {
   // TODO: Revisit how to handle cartridge ram
-  return address <= 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
+  return address < 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
 }
 
 function isDmaTransfer(address: number) {

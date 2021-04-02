@@ -79,6 +79,16 @@ export function createAddOperations(cpu: CPU): Operation[] {
     return 0b10001000 + rCode;
   }
 
+  function addCarryAndSetFlags(accumulatorVal: number, toAdd: number, carryFlagValue: number) {
+    const newValue = (accumulatorVal + toAdd + carryFlagValue) & 0xff;
+    registers.flags.isResultZero = newValue === 0;
+    registers.flags.isHalfCarry = ((accumulatorVal & 0x0f) + (toAdd & 0x0f) + carryFlagValue) > 0xf;
+    registers.flags.isSubtraction = false;
+    registers.flags.isCarry = newValue < accumulatorVal + carryFlagValue;
+
+    return newValue;
+  }
+
   cpu.registers.baseRegisters.forEach(register => {
     addOperations.push({
       byteDefinition: getAddCarryARByteDefinition(register.code),
@@ -86,7 +96,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        registers.A.value = addAndSetFlags(registers.A.value, register.value + registers.flags.CY);
+        registers.A.value = addCarryAndSetFlags(registers.A.value, register.value, registers.flags.CY & 0xff);
       }
     });
   });
@@ -101,7 +111,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
     execute() {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.A.value = addAndSetFlags(registers.A.value, value + registers.flags.CY);
+      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
     }
   });
 
@@ -112,7 +122,7 @@ export function createAddOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       const value = memory.readByte(registers.HL.value);
-      registers.A.value = addAndSetFlags(registers.A.value, value + registers.flags.CY);
+      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
     }
   });
 
@@ -133,7 +143,9 @@ export function createAddOperations(cpu: CPU): Operation[] {
     return (rpCode << 4) + 0b1001;
   }
 
-  registers.registerPairs.forEach(registerPair => {
+  registers.registerPairs
+    .filter(registerPair => registerPair.name !== 'AF')
+    .forEach(registerPair => {
     addOperations.push({
       instruction: `ADD HL, ${registerPair.name}`,
       byteDefinition: getAddHLSSByteDefinition(registerPair.code),
@@ -151,20 +163,29 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // ****************
   addOperations.push({
     get instruction() {
-      return `ADD SP, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
+      const value = memory.readSignedByte(registers.programCounter.value);
+      if (value >= 0) {
+        return `ADD SP, 0x${value.toString(16)}`;
+      } else {
+        return `ADD SP, -0x${(value * -1).toString(16)}`;
+      }
     },
     byteDefinition: 0b11_101_000,
     cycleTime: 4,
     byteLength: 2,
     execute() {
-      const newValue = registers.stackPointer.value + memory.readByte(registers.programCounter.value);
+      const toAdd = memory.readSignedByte(registers.programCounter.value);
       registers.programCounter.value++;
+
+      const distanceFromWrappingBit3 = 0xf - (registers.stackPointer.value & 0x000f);
+      const distanceFromWrappingBit7 = 0xff - (registers.stackPointer.value & 0x00ff);
+
+      registers.flags.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
+      registers.flags.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
       registers.flags.isResultZero = false;
       registers.flags.isSubtraction = false;
-      registers.flags.isHalfCarry = (newValue & 0xfff) < (registers.stackPointer.value & 0xfff);
-      registers.flags.isCarry = (newValue & 0xf000) < (registers.stackPointer.value & 0xf000);
 
-      registers.stackPointer.value = newValue;
+      registers.stackPointer.value = registers.stackPointer.value + toAdd;
     }
   });
 

@@ -22,15 +22,23 @@ class InterruptRequestRegister implements SingleByteMemoryRegister {
     memory.writeByte(this.offset, byte);
   }
 
-  setVBlankInterruptRequest() {
+  triggerVBlankInterruptRequest() {
     this.value = setBit(this.value, 0, 1);
+  }
+
+  triggerLcdStatusInterruptRequest() {
+    this.value = setBit(this.value, 1, 1);
+  }
+
+  triggerTimerInterruptRequest() {
+    this.value = setBit(this.value, 2, 1);
   }
 
   clearVBlankInterruptRequest() {
     this.value = clearBit(this.value, 0);
   }
 
-  clearLCDStatusInterruptRequest() {
+  clearLcdStatusInterruptRequest() {
     this.value = clearBit(this.value, 1);
   }
 

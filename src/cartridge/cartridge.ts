@@ -29,8 +29,13 @@ export const cartridge = {
     gameDataView.setUint8(address, value);
   },
 
+  //TODO Look into this logic, try/catch should not be needed, as this should never happen
   writeWord(address: number, value: number) {
-    gameDataView.setUint16(address, value, true);
+    try {
+      gameDataView.setUint16(address, value, true);
+    } catch(error) {
+      console.error(`Address ${address} larger than cartridge size of ${gameBytes.length}`);
+    }
   },
 
   get title(): string {

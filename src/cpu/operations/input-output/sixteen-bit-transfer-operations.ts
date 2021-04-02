@@ -18,7 +18,8 @@ sixteenBitTransferOperations.push({
   cycleTime: 5,
   byteLength: 3,
   execute() {
-    registers.stackPointer.value = memory.readWord(registers.programCounter.value);
+    const address = memory.readWord(registers.programCounter.value);
+    memory.writeWord(address, registers.stackPointer.value);
     registers.programCounter.value += 2;
   }
 });
@@ -105,6 +106,10 @@ sixteenBitTransferOperations.push({
       });
     });
 
+
+// ****************
+// * LDHL SP, n
+// ****************
   sixteenBitTransferOperations.push({
     byteDefinition: 0b11_111_000,
     get instruction() {
@@ -118,9 +123,18 @@ sixteenBitTransferOperations.push({
     byteLength: 2,
     cycleTime: 3,
     execute() {
-      const value = memory.readSignedByte(registers.programCounter.value);
+      const toAdd = memory.readSignedByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.HL.value = registers.stackPointer.value + value;
+
+      const distanceFromWrappingBit3 = 0xf - (registers.stackPointer.value & 0x000f);
+      const distanceFromWrappingBit7 = 0xff - (registers.stackPointer.value & 0x00ff);
+
+      registers.flags.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
+      registers.flags.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
+      registers.flags.isResultZero = false;
+      registers.flags.isSubtraction = false;
+
+      registers.HL.value = registers.stackPointer.value + toAdd;
     }
   })
 
