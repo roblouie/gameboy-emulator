@@ -60,7 +60,9 @@ export function createIncrementOperations(cpu: CPU): Operation[] {
     return (rpCode << 4) + 0b0011;
   }
 
-  registers.registerPairs.forEach(registerPair => {
+  registers.registerPairs
+    .filter(register => register.name !== 'AF')
+    .forEach(registerPair => {
     incrementOperations.push({
       instruction: `INC ${registerPair.name}`,
       byteDefinition: getIncSSByteDefinition(registerPair.code),
