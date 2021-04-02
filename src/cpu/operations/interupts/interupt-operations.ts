@@ -1,5 +1,6 @@
 import { Operation } from "@/cpu/operations/operation.model";
 import { CPU } from "@/cpu/cpu";
+import { timerCounterRegister } from "@/memory/shared-memory-registers/timer-registers/timer-counter-register";
 
 // TODO: Interrupt disable / enable doesn't change the master interrupt flag until
 // after the instruction following EI/DI executes. Currently they just change the flag
