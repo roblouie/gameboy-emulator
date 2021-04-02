@@ -39,6 +39,7 @@ export class Gameboy {
     cpu.registers.C.value = 0x13;
     cpu.registers.E.value = 0xD8;
     cpu.registers.A.value = 1;
+    cpu.registers.F.value = 0xb0;
     lcdControlRegister.value = 0x83; // initial value from official guide
 
     const runFrame = (currentTime: number) => {

@@ -60,7 +60,9 @@ export function createDecrementOperations(cpu: CPU): Operation[] {
     return (rpCode << 4) + 0b1011;
   }
 
-  registers.registerPairs.forEach(registerPair => {
+  registers.registerPairs
+    .filter(register => register.name !== 'AF')
+    .forEach(registerPair => {
     decrementOperations.push({
       instruction: `DEC ${registerPair.name}`,
       byteDefinition: getDecSSByteDefinition(registerPair.code),

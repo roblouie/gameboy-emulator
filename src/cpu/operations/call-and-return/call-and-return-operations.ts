@@ -9,6 +9,8 @@ enum FlagCondition {
   C
 }
 
+//   .byte $DC,<taken,>taken ; CALL C,taken
+
 export function getCallAndReturnOperations(cpu: CPU): Operation[] {
   const callAndReturnOperations: Operation[] = [];
   const { registers } = cpu;
@@ -78,7 +80,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (registers.flags.isResultZero) {
         const toAddress = memory.readWord(registers.programCounter.value);
-        registers.programCounter.value++;
+        registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
         cpu.pushToStack(returnToAddress);
@@ -103,7 +105,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (!registers.flags.isCarry) {
         const toAddress = memory.readWord(registers.programCounter.value);
-        registers.programCounter.value++;
+        registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
         cpu.pushToStack(returnToAddress);
@@ -128,9 +130,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     execute() {
       if (registers.flags.isCarry) {
         const toAddress = memory.readWord(registers.programCounter.value);
-        registers.programCounter.value++;
+        registers.programCounter.value += 2;
 
-        const returnToAddress = registers.programCounter.value + this.byteLength;
+        const returnToAddress = registers.programCounter.value;
         cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;

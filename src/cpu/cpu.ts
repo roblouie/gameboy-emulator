@@ -45,9 +45,16 @@ export class CPU {
     }
 
     const operation = this.getOperation();
+    let debug = true;
 
-    // if (this.registers.programCounter.value === 0xc4c1 ||this.registers.programCounter.value === 0xc4c2) {
+    // if (this.registers.programCounter.value >= 0xc003) {
+    //   debug = true;
+    // }
+    //
+    // if (this.registers.programCounter.value >= 0xc733 && debug) {
+    //   console.log(instructionCache);
     //   debugger;
+    //   debug = false;
     // }
 
     // Stopping point for acid test
@@ -56,16 +63,30 @@ export class CPU {
     // }
     //debug
     // updateRegisterStateCache(this);
-    // updateInstructionCache(
-    //   operation.instruction,
-    //   this.registers.programCounter.value,
-    //   this.registers.AF.value,
-    //   this.registers.BC.value,
-    //   this.registers.DE.value,
-    //   this.registers.HL.value,
-    // );
+
+    // if (this.registers.programCounter.value === 0xc670 || this.registers.programCounter.value === 0xc671 || instructionCache.length === 40000) {
+    //   console.log(instructionCache);
+    //   debugger;
+    // }
+    // if (debug) {
+    //   updateInstructionCache(
+    //     operation.instruction,
+    //     this.registers.programCounter.value,
+    //     this.registers.AF.value,
+    //     this.registers.BC.value,
+    //     this.registers.DE.value,
+    //     this.registers.HL.value,
+    //     this.registers.stackPointer.value,
+    //   );
+    // }
+
     // end debug
     operation.execute();
+
+    // if (this.registers.stackPointer.value === 0) {
+    //   console.log(instructionCache);
+    //   debugger;
+    // }
 
 
 

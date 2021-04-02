@@ -143,7 +143,9 @@ export function createAddOperations(cpu: CPU): Operation[] {
     return (rpCode << 4) + 0b1001;
   }
 
-  registers.registerPairs.forEach(registerPair => {
+  registers.registerPairs
+    .filter(registerPair => registerPair.name !== 'AF')
+    .forEach(registerPair => {
     addOperations.push({
       instruction: `ADD HL, ${registerPair.name}`,
       byteDefinition: getAddHLSSByteDefinition(registerPair.code),
@@ -161,20 +163,29 @@ export function createAddOperations(cpu: CPU): Operation[] {
 // ****************
   addOperations.push({
     get instruction() {
-      return `ADD SP, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
+      const value = memory.readSignedByte(registers.programCounter.value);
+      if (value >= 0) {
+        return `ADD SP, 0x${value.toString(16)}`;
+      } else {
+        return `ADD SP, -0x${(value * -1).toString(16)}`;
+      }
     },
     byteDefinition: 0b11_101_000,
     cycleTime: 4,
     byteLength: 2,
     execute() {
-      const newValue = registers.stackPointer.value + memory.readByte(registers.programCounter.value);
+      const toAdd = memory.readSignedByte(registers.programCounter.value);
       registers.programCounter.value++;
+
+      const distanceFromWrappingBit3 = 0xf - (registers.stackPointer.value & 0x000f);
+      const distanceFromWrappingBit7 = 0xff - (registers.stackPointer.value & 0x00ff);
+
+      registers.flags.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
+      registers.flags.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
       registers.flags.isResultZero = false;
       registers.flags.isSubtraction = false;
-      registers.flags.isHalfCarry = (newValue & 0xfff) < (registers.stackPointer.value & 0xfff);
-      registers.flags.isCarry = (newValue & 0xf000) < (registers.stackPointer.value & 0xf000);
 
-      registers.stackPointer.value = newValue;
+      registers.stackPointer.value = registers.stackPointer.value + toAdd;
     }
   });
 
