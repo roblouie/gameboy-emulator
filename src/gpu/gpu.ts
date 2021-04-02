@@ -58,12 +58,12 @@ export class GPU {
           this.cycleCounter %= GPU.CyclesPerScanlineVram;
 
           if (lcdStatusRegister.isHBlankInterruptSelected) {
-            interruptRequestRegister.setLcdStatusInterruptRequest();
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
           }
 
           lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
           if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
-            interruptRequestRegister.setLcdStatusInterruptRequest();
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
           }
 
           lcdStatusRegister.mode = LcdStatusMode.InHBlank;
@@ -80,7 +80,7 @@ export class GPU {
 
           if (lineYRegister.value === GPU.ScreenHeight) {
             lcdStatusRegister.mode = LcdStatusMode.InVBlank;
-            interruptRequestRegister.setVBlankInterruptRequest();
+            interruptRequestRegister.triggerVBlankInterruptRequest();
           } else {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
           }
@@ -96,7 +96,7 @@ export class GPU {
           // function maybe?
           lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
           if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
-            interruptRequestRegister.setLcdStatusInterruptRequest();
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
           }
 
           lineYRegister.value++;

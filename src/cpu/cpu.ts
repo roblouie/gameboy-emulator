@@ -14,10 +14,13 @@ import {
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
 import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
+import { timerControllerRegister } from "@/memory/shared-memory-registers/timer-registers/timer-controller-register";
+import { timerModuloRegister } from "@/memory/shared-memory-registers/timer-registers/timer-modulo-register";
+import { timerCounterRegister } from "@/memory/shared-memory-registers/timer-registers/timer-counter-register";
 
 
 export class CPU {
-  isInterruptMasterEnable = false;
+  isInterruptMasterEnable = true;
   operations: Operation[];
   cbSubOperations: Operation[];
   registers: CpuRegisterCollection;
@@ -39,58 +42,49 @@ export class CPU {
 
   tick(): number {
     this.handleInterrupts();
-
-    if (this.isHalted || this.isStopped) {
+    if (this.isHalted) {
+      this.updateTimer(1);
       return 1;
     }
 
     const operation = this.getOperation();
-    let debug = true;
 
-    // if (this.registers.programCounter.value >= 0xc003) {
-    //   debug = true;
-    // }
-    //
-    // if (this.registers.programCounter.value >= 0xc733 && debug) {
-    //   console.log(instructionCache);
-    //   debugger;
-    //   debug = false;
-    // }
+    // updateInstructionCache(
+    //   operation.instruction,
+    //   this.registers.programCounter.value,
+    //   this.registers.AF.value,
+    //   this.registers.BC.value,
+    //   this.registers.DE.value,
+    //   this.registers.HL.value,
+    //   this.registers.stackPointer.value,
+    // );
 
-    // Stopping point for acid test
-    // if (this.registers.programCounter.value === 0x2cd ||this.registers.programCounter.value === 0x2ce) {
-    //   // debugger;
-    // }
-    //debug
-    // updateRegisterStateCache(this);
-
-    // if (this.registers.programCounter.value === 0xc670 || this.registers.programCounter.value === 0xc671 || instructionCache.length === 40000) {
-    //   console.log(instructionCache);
-    //   debugger;
-    // }
-    // if (debug) {
-    //   updateInstructionCache(
-    //     operation.instruction,
-    //     this.registers.programCounter.value,
-    //     this.registers.AF.value,
-    //     this.registers.BC.value,
-    //     this.registers.DE.value,
-    //     this.registers.HL.value,
-    //     this.registers.stackPointer.value,
-    //   );
-    // }
-
-    // end debug
     operation.execute();
 
-    // if (this.registers.stackPointer.value === 0) {
-    //   console.log(instructionCache);
-    //   debugger;
-    // }
-
-
+    this.updateTimer(operation.cycleTime);
 
     return operation.cycleTime;
+  }
+
+  private timerCycles = 0;
+  updateTimer(cycles: number) {
+    if (!timerControllerRegister.isTimerOn) {
+      return;
+    }
+
+    this.timerCycles += cycles;
+
+    if (this.timerCycles >= timerControllerRegister.cyclesForTimerUpdate) {
+
+      if (timerCounterRegister.value + 1 > 0xff) {
+        interruptRequestRegister.triggerTimerInterruptRequest();
+        timerCounterRegister.value = timerModuloRegister.value;
+      }
+
+      timerCounterRegister.value++;
+      this.timerCycles = 0;
+    }
+
   }
 
   reset() {
@@ -106,14 +100,19 @@ export class CPU {
   }
 
   pushToStack(word: number) {
-    this.registers.stackPointer.value -= 2;
-    memory.writeWord(this.registers.stackPointer.value, word);
+    this.registers.stackPointer.value--;
+    memory.writeByte(this.registers.stackPointer.value, word >> 8);
+    this.registers.stackPointer.value--;
+    memory.writeByte(this.registers.stackPointer.value, word & 0xff);
   }
 
   popFromStack() {
-    const value = memory.readWord(this.registers.stackPointer.value);
-    this.registers.stackPointer.value += 2;
-    return value;
+    const lowByte = memory.readByte(this.registers.stackPointer.value);
+    this.registers.stackPointer.value++;
+    const highByte = memory.readByte(this.registers.stackPointer.value);
+    this.registers.stackPointer.value++;
+
+    return (highByte << 8) | lowByte;
   }
 
   private getOperation() {
@@ -133,12 +132,13 @@ export class CPU {
   private handleInterrupts() {
     const firedInterrupts = interruptRequestRegister.value & interruptEnableRegister.value;
 
+    if (firedInterrupts > 0) {
+      this.isHalted = false;
+    }
+
     if (!this.isInterruptMasterEnable || firedInterrupts === 0) {
       return;
     }
-
-    this.isHalted = false;
-    this.isStopped = false;
 
     this.pushToStack(this.registers.programCounter.value);
 

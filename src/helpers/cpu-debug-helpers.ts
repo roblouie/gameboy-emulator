@@ -1,7 +1,7 @@
 import { CPU } from "@/cpu/cpu";
 
 export const instructionCache: string[] = [];
-const instructionCacheSize = 40000;
+const instructionCacheSize = 300;
 
 export const registerStateCache: string[] = [];
 
