@@ -14,3 +14,19 @@ export function setBit(value: number, bitPosition: number, bitValue: number): nu
 
   return result;
 }
+
+export function asUint8(value: number) {
+  return value & 0xff;
+}
+
+export function asUint16(value: number) {
+  return value & 0xffff;
+}
+
+export function getLeastSignificantByte(word: number) {
+  return word & 0xff;
+}
+
+export function getMostSignificantByte(word: number) {
+  return (word >> 8) & 0xff;
+}

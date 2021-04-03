@@ -6,6 +6,28 @@ class LcdControlRegister implements SingleByteMemoryRegister {
   offset = 0xff40;
   name = 'LCDC';
 
+  private tileMapAddressRanges = [
+    {
+      start: 0x9800,
+      end: 0x9bff
+    },
+    {
+      start: 0x9c00,
+      end: 0x9fff,
+    }
+  ];
+
+  private characterDataAddressRanges = [
+    {
+      start: 0x8800,
+      end: 0x97ff
+    },
+    {
+      start: 0x8000,
+      end: 0x8fff,
+    }
+  ];
+
   get value() {
     return memory.readByte(this.offset);
   }
@@ -35,54 +57,32 @@ class LcdControlRegister implements SingleByteMemoryRegister {
     return getBit(this.value, 4);
   }
 
+  get windowCharacterData() {
+    return this.backgroundCharacterData;
+  }
+
   get isWindowingOn() {
     return getBit(this.value, 5) === 1;
   }
 
   get windowCodeArea() {
-    const ranges = [
-      {
-        start: 0x9800,
-        end: 0x9bff
-      },
-      {
-        start: 0x9c00,
-        end: 0x9fff,
-      }
-    ];
+    return getBit(this.value, 6);
+  }
 
-    const flag = getBit(this.value, 6);
-    return ranges[flag];
+  get windowTileMapAddressRange() {
+    return this.tileMapAddressRanges[this.windowCodeArea];
   }
 
   get backgroundTileMapAddressRange() {
-    const ranges = [
-      {
-        start: 0x9800,
-        end: 0x9bff
-      },
-      {
-        start: 0x9c00,
-        end: 0x9fff,
-      }
-    ];
-
-    return ranges[this.backgroundCodeArea];
+    return this.tileMapAddressRanges[this.backgroundCodeArea];
   }
 
   get backgroundCharacterDataAddressRange() {
-    const ranges = [
-      {
-        start: 0x8800,
-        end: 0x97ff
-      },
-      {
-        start: 0x8000,
-        end: 0x8fff,
-      }
-    ];
+    return this.characterDataAddressRanges[this.backgroundCharacterData];
+  }
 
-    return ranges[this.backgroundCharacterData];
+  get windowCharacterDataAddressRange() {
+    return this.backgroundCharacterDataAddressRange;
   }
 
   get isLCDControllerOperating() {

@@ -14,9 +14,7 @@ import {
 import { Operation } from "@/cpu/operations/operation.model";
 import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
 import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
-import { timerControllerRegister } from "@/memory/shared-memory-registers/timer-registers/timer-controller-register";
-import { timerModuloRegister } from "@/memory/shared-memory-registers/timer-registers/timer-modulo-register";
-import { timerCounterRegister } from "@/memory/shared-memory-registers/timer-registers/timer-counter-register";
+import { TimerManager } from "@/cpu/timer-manager";
 
 
 export class CPU {
@@ -25,66 +23,38 @@ export class CPU {
   cbSubOperations: Operation[];
   registers: CpuRegisterCollection;
 
+  private timerManager: TimerManager;
+  private isHalted = false;
+  private isStopped = false;
+
   private static VBlankInterruptAddress = 0x0040;
   private static LCDStatusInterruptAddress = 0x0048;
   private static TimerOverflowInterruptAddress = 0x0050;
   private static SerialTransferCompletionInterruptAddress = 0x0058;
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
-  private isHalted = false;
-  private isStopped = false;
-
   constructor() {
     this.registers = new CpuRegisterCollection();
     this.operations = this.initializeOperations();
     this.cbSubOperations = getCBSubOperations(this);
+    this.timerManager = new TimerManager();
   }
 
   tick(): number {
     this.handleInterrupts();
+
     if (this.isHalted) {
-      this.updateTimer(1);
+      this.timerManager.updateTimers(1);
       return 1;
     }
 
     const operation = this.getOperation();
 
-    // updateInstructionCache(
-    //   operation.instruction,
-    //   this.registers.programCounter.value,
-    //   this.registers.AF.value,
-    //   this.registers.BC.value,
-    //   this.registers.DE.value,
-    //   this.registers.HL.value,
-    //   this.registers.stackPointer.value,
-    // );
-
     operation.execute();
 
-    this.updateTimer(operation.cycleTime);
+    this.timerManager.updateTimers(operation.cycleTime);
 
     return operation.cycleTime;
-  }
-
-  private timerCycles = 0;
-  updateTimer(cycles: number) {
-    if (!timerControllerRegister.isTimerOn) {
-      return;
-    }
-
-    this.timerCycles += cycles;
-
-    if (this.timerCycles >= timerControllerRegister.cyclesForTimerUpdate) {
-
-      if (timerCounterRegister.value + 1 > 0xff) {
-        interruptRequestRegister.triggerTimerInterruptRequest();
-        timerCounterRegister.value = timerModuloRegister.value;
-      }
-
-      timerCounterRegister.value++;
-      this.timerCycles = 0;
-    }
-
   }
 
   reset() {
@@ -119,6 +89,18 @@ export class CPU {
     const operationIndex = memory.readByte(this.registers.programCounter.value);
     this.registers.programCounter.value++;
     const operation = this.operations[operationIndex];
+
+    // if (this.startDebugging) {
+    //   updateInstructionCache(
+    //     operation.instruction,
+    //     this.registers.programCounter.value,
+    //     this.registers.AF.value,
+    //     this.registers.BC.value,
+    //     this.registers.DE.value,
+    //     this.registers.HL.value,
+    //     this.registers.stackPointer.value,
+    //   );
+    // }
 
     if (operation.byteDefinition === 0xcb) {
       const cbOperationIndex = memory.readByte(this.registers.programCounter.value);

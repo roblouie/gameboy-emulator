@@ -19,14 +19,14 @@ export function backgroundTilesToImageData(): ImageData {
   const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
   const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
 
-  if (lcdControlRegister.backgroundCodeArea === 0) {
-    backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
-  } else {
-    const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
-    backgroundTileMap = new Int8Array(originalData);
-  }
+  // if (lcdControlRegister.backgroundCodeArea === 0) {
+    backgroundTileMap = memory.memoryBytes.subarray(0x9800, 0x9c00);
+  // } else {
+  //   const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+  //   backgroundTileMap = new Int8Array(originalData);
+  // }
 
-  const backgroundCharData = memory.memoryBytes.subarray(characterDataRange.start, characterDataRange.end);
+  const backgroundCharData = memory.memoryBytes.subarray(0x8000, 0x9000);
 
   const enhancedImageData = new EnhancedImageData(256, 256);
   let imageDataX = 0;
@@ -43,8 +43,8 @@ export function backgroundTilesToImageData(): ImageData {
     }
   });
 
-  console.log(backgroundTileMap);
-  console.log(backgroundCharData);
+  // console.log(backgroundTileMap);
+  // console.log(backgroundCharData);
   return enhancedImageData;
 }
 
