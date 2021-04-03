@@ -13,6 +13,8 @@ import {
   scrollYRegister
 } from "@/memory/shared-memory-registers";
 import { LcdStatusMode } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-mode.enum";
+import { windowYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-y-register";
+import { windowXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-x-register";
 
 //TODO: Move colors to its own file, posibly create new class for custom colors
 const colors = [
@@ -179,6 +181,34 @@ export class GPU {
     }
   }
 
+  private drawWindowLine() {
+    if (windowYRegister.value < lineYRegister.value) {
+      return; // the window is below this, so nothing to draw
+    }
+
+    let windowTileMap: Uint8Array | Int8Array;
+    const tileMapRange = lcdControlRegister.windowTileMapAddressRange;
+    const characterDataRange = lcdControlRegister.windowCharacterDataAddressRange;
+
+    if (lcdControlRegister.backgroundCodeArea === 0) {
+      windowTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+    } else {
+      const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      windowTileMap = new Int8Array(originalData);
+    }
+
+    const scanlineIntersectsAt = windowYRegister.value - lineYRegister.value;
+
+    for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
+      if (windowXRegister.value < screenX) {
+        continue; // we are to the left of the window, don't draw
+      }
+
+      const tileMapIndex = this.getTileIndexFromPixelLocation(screenX, windowYRegister.value);
+      const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
+    }
+  }
+
   drawSpriteLine() {
     const spriteOffsetX = -8;
     const spriteOffsetY = -16;
@@ -223,12 +253,6 @@ export class GPU {
         }
       }
     });
-  }
-
-  private drawWindowLine() {
-    let backgroundTileMap: Uint8Array | Int8Array;
-    const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
-    const characterDataRange = lcdControlRegister.windowCodeArea;
   }
 
   private getTileIndexFromPixelLocation(x: number, y: number) {

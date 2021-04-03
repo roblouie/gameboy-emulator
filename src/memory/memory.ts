@@ -2,6 +2,7 @@ import { cartridge } from "@/cartridge/cartridge";
 import { controllerDataRegister, dmaTransferRegister } from "@/memory/shared-memory-registers";
 import { dmaTransferController } from "@/memory/dma-transfer-controller";
 import { input } from "@/input/input";
+import { dividerRegister } from "@/memory/shared-memory-registers/timer-registers/divider-register";
 
 const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);
@@ -23,7 +24,6 @@ export const memory = {
     else if (isReadingInput(address)) {
       const inputValue = memoryView.getUint8(address);
       const result = input.reportInput(inputValue);
-      // console.log(result);
       return result;
     } else {
       return memoryView.getUint8(address);
@@ -48,8 +48,12 @@ export const memory = {
 
   writeByte(address: number, value: number) {
     if (isAccessingCartridge(address)) {
-      cartridge.writeByte(address, value);
+      //cartridge.writeByte(address, value);
       return;
+    }
+
+    if (address === dividerRegister.offset) {
+      memoryView.setUint8(dividerRegister.offset, 0);
     }
 
     memoryView.setUint8(address, value);
@@ -60,7 +64,7 @@ export const memory = {
 
   writeWord(address: number, value: number) {
     if (isAccessingCartridge(address)) {
-      return cartridge.writeWord(address, value);
+      return //cartridge.writeWord(address, value);
     } else {
       memoryView.setUint16(address, value, true);
     }
@@ -68,8 +72,7 @@ export const memory = {
 }
 
 function isAccessingCartridge(address: number): boolean {
-  // TODO: Revisit how to handle cartridge ram
-  return address < 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
+  return address <= 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
 }
 
 function isDmaTransfer(address: number) {
