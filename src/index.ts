@@ -1,5 +1,10 @@
 import { cartridge } from "@/cartridge/cartridge";
-import { backgroundTilesToImageData, characterImageData, drawOam } from "@/helpers/gpu-debug-helpers";
+import {
+  backgroundTilesToImageData,
+  characterImageData,
+  drawOam,
+  drawOamToBackground
+} from "@/helpers/gpu-debug-helpers";
 import { Gameboy } from "@/gameboy";
 import { GameboyButton } from "@/input/gameboy-button.enum";
 import { memory } from "@/memory/memory";
@@ -117,12 +122,14 @@ async function onFileChange(event: Event) {
       // vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
 
       backgroundContext.imageSmoothingEnabled = false;
+      // backgroundContext.clearRect(0, 0, 600, 600);
+
       backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
-      backgroundContext.drawImage( backgroundCanvas, 0, 0, 2*backgroundCanvas.width, 2*backgroundCanvas.height );
+
 
       oamContext.imageSmoothingEnabled = false;
+      oamContext.clearRect(0, 0, 512, 512);
       oamContext.putImageData(drawOam(), 0, 0);
-      scaledDrawContext.clearRect(0, 0, 640, 576);
       oamContext.drawImage(oamCanvas, 0, 0, 8*oamCanvas.width, 8*oamCanvas.height );
     });
 
