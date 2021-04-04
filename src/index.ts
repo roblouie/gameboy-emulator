@@ -1,5 +1,5 @@
 import { cartridge } from "@/cartridge/cartridge";
-import { backgroundTilesToImageData, characterImageData } from "@/helpers/gpu-debug-helpers";
+import { backgroundTilesToImageData, characterImageData, drawOam } from "@/helpers/gpu-debug-helpers";
 import { Gameboy } from "@/gameboy";
 import { GameboyButton } from "@/input/gameboy-button.enum";
 import { memory } from "@/memory/memory";
@@ -12,7 +12,8 @@ let scaledDrawContext: CanvasRenderingContext2D;
 let backgroundCanvas: HTMLCanvasElement;
 let backgroundContext: CanvasRenderingContext2D;
 
-let isPressingDown = false;
+let oamCanvas: HTMLCanvasElement;
+let oamContext: CanvasRenderingContext2D;
 
 window.addEventListener('load', () => {
   const fileInput = document.querySelector('.file-input') as HTMLInputElement;
@@ -26,6 +27,9 @@ window.addEventListener('load', () => {
   //
   backgroundCanvas = document.querySelector('#background') as HTMLCanvasElement;
   backgroundContext = backgroundCanvas.getContext('2d') as CanvasRenderingContext2D;
+
+  oamCanvas = document.querySelector('#oam') as HTMLCanvasElement;
+  oamContext = oamCanvas.getContext('2d') as CanvasRenderingContext2D;
 });
 
 
@@ -100,6 +104,7 @@ async function onFileChange(event: Event) {
     scaledDrawContext.imageSmoothingEnabled = false;
     const fpsDiv = document.querySelector('#fps');
     gameboy.onFrameFinished((imageData: ImageData, fps: number, registers: any) => {
+      scaledDrawContext.clearRect(0, 0, 640, 576);
       context.putImageData(imageData, 0, 0);
       scaledDrawContext.drawImage(canvas, 0, 0, 640, 576);
       if (fpsDiv) {
@@ -114,6 +119,11 @@ async function onFileChange(event: Event) {
       backgroundContext.imageSmoothingEnabled = false;
       backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
       backgroundContext.drawImage( backgroundCanvas, 0, 0, 2*backgroundCanvas.width, 2*backgroundCanvas.height );
+
+      oamContext.imageSmoothingEnabled = false;
+      oamContext.putImageData(drawOam(), 0, 0);
+      scaledDrawContext.clearRect(0, 0, 640, 576);
+      oamContext.drawImage(oamCanvas, 0, 0, 8*oamCanvas.width, 8*oamCanvas.height );
     });
 
     gameboy.run();
