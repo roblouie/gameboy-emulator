@@ -17,7 +17,7 @@ const colors = [
 const CharacterDataStart = 0x8000;
 const CharacterDataEnd = 0x97ff;
 
-const oamImageDate = new EnhancedImageData(320, 320);
+let oamImageDate = new EnhancedImageData(320, 320);
 
 export function backgroundTilesToImageData(): ImageData {
   let backgroundTileMap: Uint8Array | Int8Array;
@@ -78,7 +78,7 @@ function drawTileAt(imageData: EnhancedImageData, x: number, y: number, charData
   }
 }
 
-function drawSpriteTileAt(imageData: EnhancedImageData, x: number, y: number, charData: Uint8Array, tileStart: number, palette: number[]) {
+export function drawSpriteTileAt(imageData: EnhancedImageData, x: number, y: number, charData: Uint8Array, tileStart: number, palette: number[]) {
   let imageDataX = x;
   let imageDataY = y;
 
@@ -131,6 +131,28 @@ export function drawOam(): ImageData {
 
   return oamImageDate;
 }
+
+export function drawOamToBackground(): ImageData {
+  const bytesPerLine = 2;
+  const linesPerTile = 8; // TODO: Update to account for 16px high tiles, which are not yet implemented
+  const bytesPerTile = bytesPerLine * linesPerTile;
+  const characterDataStart = 0x8000;
+  oamImageDate = new EnhancedImageData(320, 320);
+
+
+  objectAttributeMemoryRegisters.forEach(oamRegister => {
+    const { characterCode, paletteNumber } = oamRegister;
+    const tileCharBytePosition = characterCode * bytesPerTile;
+    const currentTileBytePosition = characterDataStart + tileCharBytePosition;
+
+    const palette = objectPaletteRegisters[paletteNumber].palette;
+
+    drawSpriteTileAt(oamImageDate, oamRegister.xPosition - 8, oamRegister.yPosition - 16, memory.memoryBytes, currentTileBytePosition, palette);
+  });
+
+  return oamImageDate;
+}
+
 
 export function characterImageData(): ImageData {
   const characterData = memory.memoryBytes.subarray(CharacterDataStart, CharacterDataEnd);

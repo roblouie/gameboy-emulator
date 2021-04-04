@@ -15,6 +15,7 @@ import {
 import { LcdStatusMode } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-mode.enum";
 import { windowYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-y-register";
 import { windowXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-x-register";
+import { drawSpriteTileAt } from "@/helpers/gpu-debug-helpers";
 
 //TODO: Move colors to its own file, posibly create new class for custom colors
 const colors = [
@@ -171,7 +172,7 @@ export class GPU {
         const lowerByte = memory.readByte(currentTileLineBytePosition);
         const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
-        const paletteIndex = this.getPixelInTileLineLeftToRight(xPosInTile, lowerByte, higherByte);
+        const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
 
         const paletteColor = palette[paletteIndex];
         const color = colors[paletteColor];
@@ -209,32 +210,40 @@ export class GPU {
     }
   }
 
+
   drawSpriteLine() {
     const spriteOffsetX = -8;
-    const spriteOffsetY = -8;
+    const spriteOffsetY = -16;
     const characterDataStart = 0x8000;
-    const bytesPerCharacter = 2;
-    const charactersPerTile = 8; // TODO: Update to account for 16px high tiles, which are not yet implemented
-    const bytesPerTile = bytesPerCharacter * charactersPerTile;
+    const bytesPerLine = 2;
+    const linesPerTile = lcdControlRegister.objectHeight;
+    const bytesPerTile = bytesPerLine * linesPerTile;
+    let objectsDrawnThisLine = 0;
+    const maxObjectsPerLine = 10;
 
     objectAttributeMemoryRegisters.forEach(oamRegister => {
       const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
 
-      if (xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
+      if (objectsDrawnThisLine === maxObjectsPerLine || xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
         return;
       }
 
       const spriteX = xPosition + spriteOffsetX;
       const spriteY = yPosition + spriteOffsetY;
 
-      const scanlineIntersectsYAt = spriteY - lineYRegister.value;
+      let scanlineIntersectsYAt = lineYRegister.value - spriteY;
+      const lastLineOfSprite = lcdControlRegister.objectHeight - 1;
 
-      const isIntersectingY = scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lcdControlRegister.objectHeight;
+      if (oamRegister.isFlippedVertical) {
+        scanlineIntersectsYAt = lastLineOfSprite - scanlineIntersectsYAt;
+      }
+
+      const isIntersectingY = scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lastLineOfSprite;
       if (!isIntersectingY) {
         return;
       }
 
-      const bytePositionInTile = scanlineIntersectsYAt * bytesPerCharacter;
+      const bytePositionInTile = scanlineIntersectsYAt * bytesPerLine;
       const tileCharBytePosition = characterCode * bytesPerTile;
       const currentTileLineBytePosition = characterDataStart + tileCharBytePosition + bytePositionInTile;
 
@@ -242,16 +251,18 @@ export class GPU {
       const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
       for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
-        const paletteIndex = this.getPixelInTileLineLeftToRight(xPixelInTile, lowerByte, higherByte);
+        const paletteIndex = this.getPixelInTileLine(xPixelInTile, lowerByte, higherByte, oamRegister.isFlippedHorizontal);
 
         const palette = objectPaletteRegisters[paletteNumber].palette;
         const paletteColor = palette[paletteIndex];
         const color = colors[paletteColor];
 
-        if (color !== 0) {
+        if (paletteIndex !== 0) {
           this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color, paletteIndex === 0 ? 0 : 255);
         }
       }
+
+      objectsDrawnThisLine++;
     });
   }
 
@@ -275,11 +286,11 @@ export class GPU {
     return { x: posX * tileSize, y: posY * tileSize };
   }
 
-  private getPixelInTileLineLeftToRight(xPosition: number, lowerByte: number, higherByte: number) {
+  private getPixelInTileLine(xPosition: number, lowerByte: number, higherByte: number, isFlippedX: boolean) {
     // the pixel at position 0 in a byte is the rightmost pixel, but when drawing on canvas, we
     // go from left to right, so 0 is the leftmost pixel. By subtracting 7 (the last index in the byte)
     // we can effectively swap the order.
-    const xPixelInTile = 7 - xPosition;
+    const xPixelInTile = isFlippedX ? xPosition : 7 - xPosition;
     const shadeLower = getBit(lowerByte, xPixelInTile);
     const shadeHigher = getBit(higherByte, xPixelInTile) << 1;
 
