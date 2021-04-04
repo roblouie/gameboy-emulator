@@ -211,7 +211,7 @@ export class GPU {
 
   drawSpriteLine() {
     const spriteOffsetX = -8;
-    const spriteOffsetY = -16;
+    const spriteOffsetY = -8;
     const characterDataStart = 0x8000;
     const bytesPerCharacter = 2;
     const charactersPerTile = 8; // TODO: Update to account for 16px high tiles, which are not yet implemented
@@ -249,7 +249,7 @@ export class GPU {
         const color = colors[paletteColor];
 
         if (color !== 0) {
-          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color);
+          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color, paletteIndex === 0 ? 0 : 255);
         }
       }
     });
@@ -281,7 +281,7 @@ export class GPU {
     // we can effectively swap the order.
     const xPixelInTile = 7 - xPosition;
     const shadeLower = getBit(lowerByte, xPixelInTile);
-    const shadeHigher = getBit(higherByte, xPixelInTile);
+    const shadeHigher = getBit(higherByte, xPixelInTile) << 1;
 
     return shadeLower + shadeHigher;
   }
