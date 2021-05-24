@@ -10,6 +10,6 @@ export class Sound3LengthRegister implements SingleByteMemoryRegister {
   }
 
   get lengthInSeconds() {
-    return (256 / this.value) * (1 / 256);
+    return (256 - this.value) * (1 / 256);
   }
 }

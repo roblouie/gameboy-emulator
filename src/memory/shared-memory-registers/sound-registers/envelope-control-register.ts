@@ -15,7 +15,7 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
     return memory.readByte(this.offset);
   }
 
-  get defaultEnvelopeValue() {
+  get numberOfEnvelopSteps() {
     return this.value >> 4;
   }
   
@@ -23,11 +23,11 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
     return ((this.value >> 3) & 0b1) === 1;
   }
   
-  get lengthOfEnvelopeSteps() {
-    return this.value & 0b111;
+  get lengthOfEnvelopSteps() {
+    return (this.value & 0b111);
   }
   
   get lengthOfEnvelopInSeconds() {
-    return this.lengthOfEnvelopeSteps * (1/64)
+    return this.numberOfEnvelopSteps * (1/64) * this.lengthOfEnvelopSteps
   }
 }

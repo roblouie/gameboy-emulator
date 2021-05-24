@@ -46,6 +46,7 @@ export class Gameboy {
       while (cycles <= GPU.CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
+        spu.tick(cycleForTick, currentTime);
         cycles += cycleForTick;
       }
 
@@ -55,7 +56,6 @@ export class Gameboy {
 
       this.fps = 1000 / (currentTime - previousTime);
       previousTime = currentTime;
-      // spu.tick(cycles, currentTime);
       cycles = cycles % GPU.CyclesPerFrame;
 
       requestAnimationFrame(runFrame);
