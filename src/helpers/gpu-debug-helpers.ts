@@ -21,25 +21,17 @@ let oamImageDate = new EnhancedImageData(320, 320);
 
 export function backgroundTilesToImageData(): ImageData {
   let backgroundTileMap: Uint8Array | Int8Array;
-
-  const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
-  const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
-
-  // if (lcdControlRegister.backgroundCodeArea === 0) {
-    backgroundTileMap = memory.memoryBytes.subarray(0x9800, 0x9c00);
-  // } else {
-  //   const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
-  //   backgroundTileMap = new Int8Array(originalData);
-  // }
-
-  const backgroundCharData = memory.memoryBytes.subarray(0x8000, 0x9000);
+  backgroundTileMap = memory.memoryBytes.subarray(0x9c00, 0x9c00 + 0x1000);
 
   const enhancedImageData = new EnhancedImageData(256, 256);
   let imageDataX = 0;
   let imageDataY = 0;
 
   backgroundTileMap.forEach((tileMapIndex: number) => {
-    drawTileAt(enhancedImageData, imageDataX, imageDataY, backgroundCharData, tileMapIndex * 8 * 2, backgroundPaletteRegister.backgroundPalette);
+    // if (tileMapIndex !== 0) {
+    //   debugger;
+    // }
+    drawTileAt(enhancedImageData, imageDataX, imageDataY, (tileMapIndex) * 8 * 2, backgroundPaletteRegister.backgroundPalette);
 
     imageDataX += 8;
 
@@ -49,18 +41,16 @@ export function backgroundTilesToImageData(): ImageData {
     }
   });
 
-  // console.log(backgroundTileMap);
-  // console.log(backgroundCharData);
   return enhancedImageData;
 }
 
-function drawTileAt(imageData: EnhancedImageData, x: number, y: number, charData: Uint8Array | number[], tileStart: number, palette: number[]) {
+function drawTileAt(imageData: EnhancedImageData, x: number, y: number, tileStart: number, palette: number[]) {
   let imageDataX = x;
   let imageDataY = y;
 
   for (let byteIndex = 0; byteIndex < 16; byteIndex+= 2) {
-    const lowerByte = charData[tileStart + byteIndex];
-    const higherByte = charData[tileStart + byteIndex + 1];
+    const lowerByte = memory.readByte(0x8000 + tileStart + byteIndex);
+    const higherByte = memory.readByte(0x8000 + tileStart + byteIndex + 1);
 
     for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
       const shadeLower = getBit(lowerByte, bitPosition);

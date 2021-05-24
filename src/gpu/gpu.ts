@@ -1,6 +1,6 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
-import { getBit } from "@/helpers/binary-helpers";
+import { asUint8, getBit } from "@/helpers/binary-helpers";
 import {
   backgroundPaletteRegister,
   interruptRequestRegister,
@@ -109,6 +109,7 @@ export class GPU {
           if (lineYRegister.value === GPU.HeightIncludingOffscreen) {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
             lineYRegister.value = 0;
+            this.windowLinesDrawn = 0;
           }
         }
         break;
@@ -122,30 +123,31 @@ export class GPU {
 
 
     this.drawBackgroundLine();
-
+    if (lcdControlRegister.isWindowingOn) {
+      this.drawWindowLine();
+    }
 
     if (lcdControlRegister.isObjOn) {
       this.drawSpriteLine();
     }
   }
 
-  // TODO: Refactor to do a pixel at a time?
   drawBackgroundLine() {
     let backgroundTileMap: Uint8Array | Int8Array;
     const bytesPerCharacter = 2;
-    const tileMapRange = lcdControlRegister.backgroundTileMapAddressRange;
-    const characterDataRange = lcdControlRegister.backgroundCharacterDataAddressRange;
+    const tileMapStart = lcdControlRegister.backgroundTileMapStartAddress;
+    const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
 
     if (lcdControlRegister.backgroundCodeArea === 0) {
-      backgroundTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      backgroundTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
     } else {
-      const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
       backgroundTileMap = new Int8Array(originalData);
     }
 
     const palette = backgroundPaletteRegister.backgroundPalette;
 
-    const scrolledY = (lineYRegister.value + scrollYRegister.value) & 0xff;
+    const scrolledY = asUint8(lineYRegister.value + scrollYRegister.value);
 
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
       // If background off, write color 0 to background, should probably be
@@ -156,7 +158,7 @@ export class GPU {
 
         this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
       } else {
-        const scrolledX = (screenX + scrollXRegister.value) & 0xff;
+        const scrolledX = asUint8(screenX + scrollXRegister.value);
         const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
         const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
 
@@ -165,10 +167,11 @@ export class GPU {
 
         const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
-        const tileCharIndex = backgroundTileMap[tileMapIndex];
+        const relativeOffset = lcdControlRegister.backgroundCodeArea === 0 ? 0 : 128;
+        const tileCharIndex = backgroundTileMap[tileMapIndex] + relativeOffset;
         const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
-        const currentTileLineBytePosition = characterDataRange.start + tileCharBytePosition + bytePositionInTile;
+        const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
         const lowerByte = memory.readByte(currentTileLineBytePosition);
         const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
@@ -182,32 +185,74 @@ export class GPU {
     }
   }
 
+  private windowLinesDrawn = 0;
+
   private drawWindowLine() {
-    if (windowYRegister.value < lineYRegister.value) {
-      return; // the window is below this, so nothing to draw
+    // If our current scanline is above where window drawing starts, simply exit immediately
+    if (lineYRegister.value < windowYRegister.value || windowXRegister.value > 166) {
+      return;
     }
 
+    const bytesPerCharacter = 2;
     let windowTileMap: Uint8Array | Int8Array;
-    const tileMapRange = lcdControlRegister.windowTileMapAddressRange;
-    const characterDataRange = lcdControlRegister.windowCharacterDataAddressRange;
+
+    const tileMapStart = lcdControlRegister.windowTileMapStartAddress;
+
+    const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
+    const palette = backgroundPaletteRegister.backgroundPalette;
 
     if (lcdControlRegister.backgroundCodeArea === 0) {
-      windowTileMap = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
     } else {
-      const originalData = memory.memoryBytes.subarray(tileMapRange.start, tileMapRange.end);
+      const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
       windowTileMap = new Int8Array(originalData);
     }
 
-    const scanlineIntersectsAt = windowYRegister.value - lineYRegister.value;
+    // The window can ge drawn starting at any Y position on the screen, however the first line of the window
+    // should always be the first line from the background tileset, and the second line the second, etc.
+    // To get this value, take the current line and subtract the y position of the window.
+    const yPositionInTileset = this.windowLinesDrawn;
+
+    // Per the gameboy docs, valid values for the window X register are 7 - 166, with 7 being the left edge of the
+    // screen. So to draw starting at the left edge of the screen, we subtract 7.
+    const correctedWindowX = windowXRegister.value - 7;
 
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
-      if (windowXRegister.value < screenX) {
-        continue; // we are to the left of the window, don't draw
+      // If the current pixel is to the left of the start of the window, skip to the next horizontal pixel
+      if (screenX < correctedWindowX) {
+        continue;
       }
 
-      const tileMapIndex = this.getTileIndexFromPixelLocation(screenX, windowYRegister.value);
+      // Just like the Y position, regardless of the starting X position of the window, the first horizontal
+      // pixel should be the leftmost pixel in the tilset. So we perform the same operation, just on the x values.
+      const xPositionInTileset = screenX - correctedWindowX;
+
+      const tileMapIndex = this.getTileIndexFromPixelLocation(xPositionInTileset, yPositionInTileset);
       const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
+
+      const xPosInTile = xPositionInTileset - tilePixelPosition.x;
+      const yPosInTile = yPositionInTileset - tilePixelPosition.y;
+
+      const bytePositionInTile = yPosInTile * bytesPerCharacter;
+      const relativeOffset = lcdControlRegister.backgroundCodeArea === 0 ? 0 : 128;
+      const tileCharIndex = windowTileMap[tileMapIndex] + relativeOffset;
+      const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
+
+      const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
+      const lowerByte = memory.readByte(currentTileLineBytePosition);
+      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+
+      const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
+      const paletteColor = palette[paletteIndex];
+      const color = colors[paletteColor];
+
+      this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
     }
+
+    // The number of window lines drawn must be kept track of. This is reset after each frame is drawn.
+    // Since the draw function exits before this line if a window line isn't drawn onscreen, adding to the
+    // lines drawn here works to keep track of this.
+    this.windowLinesDrawn++;
   }
 
 
