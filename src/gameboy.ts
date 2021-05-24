@@ -55,7 +55,7 @@ export class Gameboy {
 
       this.fps = 1000 / (currentTime - previousTime);
       previousTime = currentTime;
-      spu.tick(cycles, currentTime)
+      // spu.tick(cycles, currentTime);
       cycles = cycles % GPU.CyclesPerFrame;
 
       requestAnimationFrame(runFrame);
