@@ -1,6 +1,6 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
-import { asUint8, getBit } from "@/helpers/binary-helpers";
+import { asUint8, convertUint8ToInt8, getBit } from "@/helpers/binary-helpers";
 import {
   backgroundPaletteRegister,
   interruptRequestRegister,
@@ -121,8 +121,10 @@ export class GPU {
       return;
     }
 
+    if (lcdControlRegister.isBackgroundDisplayOn) {
+      this.drawBackgroundLine();
+    }
 
-    this.drawBackgroundLine();
     if (lcdControlRegister.isWindowingOn) {
       this.drawWindowLine();
     }
@@ -138,11 +140,11 @@ export class GPU {
     const tileMapStart = lcdControlRegister.backgroundTileMapStartAddress;
     const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
 
-    if (lcdControlRegister.backgroundCodeArea === 0) {
-      backgroundTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
-    } else {
+    if (lcdControlRegister.backgroundCharacterData === 0) {
       const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
       backgroundTileMap = new Int8Array(originalData);
+    } else {
+      backgroundTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
     }
 
     const palette = backgroundPaletteRegister.backgroundPalette;
@@ -167,7 +169,7 @@ export class GPU {
 
         const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
-        const relativeOffset = lcdControlRegister.backgroundCodeArea === 0 ? 0 : 128;
+        const relativeOffset = lcdControlRegister.backgroundCharacterData === 0 ? 128 : 0;
         const tileCharIndex = backgroundTileMap[tileMapIndex] + relativeOffset;
         const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
@@ -201,11 +203,11 @@ export class GPU {
     const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
     const palette = backgroundPaletteRegister.backgroundPalette;
 
-    if (lcdControlRegister.backgroundCodeArea === 0) {
-      windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
-    } else {
+    if (lcdControlRegister.backgroundCharacterData === 0) {
       const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
       windowTileMap = new Int8Array(originalData);
+    } else {
+      windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
     }
 
     // The window can ge drawn starting at any Y position on the screen, however the first line of the window
@@ -234,7 +236,7 @@ export class GPU {
       const yPosInTile = yPositionInTileset - tilePixelPosition.y;
 
       const bytePositionInTile = yPosInTile * bytesPerCharacter;
-      const relativeOffset = lcdControlRegister.backgroundCodeArea === 0 ? 0 : 128;
+      const relativeOffset = lcdControlRegister.backgroundCharacterData === 0 ? 128 : 0;
       const tileCharIndex = windowTileMap[tileMapIndex] + relativeOffset;
       const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
