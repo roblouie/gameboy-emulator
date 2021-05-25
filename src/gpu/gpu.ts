@@ -1,6 +1,6 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
-import { asUint8, convertUint8ToInt8, getBit } from "@/helpers/binary-helpers";
+import { asUint8, clearBit, getBit } from "@/helpers/binary-helpers";
 import {
   backgroundPaletteRegister,
   interruptRequestRegister,
@@ -263,12 +263,34 @@ export class GPU {
     const spriteOffsetY = -16;
     const characterDataStart = 0x8000;
     const bytesPerLine = 2;
-    const linesPerTile = lcdControlRegister.objectHeight;
-    const bytesPerTile = bytesPerLine * linesPerTile;
+    const linesPerTileIndex = 8;
+    const bytesPerTile = bytesPerLine * linesPerTileIndex;
     let objectsDrawnThisLine = 0;
     const maxObjectsPerLine = 10;
 
-    objectAttributeMemoryRegisters.forEach(oamRegister => {
+    // Sprites are prioritized first by their order in oam memory, with sprites earlier in memory given higher priority,
+    // then by their X position, with lower X positions drawn on top of higher X positions. To accomplish the first
+    // sort we simply reverse the array since when drawing to canvas each item is drawn on top of the last. The second
+    // sort is accomplished by then sorting the reversed array by X position.
+
+    // TODO: Fix the fact that this makes the 10 sprite per line drawing limit also work backwards, removing the left-
+    // most sprite on the line rather than the rightmost.
+    const prioritizedSprites = objectAttributeMemoryRegisters
+      .slice()
+      .reverse()
+      .sort((oamRegisterA, oamRegisterB) => {
+        return oamRegisterB.xPosition - oamRegisterA.xPosition;
+      });
+
+    // Idea:
+    // First filter down prioritizedSprites to a new array that only contains sprites that intersect the current Y line
+    // Then perform the reverse + sort on the filtered array to put them in priority order
+    // Then going from screen left (0) to screen right (screen width), find the first sprite that intersects that X
+    // pixel. After drawing 8 pixels, increase objectsDrawnThisLine. When the limit is reached, stop
+    // This should resolve the issue where the reverse order breaks the drawing limit, however this will create a
+    // filter call on every line drawn and a find inside a loop, so there is a possible performance concern.
+
+    prioritizedSprites.forEach(oamRegister => {
       const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
 
       if (objectsDrawnThisLine === maxObjectsPerLine || xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
@@ -290,8 +312,11 @@ export class GPU {
         return;
       }
 
+      // For 8 x 16 sprites, the lowest bit must not be used, so it is cleared out here for 8x16
+      const tileIndex = lcdControlRegister.objectHeight === 16 ? clearBit(characterCode, 0) : characterCode;
+
       const bytePositionInTile = scanlineIntersectsYAt * bytesPerLine;
-      const tileCharBytePosition = characterCode * bytesPerTile;
+      const tileCharBytePosition = tileIndex * bytesPerTile;
       const currentTileLineBytePosition = characterDataStart + tileCharBytePosition + bytePositionInTile;
 
       const lowerByte = memory.readByte(currentTileLineBytePosition);
