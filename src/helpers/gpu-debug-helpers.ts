@@ -1,6 +1,6 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
-import { getBit } from "@/helpers/binary-helpers";
+import { asUint8, convertUint8ToInt8, getBit } from "@/helpers/binary-helpers";
 import {
   backgroundPaletteRegister,
   lcdControlRegister, objectAttributeMemoryRegisters,
@@ -49,8 +49,8 @@ function drawTileAt(imageData: EnhancedImageData, x: number, y: number, tileStar
   let imageDataY = y;
 
   for (let byteIndex = 0; byteIndex < 16; byteIndex+= 2) {
-    const lowerByte = memory.readByte(0x8000 + tileStart + byteIndex);
-    const higherByte = memory.readByte(0x8000 + tileStart + byteIndex + 1);
+    const lowerByte = memory.readByte(0x8800 + convertUint8ToInt8(tileStart + byteIndex));
+    const higherByte = memory.readByte(0x8800 + convertUint8ToInt8(tileStart + byteIndex + 1));
 
     for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
       const shadeLower = getBit(lowerByte, bitPosition);

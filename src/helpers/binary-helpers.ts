@@ -23,6 +23,11 @@ export function asUint16(value: number) {
   return value & 0xffff;
 }
 
+export function convertUint8ToInt8(value: number) {
+  const confirmedUint8 = asUint8(value);
+  return (confirmedUint8 << 24) >> 24;
+}
+
 export function getLeastSignificantByte(word: number) {
   return word & 0xff;
 }
