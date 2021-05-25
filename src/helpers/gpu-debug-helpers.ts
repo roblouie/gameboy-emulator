@@ -1,6 +1,6 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
-import { asUint8, convertUint8ToInt8, getBit } from "@/helpers/binary-helpers";
+import { getBit } from "@/helpers/binary-helpers";
 import {
   backgroundPaletteRegister,
   lcdControlRegister, objectAttributeMemoryRegisters,
@@ -21,7 +21,7 @@ let oamImageDate = new EnhancedImageData(320, 320);
 
 export function backgroundTilesToImageData(): ImageData {
   let backgroundTileMap: Uint8Array | Int8Array;
-  backgroundTileMap = memory.memoryBytes.subarray(0x9c00, 0x9c00 + 0x1000);
+  backgroundTileMap = memory.memoryBytes.subarray(0x9800, 0x9800 + 0x1000);
 
   const enhancedImageData = new EnhancedImageData(256, 256);
   let imageDataX = 0;
@@ -49,8 +49,8 @@ function drawTileAt(imageData: EnhancedImageData, x: number, y: number, tileStar
   let imageDataY = y;
 
   for (let byteIndex = 0; byteIndex < 16; byteIndex+= 2) {
-    const lowerByte = memory.readByte(0x8800 + convertUint8ToInt8(tileStart + byteIndex));
-    const higherByte = memory.readByte(0x8800 + convertUint8ToInt8(tileStart + byteIndex + 1));
+    const lowerByte = memory.readByte(0x8000 + tileStart + byteIndex);
+    const higherByte = memory.readByte(0x8000 + tileStart + byteIndex + 1);
 
     for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
       const shadeLower = getBit(lowerByte, bitPosition);
