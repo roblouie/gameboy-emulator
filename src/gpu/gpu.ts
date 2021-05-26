@@ -41,6 +41,8 @@ export class GPU {
   screen: EnhancedImageData;
   private cycleCounter = 0;
 
+  private windowLinesDrawn = 0;
+
   constructor() {
     this.screen = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
   }
@@ -116,25 +118,34 @@ export class GPU {
     }
   }
 
+  // The gpu logic now passes the acid test, however it achieves background/window vs sprite priority
+  // by returning all pixel values per line out of drawBackgroundLine and drawWindowLine and sending them into
+  // drawSpriteLine. While this does work, it feels a bit clunky. A possible better solution is to update
+  // drawSpriteLine to go per pixel from left to right and draw out the intersecting sprites. While this is initially
+  // less performant than currently just drawing only the sprites that intersect the y line, it would allow all
+  // three methods to use generator functions to return each pixel. Might be worth the tradeoff overall.
   drawScanline() {
     if (!lcdControlRegister.isLCDControllerOperating) {
       return;
     }
 
+    let backgroundLineValues: number[] = [];
     if (lcdControlRegister.isBackgroundDisplayOn) {
-      this.drawBackgroundLine();
+      backgroundLineValues = this.drawBackgroundLine();
     }
 
+    let windowLineValues: number[] = [];
     if (lcdControlRegister.isWindowingOn) {
-      this.drawWindowLine();
+      windowLineValues = this.drawWindowLine();
     }
 
     if (lcdControlRegister.isObjOn) {
-      this.drawSpriteLine();
+      this.drawSpriteLine(backgroundLineValues, windowLineValues);
     }
   }
 
   drawBackgroundLine() {
+    const backgroundLineValues = [];
     let backgroundTileMap: Uint8Array | Int8Array;
     const bytesPerCharacter = 2;
     const tileMapStart = lcdControlRegister.backgroundTileMapStartAddress;
@@ -157,7 +168,7 @@ export class GPU {
       if (!lcdControlRegister.isBackgroundDisplayOn) {
         const paletteColor = palette[0];
         const color = colors[paletteColor];
-
+        backgroundLineValues.push(0);
         this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
       } else {
         const scrolledX = asUint8(screenX + scrollXRegister.value);
@@ -178,6 +189,7 @@ export class GPU {
         const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
         const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
+        backgroundLineValues.push(paletteIndex);
 
         const paletteColor = palette[paletteIndex];
         const color = colors[paletteColor];
@@ -185,16 +197,17 @@ export class GPU {
         this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
       }
     }
-  }
 
-  private windowLinesDrawn = 0;
+    return backgroundLineValues;
+  }
 
   private drawWindowLine() {
     // If our current scanline is above where window drawing starts, simply exit immediately
     if (lineYRegister.value < windowYRegister.value || windowXRegister.value > 166) {
-      return;
+      return [];
     }
 
+    const windowLineValues = [];
     const bytesPerCharacter = 2;
     let windowTileMap: Uint8Array | Int8Array;
 
@@ -210,7 +223,7 @@ export class GPU {
       windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
     }
 
-    // The window can ge drawn starting at any Y position on the screen, however the first line of the window
+    // The window can be drawn starting at any Y position on the screen, however the first line of the window
     // should always be the first line from the background tileset, and the second line the second, etc.
     // To get this value, take the current line and subtract the y position of the window.
     const yPositionInTileset = this.windowLinesDrawn;
@@ -222,6 +235,7 @@ export class GPU {
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
       // If the current pixel is to the left of the start of the window, skip to the next horizontal pixel
       if (screenX < correctedWindowX) {
+        windowLineValues.push(0);
         continue;
       }
 
@@ -245,6 +259,7 @@ export class GPU {
       const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
       const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
+      windowLineValues.push(paletteIndex);
       const paletteColor = palette[paletteIndex];
       const color = colors[paletteColor];
 
@@ -255,49 +270,27 @@ export class GPU {
     // Since the draw function exits before this line if a window line isn't drawn onscreen, adding to the
     // lines drawn here works to keep track of this.
     this.windowLinesDrawn++;
+
+    return windowLineValues;
   }
 
 
-  drawSpriteLine() {
+  drawSpriteLine(backgroundLineValues: number[], windowLineValues: number[]) {
     const spriteOffsetX = -8;
     const spriteOffsetY = -16;
     const characterDataStart = 0x8000;
     const bytesPerLine = 2;
     const linesPerTileIndex = 8;
     const bytesPerTile = bytesPerLine * linesPerTileIndex;
-    let objectsDrawnThisLine = 0;
     const maxObjectsPerLine = 10;
 
-    // Sprites are prioritized first by their order in oam memory, with sprites earlier in memory given higher priority,
-    // then by their X position, with lower X positions drawn on top of higher X positions. To accomplish the first
-    // sort we simply reverse the array since when drawing to canvas each item is drawn on top of the last. The second
-    // sort is accomplished by then sorting the reversed array by X position.
+    const intersectingSprites = objectAttributeMemoryRegisters.filter(oamRegister => {
+      const { xPosition, yPosition } = oamRegister;
 
-    // TODO: Fix the fact that this makes the 10 sprite per line drawing limit also work backwards, removing the left-
-    // most sprite on the line rather than the rightmost.
-    const prioritizedSprites = objectAttributeMemoryRegisters
-      .slice()
-      .reverse()
-      .sort((oamRegisterA, oamRegisterB) => {
-        return oamRegisterB.xPosition - oamRegisterA.xPosition;
-      });
-
-    // Idea:
-    // First filter down prioritizedSprites to a new array that only contains sprites that intersect the current Y line
-    // Then perform the reverse + sort on the filtered array to put them in priority order
-    // Then going from screen left (0) to screen right (screen width), find the first sprite that intersects that X
-    // pixel. After drawing 8 pixels, increase objectsDrawnThisLine. When the limit is reached, stop
-    // This should resolve the issue where the reverse order breaks the drawing limit, however this will create a
-    // filter call on every line drawn and a find inside a loop, so there is a possible performance concern.
-
-    prioritizedSprites.forEach(oamRegister => {
-      const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
-
-      if (objectsDrawnThisLine === maxObjectsPerLine || xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
-        return;
+      if (xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
+        return false;
       }
 
-      const spriteX = xPosition + spriteOffsetX;
       const spriteY = yPosition + spriteOffsetY;
 
       let scanlineIntersectsYAt = lineYRegister.value - spriteY;
@@ -307,9 +300,27 @@ export class GPU {
         scanlineIntersectsYAt = lastLineOfSprite - scanlineIntersectsYAt;
       }
 
-      const isIntersectingY = scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lastLineOfSprite;
-      if (!isIntersectingY) {
-        return;
+      return scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lastLineOfSprite;
+    });
+
+    const prioritizedSprites = intersectingSprites
+      .slice(0, maxObjectsPerLine)
+      .reverse()
+      .sort((oamRegisterA, oamRegisterB) => {
+        return oamRegisterB.xPosition - oamRegisterA.xPosition;
+      })
+
+    prioritizedSprites.forEach(oamRegister => {
+      const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
+
+      const spriteX = xPosition + spriteOffsetX;
+      const spriteY = yPosition + spriteOffsetY;
+
+      let scanlineIntersectsYAt = lineYRegister.value - spriteY;
+      const lastLineOfSprite = lcdControlRegister.objectHeight - 1;
+
+      if (oamRegister.isFlippedVertical) {
+        scanlineIntersectsYAt = lastLineOfSprite - scanlineIntersectsYAt;
       }
 
       // For 8 x 16 sprites, the lowest bit must not be used, so it is cleared out here for 8x16
@@ -328,13 +339,17 @@ export class GPU {
         const palette = objectPaletteRegisters[paletteNumber].palette;
         const paletteColor = palette[paletteIndex];
         const color = colors[paletteColor];
+        const screenX = spriteX + xPixelInTile;
 
-        if (paletteIndex !== 0) {
-          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color, paletteIndex === 0 ? 0 : 255);
+        const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
+        const isWindowSolid = windowLineValues[screenX] !== undefined && windowLineValues[screenX] !== 0;
+
+        const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
+
+        if (paletteIndex !== 0 && !isPixelBehindBackground) {
+          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color);
         }
       }
-
-      objectsDrawnThisLine++;
     });
   }
 
