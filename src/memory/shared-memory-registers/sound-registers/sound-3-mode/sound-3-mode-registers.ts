@@ -10,5 +10,5 @@ export const sound3ModeRegisters = {
   soundLength: new Sound3LengthRegister(),
   outputLevel: new OutputLevelRegister(),
   lowOrderFrequency: new LowOrderFrequencyRegister(0xff1d, 'NR33'),
-  higherOrderFrequency: new HighOrderFrequencyRegister(0xff1e, 'NR34'),
+  highOrderFrequency: new HighOrderFrequencyRegister(0xff1e, 'NR34'),
 }
