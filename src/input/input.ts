@@ -15,6 +15,9 @@ export class Input {
   isPressingA = false;
   isPressingB = false;
 
+  isPollingDirections = false;
+  isPollingButtons = false;
+
   buttonPressed(button: GameboyButton) {
     this.setState(button, true);
   }
@@ -23,27 +26,30 @@ export class Input {
     this.setState(button, false);
   }
 
-  reportInput(byte: number): number {
-    let inputValue = 0b1111;
-    const isPollingDirections = ((byte >> 4) & 0b1) === 0;
-    const isPollingButtons = ((byte >> 5) & 0b1) === 0;
+  setInputToCheck(byte: number) {
+    this.isPollingButtons = ((byte >> 4) & 0b1) === 1;
+    this.isPollingDirections = ((byte >> 5) & 0b1) === 1;
+  }
 
-    if (isPollingDirections) {
+  reportInput(): number {
+    let inputValue = 0b1111;
+
+    if (this.isPollingDirections) {
       inputValue = setBit(inputValue, 0, this.isPressingRight ? 0 : 1);
       inputValue = setBit(inputValue, 1, this.isPressingLeft ? 0 : 1);
       inputValue = setBit(inputValue, 2, this.isPressingUp ? 0 : 1);
       inputValue = setBit(inputValue, 3, this.isPressingDown ? 0 : 1);
     }
 
-    if (isPollingButtons) {
+    if (this.isPollingButtons) {
       inputValue = setBit(inputValue, 0, this.isPressingA ? 0 : 1);
       inputValue = setBit(inputValue, 1, this.isPressingB ? 0 : 1);
       inputValue = setBit(inputValue, 2, this.isPressingSelect ? 0 : 1);
       inputValue = setBit(inputValue, 3, this.isPressingStart ? 0 : 1);
     }
 
-    inputValue = setBit(inputValue, 4, isPollingButtons ? 0 : 1);
-    inputValue = setBit(inputValue, 5, isPollingButtons ? 0 : 1);
+    inputValue = setBit(inputValue, 4, this.isPollingButtons ? 0 : 1);
+    inputValue = setBit(inputValue, 5, this.isPollingDirections ? 0 : 1);
 
     return inputValue;
   }

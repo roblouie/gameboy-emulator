@@ -1,4 +1,4 @@
-import { cartridge } from "@/cartridge/cartridge";
+import { Cartridge } from "@/cartridge/cartridge";
 import {
   backgroundTilesToImageData,
   characterImageData,
@@ -8,6 +8,7 @@ import {
 import { Gameboy } from "@/gameboy";
 import { GameboyButton } from "@/input/gameboy-button.enum";
 import { memory } from "@/memory/memory";
+import { CartridgeLoader } from "@/cartridge/cartridge-loader";
 
 let canvas: HTMLCanvasElement;
 let context: CanvasRenderingContext2D;
@@ -43,7 +44,7 @@ async function onFileChange(event: Event) {
 
   if (fileElement.files && fileElement.files[0]) {
     const arrayBuffer = await fileToArrayBuffer(fileElement.files[0]);
-    cartridge.loadCartridge(arrayBuffer);
+    const cartridge = CartridgeLoader.FromArrayBuffer(arrayBuffer);
 
     console.log('title: ' + cartridge.title);
     console.log('version: ' + cartridge.versionNumber);
@@ -57,6 +58,7 @@ async function onFileChange(event: Event) {
 
 
     const gameboy = new Gameboy();
+    gameboy.instertCartridge(cartridge);
 
 
     document.addEventListener('keydown', event => {
@@ -73,8 +75,17 @@ async function onFileChange(event: Event) {
         gameboy.input.isPressingRight = true;
       }
 
-      gameboy.input.isPressingA = event.code === 'KeyA';
-      gameboy.input.isPressingB = event.code === 'KeyB'
+      if (event.code === 'KeyA') {
+        gameboy.input.isPressingA = true;
+      }
+
+      if (event.code === 'KeyB') {
+        gameboy.input.isPressingB = true;
+      }
+
+      if (event.code === 'Enter') {
+        gameboy.input.isPressingStart = true;
+      }
 
       // if (event.key === 'ArrowDown') {
       //   gameboy.input.buttonPressed(GameboyButton.Down);
@@ -94,8 +105,16 @@ async function onFileChange(event: Event) {
         gameboy.input.isPressingRight = false;
       }
 
+      if (event.code === 'KeyA') {
+        gameboy.input.isPressingA = false;
+      }
+
+      if (event.code === 'KeyB') {
+        gameboy.input.isPressingB = false;
+      }
+
       if (event.code === 'Enter') {
-        gameboy.input.isPressingStart = true;
+        gameboy.input.isPressingStart = false;
       }
 
 

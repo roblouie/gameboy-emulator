@@ -9,8 +9,9 @@ enum FlagCondition {
   C
 }
 
-//   .byte $DC,<taken,>taken ; CALL C,taken
-
+// ****************
+// * Call nn
+// ****************
 export function getCallAndReturnOperations(cpu: CPU): Operation[] {
   const callAndReturnOperations: Operation[] = [];
   const { registers } = cpu;
@@ -25,6 +26,9 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     cycleTime: 6,
     execute() {
       const callToAddress = memory.readWord(registers.programCounter.value);
+      if (callToAddress === 0x7d19) {
+        debugger;
+      }
       registers.programCounter.value += 2;
 
       const returnToAddress = registers.programCounter.value;

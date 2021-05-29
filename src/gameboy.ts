@@ -7,7 +7,7 @@ import {
   updateRegisterStateCache
 } from "@/helpers/cpu-debug-helpers";
 import { memory } from "@/memory/memory";
-import { CartridgeEntryPointOffset } from "@/cartridge/cartridge";
+import { Cartridge } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
 import { Spu } from "./spu/spu";
 import { lcdControlRegister } from "@/memory/shared-memory-registers";
@@ -33,7 +33,7 @@ export class Gameboy {
     let debug = true;
 
     // Initialize registers, probalby should be moved to CPU
-    cpu.registers.programCounter.value = CartridgeEntryPointOffset;
+    cpu.registers.programCounter.value = Cartridge.EntryPointOffset;
     cpu.registers.stackPointer.value = 0xfffe;
     cpu.registers.HL.value = 0x014d;
     cpu.registers.C.value = 0x13;
@@ -66,6 +66,10 @@ export class Gameboy {
 
   onFrameFinished(callback: Function) {
     this.frameFinishedCallback = callback;
+  }
+
+  instertCartridge(cartridge: Cartridge) {
+    memory.insertCartridge(cartridge);
   }
 
 }

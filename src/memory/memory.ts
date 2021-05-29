@@ -1,4 +1,4 @@
-import { cartridge } from "@/cartridge/cartridge";
+import { Cartridge } from "@/cartridge/cartridge";
 import { controllerDataRegister, dmaTransferRegister } from "@/memory/shared-memory-registers";
 import { dmaTransferController } from "@/memory/dma-transfer-controller";
 import { input } from "@/input/input";
@@ -8,49 +8,58 @@ const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);
 const memoryBytes = new Uint8Array(memoryBuffer);
 
-export const memory = {
+class Memory {
+  cartridge?: Cartridge;
+
+  insertCartridge(cartridge: Cartridge) {
+    this.cartridge = cartridge;
+  }
+
   get memoryBytes() {
     return memoryBytes;
-  },
+  }
 
   reset() {
     memoryBytes.fill(0, 0, memoryBytes.length - 1);
-  },
+  }
 
   readByte(address: number) {
     if (isAccessingCartridge(address)) {
-      return cartridge.readByte(address);
-    }
-    else if (isReadingInput(address)) {
-      const inputValue = memoryView.getUint8(address);
-      const result = input.reportInput(inputValue);
-      return result;
+      return this.cartridge ? this.cartridge.readByte(address) : 0;
+    } else if (isReadingInput(address)) {
+      return input.reportInput();
     } else {
       return memoryView.getUint8(address);
     }
-  },
+  }
 
   readSignedByte(address: number) {
     if (isAccessingCartridge(address)) {
-      return cartridge.readSignedByte(address);
+      return this.cartridge ? this.cartridge.readSignedByte(address) : 0;
     } else {
       return memoryView.getInt8(address);
     }
-  },
+  }
 
   readWord(address: number) {
     if (isAccessingCartridge(address)) {
-      return cartridge.readWord(address);
+      return this.cartridge ? this.cartridge.readWord(address) : 0;
     } else {
       return memoryView.getUint16(address, true);
     }
-  },
+  }
 
   writeByte(address: number, value: number) {
     if (isAccessingCartridge(address)) {
-      //cartridge.writeByte(address, value);
+      this.cartridge?.writeByte(address, value);
       return;
     }
+
+    if (isReadingInput(address)) {
+      input.setInputToCheck(value);
+      return;
+    }
+
 
     if (address === dividerRegister.offset) {
       memoryView.setUint8(dividerRegister.offset, 0);
@@ -60,19 +69,21 @@ export const memory = {
     if (isDmaTransfer(address)) {
       dmaTransferController.transfer();
     }
-  },
+  }
 
   writeWord(address: number, value: number) {
     if (isAccessingCartridge(address)) {
-      return //cartridge.writeWord(address, value);
+      this.cartridge?.writeWord(address, value);
     } else {
       memoryView.setUint16(address, value, true);
     }
   }
 }
 
+export const memory = new Memory();
+
 function isAccessingCartridge(address: number): boolean {
-  return address <= 0x7FFF; // || (address >= 0xA000 && address <= 0xBFFF);
+  return address <= 0x7FFF || (address >= 0xA000 && address <= 0xBFFF);
 }
 
 function isDmaTransfer(address: number) {
