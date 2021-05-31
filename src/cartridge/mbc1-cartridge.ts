@@ -1,12 +1,99 @@
 import { Cartridge } from "@/cartridge/cartridge";
+import { instructionCache } from "@/helpers/cpu-debug-helpers";
+
+enum Mbc1WriteType {
+  RamGateRegister,
+  Bank1Register,
+  Bank2Register,
+  ModeRegister,
+  Sram
+}
+
+enum Mbc1ReadType {
+  RomBankZero,
+  RomBankZeroMode1,
+  RomBank,
+  Sram,
+  Invalid
+}
 
 export class Mbc1Cartridge extends Cartridge{
   private isRamEnabled = false;
   private bank1 = 0b00001;
   private bank2 = 0b0;
   private mode = 0b0;
+  private ramDataView: DataView;
+  private ramBytes: Uint8Array;
+
+
+  constructor(gameDataView: DataView) {
+    super(gameDataView);
+    this.ramDataView = new DataView(new ArrayBuffer(this.ramSize));
+    this.ramBytes = new Uint8Array(this.ramDataView.buffer);
+    this.ramBytes.fill(0xff);
+  }
+
 
   override writeByte(address: number, value: number) {
+    const sramWrite = (address: number, value: number) => this.ramDataView.setUint8(address, value);
+    this.write(address, value, sramWrite);
+  }
+
+  override writeWord(address: number, value: number) {
+    const sramWrite = (address: number, value: number) => this.ramDataView.setUint16(address, value, true);
+    this.write(address, value, sramWrite);
+  }
+
+  override readByte(address: number): number {
+    const cartridgeRead = (address: number) => this.gameDataView.getUint8(address);
+    const sramRead = (address: number) => this.ramDataView.getUint8(address);
+    return this.read(address, cartridgeRead, sramRead);
+  }
+
+  override readSignedByte(address: number): number {
+    const cartridgeRead = (address: number) => this.gameDataView.getInt8(address);
+    const sramRead = (address: number) => this.ramDataView.getInt8(address);
+    return this.read(address, cartridgeRead, sramRead);
+  }
+
+  override readWord(address: number): number {
+    const cartridgeRead = (address: number) => this.gameDataView.getUint16(address, true);
+    const sramRead = (address: number) => this.ramDataView.getUint16(address, true);
+    return this.read(address, cartridgeRead, sramRead);
+  }
+
+  private read(address: number, readFromCartridge: Function, readFromSram: Function) {
+    const maskedAddress = address & 0b11111111111111;
+
+    if (address >= 0x0000 && address <= 0x3fff) {
+      if (this.mode === 0) {
+        return readFromCartridge(maskedAddress);
+      } else {
+        const bankNumber = this.bank2 << 5;
+        const bankCorrectedAddress = (bankNumber << 14) + maskedAddress;
+        const wrappedForSize = bankCorrectedAddress & (this.romSize - 1);
+        return readFromCartridge(wrappedForSize);
+      }
+    } else if (address >= 0x4000 && address <= 0x7fff) {
+      const bankNumber = (this.bank2 << 5) + this.bank1;
+      const bankCorrectedAddress = (bankNumber << 14) + maskedAddress;
+      const wrappedForSize = bankCorrectedAddress & (this.romSize - 1);
+      return readFromCartridge(wrappedForSize);
+    } else {
+      if (!this.isRamEnabled) {
+        return 0xff;
+      }
+      const maskedAddress = address & 0b1111111111111;
+      if (this.mode === 0 || this.ramSize === 0x008000) {
+        return readFromSram(maskedAddress);
+      } else {
+        const bankedAddress = (this.bank2 << 13) + maskedAddress;
+        return readFromSram(bankedAddress);
+      }
+    }
+  }
+
+  private write(address: number, value: number, writeToSram: Function) {
     if (this.isRamGate(address)) {
       const valueToEnableRam = 0b1010;
       const lowerNibble = value & 0b1111;
@@ -14,63 +101,21 @@ export class Mbc1Cartridge extends Cartridge{
     } else if (this.isBank1(address)) {
       const masked = value & 0b11111;
       this.bank1 = masked === 0 ? 1 : masked; // zero not allowed in bank 1
-
     } else if (this.isBank2(address)) {
       this.bank2 = value & 0b11;
-
     } else if (this.isMode(address)) {
       this.mode = value & 0b1;
-    } else if (this.isRam(address)) {
-      if (this.isRamEnabled) {
-        const maskedAddress = address & 0b1111111111111;
-
-        if (this.mode === 0) {
-          super.writeByte(0xa000 + maskedAddress, value);
-        } else {
-          const bankedAddress = (this.bank2 << 13) + maskedAddress;
-          const adjusted = 0xa000 + bankedAddress;
-          const wrapped = adjusted & (this.romSize - 1);
-          super.writeByte(wrapped, value);
-        }
-      }
-    }
-  }
-
-  override readByte(address: number): number {
-    const maskedAddress = address & 0b11111111111111;
-
-    if (address >= 0x0000 && address <= 0x3fff) {
-      if (this.mode === 0) {
-        return super.readByte(maskedAddress);
+    } else if (this.isRam(address) && this.isRamEnabled) {
+      const maskedAddress = address & 0b1111111111111;
+      if (this.mode === 0 || this.ramSize === 0x008000) {
+        writeToSram(maskedAddress, value);
       } else {
-        const bankNumber = this.bank2 << 5;
-        const bankCorrectedAddress = (bankNumber << 14) + maskedAddress;
-        const wrappedForSize = bankCorrectedAddress & (this.romSize - 1);
-        return super.readByte(wrappedForSize);
-      }
-    } else if (address >= 0x4000 && address <= 0x7fff) {
-      const bankNumber = (this.bank2 << 5) + this.bank1;
-      const bankCorrectedAddress = (bankNumber << 14) + maskedAddress;
-      const wrappedForSize = bankCorrectedAddress & (this.romSize - 1);
-      return super.readByte(wrappedForSize);
-    } else if (this.isRam(address)) {
-      if (this.isRamEnabled) {
-        const maskedAddress = address & 0b1111111111111;
-
-        if (this.mode === 0) {
-          const test = super.readByte(0xa000 + maskedAddress);
-          return test;
-        } else {
-          const bankedAddress = (this.bank2 << 13) + maskedAddress;
-          const adjusted = 0xa000 + bankedAddress;
-          const wrapped = adjusted & (this.romSize - 1);
-          const test = super.readByte(wrapped);
-          return test;
-        }
+        const bankedAddress = (this.bank2 << 13) + maskedAddress;
+        writeToSram(bankedAddress, value);
       }
     }
-    return super.readByte(address);
   }
+
 
   private isRamGate(address: number) {
     return address >= 0x0000 && address <= 0x1fff;

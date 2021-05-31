@@ -12,11 +12,6 @@ export class Cartridge {
     this.gameBytes = new Uint8Array(gameDataView.buffer);
   }
 
-  // loadCartridge(gameData: ArrayBuffer) {
-  //   this.gameDataView = new DataView(gameData);
-  //   this.gameBytes = new Uint8Array(gameData);
-  // }
-
   readByte(address: number) {
     return this.gameDataView.getUint8(address);
   }
@@ -74,11 +69,11 @@ export class Cartridge {
     const sizeCode = this.gameDataView.getUint8(sizeOffset);
     const sizes = [
       0,
-      16,
-      64,
-      256,
-      1024,
-      512
+      0x002000,
+      0x008000,
+      0x032000,
+      0x128000,
+      0x512000,
     ];
 
     return sizes[sizeCode];

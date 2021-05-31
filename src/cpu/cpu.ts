@@ -48,11 +48,6 @@ export class CPU {
       return 1;
     }
 
-    // if (this.registers.programCounter.value === 0x48e7) {
-    //   console.log(instructionCache);
-    //   debugger;
-    // }
-
     const operation = this.getOperation();
 
     operation.execute();
@@ -96,15 +91,15 @@ export class CPU {
     const operation = this.operations[operationIndex];
 
     // if (this.startDebugging) {
-      updateInstructionCache(
-        operation.instruction,
-        this.registers.programCounter.value,
-        this.registers.AF.value,
-        this.registers.BC.value,
-        this.registers.DE.value,
-        this.registers.HL.value,
-        this.registers.stackPointer.value,
-      );
+    //   updateInstructionCache(
+    //     operation.instruction,
+    //     this.registers.programCounter.value,
+    //     this.registers.AF.value,
+    //     this.registers.BC.value,
+    //     this.registers.DE.value,
+    //     this.registers.HL.value,
+    //     this.registers.stackPointer.value,
+    //   );
     // }
 
     if (operation.byteDefinition === 0xcb) {
