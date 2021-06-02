@@ -9,6 +9,7 @@ import { Gameboy } from "@/gameboy";
 import { GameboyButton } from "@/input/gameboy-button.enum";
 import { memory } from "@/memory/memory";
 import { CartridgeLoader } from "@/cartridge/cartridge-loader";
+import { PulseOscillatorNode } from "@/spu/pulse-oscillator";
 
 let canvas: HTMLCanvasElement;
 let context: CanvasRenderingContext2D;
@@ -36,7 +37,19 @@ window.addEventListener('load', () => {
 
   oamCanvas = document.querySelector('#oam') as HTMLCanvasElement;
   oamContext = oamCanvas.getContext('2d') as CanvasRenderingContext2D;
+
+  document.querySelector('#play-audio').addEventListener('click', playAudio);
 });
+
+const audioContext = new AudioContext();
+const oscillator = new PulseOscillatorNode(audioContext);
+oscillator.frequency.value = 600;
+oscillator
+  .connect(audioContext.destination);
+
+function playAudio() {
+  oscillator.start();
+}
 
 
 async function onFileChange(event: Event) {

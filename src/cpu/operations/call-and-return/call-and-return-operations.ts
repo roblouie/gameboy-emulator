@@ -26,9 +26,6 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     cycleTime: 6,
     execute() {
       const callToAddress = memory.readWord(registers.programCounter.value);
-      if (callToAddress === 0x7d19) {
-        debugger;
-      }
       registers.programCounter.value += 2;
 
       const returnToAddress = registers.programCounter.value;

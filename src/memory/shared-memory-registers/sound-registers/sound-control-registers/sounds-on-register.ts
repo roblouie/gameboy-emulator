@@ -1,13 +1,17 @@
 import { memory } from "@/memory/memory";
 import { SingleByteMemoryRegister } from "../../memory-register";
+import { setBit } from "@/helpers/binary-helpers";
 
-
-export class SoundsOnRegister implements SingleByteMemoryRegister {
+class SoundsOnRegister implements SingleByteMemoryRegister {
   offset = 0xff26;
   name = 'NR52';
 
   get value() {
     return memory.readByte(this.offset);
+  }
+
+  set value(byte: number) {
+    memory.writeByte(this.offset, byte);
   }
 
   get isAllSoundOn() {
@@ -26,7 +30,13 @@ export class SoundsOnRegister implements SingleByteMemoryRegister {
     return ((this.value >> 1) & 0b1) === 1;
   }
 
-  get isSound1ON() {
+  get isSound1On() {
     return (this.value & 0b1) === 1;
   }
+
+  set isSound1On(isOn: boolean) {
+    this.value = setBit(this.value, 0, isOn ? 1 : 0);
+  }
 }
+
+export const soundsOnRegister = new SoundsOnRegister();

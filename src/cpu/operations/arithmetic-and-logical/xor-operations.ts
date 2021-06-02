@@ -31,9 +31,6 @@ export function createXorOperations(cpu: CPU): Operation[] {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        if (registers.programCounter.value === 0x1da) {
-          debugger;
-        }
         registers.A.value = xorAndSetFlags(registers.A.value, register.value);
       }
     });

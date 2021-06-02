@@ -7,7 +7,7 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
   name: string;
   
   constructor(offset: number, name: string) {
-    this.offset = offset,
+    this.offset = offset;
     this.name = name
   }
 
@@ -15,8 +15,12 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
     return memory.readByte(this.offset);
   }
 
-  get numberOfEnvelopSteps() {
+  get initialVolume() {
     return this.value >> 4;
+  }
+
+  get defaultVolumeAsDecimal() {
+    return this.initialVolume / 15;
   }
   
   get isEnvelopeRising() {
@@ -27,7 +31,7 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
     return (this.value & 0b111);
   }
   
-  get lengthOfEnvelopInSeconds() {
-    return this.numberOfEnvelopSteps * (1/64) * this.lengthOfEnvelopSteps
+  get lengthOfEnvelopeInSeconds() {
+    return this.initialVolume * this.lengthOfEnvelopSteps * (1/64);
   }
 }

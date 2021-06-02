@@ -46,7 +46,7 @@ export class Gameboy {
       while (cycles <= GPU.CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
-        // spu.tick(cycleForTick, currentTime);
+        spu.tick(cycleForTick, currentTime);
         cycles += cycleForTick;
       }
 
