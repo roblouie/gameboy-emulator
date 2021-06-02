@@ -38,7 +38,7 @@ window.addEventListener('load', () => {
   oamCanvas = document.querySelector('#oam') as HTMLCanvasElement;
   oamContext = oamCanvas.getContext('2d') as CanvasRenderingContext2D;
 
-  document.querySelector('#play-audio').addEventListener('click', playAudio);
+  // document.querySelector('#play-audio').addEventListener('click', playAudio);
 });
 
 const audioContext = new AudioContext();
@@ -153,16 +153,16 @@ async function onFileChange(event: Event) {
       // vramContext.putImageData(characterImageData(), 0, 0);
       // vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
 
-      backgroundContext.imageSmoothingEnabled = false;
+      // backgroundContext.imageSmoothingEnabled = false;
       // backgroundContext.clearRect(0, 0, 600, 600);
 
-      backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
+      // backgroundContext.putImageData(backgroundTilesToImageData(), 0, 0);
 
 
-      oamContext.imageSmoothingEnabled = false;
-      oamContext.clearRect(0, 0, 512, 512);
-      oamContext.putImageData(drawOam(), 0, 0);
-      oamContext.drawImage(oamCanvas, 0, 0, 8*oamCanvas.width, 8*oamCanvas.height );
+      // oamContext.imageSmoothingEnabled = false;
+      // oamContext.clearRect(0, 0, 512, 512);
+      // oamContext.putImageData(drawOam(), 0, 0);
+      // oamContext.drawImage(oamCanvas, 0, 0, 8*oamCanvas.width, 8*oamCanvas.height );
     });
 
     gameboy.run();

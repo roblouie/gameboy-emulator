@@ -1,12 +1,12 @@
+import {PulseOscillatorNode} from "@/spu/pulse-oscillator";
 import {
-  lengthAndDutyCycleRegister,
-  lowOrderFrequencyRegister,
-  highOrderFrequencyRegister, envelopeControlRegister, sweepControlRegister
-} from "@/memory/shared-memory-registers/sound-registers/sound-1-mode/sound-1-mode-registers";
-import { memory } from "@/memory/memory";
-import { PulseOscillatorNode } from "@/spu/pulse-oscillator";
+  envelopeControlRegister,
+  highOrderFrequencyRegister,
+  lengthAndDutyCycleRegister, lowOrderFrequencyRegister
+} from "@/memory/shared-memory-registers/sound-registers/sound-2-mode/sound-2-mode-registers";
+import {memory} from "@/memory/memory";
 
-export class Sound1 {
+export class Sound2 {
   pulseOscillator: PulseOscillatorNode;
   gainNode: GainNode;
 
@@ -58,7 +58,6 @@ export class Sound1 {
       this.gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
       this.pulseOscillator.frequency.value = this.getFrequency();
       this.setEnvelope();
-      this.setSweepShift();
       this.updateDutyCycle();
 
       if (!highOrderFrequencyRegister.isContinuousSelection) {
@@ -80,21 +79,5 @@ export class Sound1 {
       const gainToRampTo = envelopeControlRegister.isEnvelopeRising ? 1 : 0;
       this.gainNode.gain.linearRampToValueAtTime(gainToRampTo, envelopeControlRegister.lengthOfEnvelopeInSeconds);
     }
-  }
-
-  //TODO: Sweep is wrong, it does the full sweep in sweep time instead of one step. Fix
-  // Might need to use actual cycles to set this
-  private setSweepShift() {
-    if (sweepControlRegister.sweepTime === 0) {
-      return;
-    }
-
-    const shiftExponent = Math.pow(2, sweepControlRegister.sweepShiftNumber);
-    const pitchValue = this.pulseOscillator.frequency.value / shiftExponent;
-    const pitchDirectionalValue = sweepControlRegister.isSweepInrease ? -pitchValue : pitchValue;
-    const pitchTarget = this.pulseOscillator.frequency.value + pitchDirectionalValue;
-    const timeTarget = this.audioContext.currentTime + sweepControlRegister.sweepTimeInSeconds;
-
-    this.pulseOscillator.frequency.linearRampToValueAtTime(pitchTarget, timeTarget);
   }
 }
