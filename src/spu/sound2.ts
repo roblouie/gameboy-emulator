@@ -27,6 +27,7 @@ export class Sound2 {
 
   tick(elapsedTime: number) {
     //TODO: Take this out of here once there is a mute/unmute button that can start audio contexts correctly
+    // this.gainNode.gain.value = 1;
     if (this.isContextStarted) {
       this.pulseOscillator.start();
       this.isContextStarted = false;

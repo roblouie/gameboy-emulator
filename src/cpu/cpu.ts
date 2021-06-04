@@ -18,6 +18,7 @@ import { TimerManager } from "@/cpu/timer-manager";
 
 
 export class CPU {
+  static OperatingHertz = 4194304;
   isInterruptMasterEnable = true;
   operations: Operation[];
   cbSubOperations: Operation[];

@@ -2,30 +2,56 @@ import { memory } from '@/memory/memory';
 import { sound3ModeRegisters } from '@/memory/shared-memory-registers';
 import { Sound1 } from "@/spu/sound1";
 import {Sound2} from "@/spu/sound2";
+import { Sound4 } from "@/spu/sound4";
+import { Sound1Hard } from "@/spu/sound-1-hard";
+import { CPU } from "@/cpu/cpu";
 
 
 export class Spu {
-  gainValue = 0.1;
+  private readonly frameSequencerStepRate = 8192;
   private previousTime = 0;
   
   private audioCtx = new AudioContext();
-  private S1MGain = this.audioCtx.createGain()
-  private S1MOscillator = this.audioCtx.createOscillator();
 
   private isOscillatorStarted = false;
 
   private sound1: Sound1;
   private sound2: Sound2;
+  private sound4: Sound4;
 
+  private sound1Hard: Sound1Hard;
+
+  private nextSampleCycles = 0;
 
   constructor() {
     // this.S1MGain.gain.value = this.gainValue;
     // this.S1MOscillator.type = 'square';
     this.sound1 = new Sound1(this.audioCtx);
     this.sound2 = new Sound2(this.audioCtx);
+    this.sound4 = new Sound4(this.audioCtx);
 
-    this.S1MOscillator.connect(this.S1MGain);
-    this.S1MGain.connect(this.audioCtx.destination);
+    this.sound1Hard = new Sound1Hard(this.audioCtx);
+  }
+
+  private static FrameSequencerHertz = 512;
+  private readonly FrameSequencerInterval = CPU.OperatingHertz / Spu.FrameSequencerHertz;
+
+  private cyclesToFrameSequencer = 0;
+
+  private frameSequencerStep = 0;
+
+  private advanceFrameSequencer() {
+    // this.sound4.setEnvelope();
+
+    // switch(this.frameSequencerStep) {
+    //   case 7:
+    //     this.sound4.setEnvelope();
+    //     break;
+    // }
+    this.frameSequencerStep++;
+    if (this.frameSequencerStep === 8) {
+      this.frameSequencerStep = 0;
+    }
   }
 
   tick(cycles: number, currentTime: number) {
@@ -38,47 +64,23 @@ export class Spu {
     }
     const timeDifference = currentTime - this.previousTime;
 
-    // this.checkIfModesInitialized(currentTime);
     this.sound1.tick(timeDifference);
     this.sound2.tick(timeDifference);
+    this.sound4.tick(cycles);
+
+    // this.sound1Hard.tick(cycles);
 
     this.previousTime = currentTime;
-  }
 
-  // main check routine performed each tick, checking to see if the initialize bit has been set by the game
-  private checkIfModesInitialized(currentTime: number) {
-    // if (sound1ModeRegisters.highOrderFrequency.isInitialize) {
-    //   this.S1MOscillator.frequency.value = this.getOscillatorFrequency(sound1ModeRegisters.lowOrderFrequency.offset);
-    //   this.setEnvelope(sound1ModeRegisters.envelopeControl.lengthOfEnvelopInSeconds, this.S1MGain, sound1ModeRegisters.envelopeControl.isEnvelopeRising);
-    //   // this.setSweepShift();
-    //   sound1ModeRegisters.highOrderFrequency.isInitialize = false;
-    // }
-  }
+    this.cyclesToFrameSequencer += cycles;
 
-  // shared features for S1M and S2M
-  private getOscillatorFrequency(memoryOffset: number) {
-    const rawValue = memory.readWord(memoryOffset) & 0b11111111111;
-    return (4194304 / (32 * (2048 - rawValue)))
-  }
 
-  private setEnvelope(lengthInSeconds: number, gainNode: GainNode, isRising: boolean) {
-    if (isRising) {
-      gainNode.gain.value = 0;
-      gainNode.gain.setTargetAtTime(this.gainValue, this.audioCtx.currentTime, lengthInSeconds);
-    } else {
-      gainNode.gain.value = this.gainValue;
-      gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, lengthInSeconds);
+
+    if (this.cyclesToFrameSequencer >= this.FrameSequencerInterval) {
+      this.advanceFrameSequencer();
+      this.cyclesToFrameSequencer -= this.FrameSequencerInterval;
     }
+
   }
 
-  // sweep shift for S1M only
-  private setSweepShift() {
-    // const shiftExponent = Math.pow(2, sound1ModeRegisters.sweepControl.sweepShiftNumber);
-    // const pitchValue = this.S1MOscillator.frequency.value / shiftExponent;
-    // const pitchDirectionalValue = sound1ModeRegisters.sweepControl.isSweepInrease ? -pitchValue : pitchValue;
-    // const pitchTarget = this.S1MOscillator.frequency.value + pitchDirectionalValue;
-    // const timeTarget = this.audioCtx.currentTime + sound1ModeRegisters.sweepControl.sweepTimeInSeconds;
-
-    // this.S1MOscillator.frequency.linearRampToValueAtTime(pitchTarget, timeTarget);
-  }
 }

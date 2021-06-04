@@ -14,6 +14,15 @@ module.exports = {
         use: 'ts-loader',
         exclude: [/node_modules/, /.spec.ts/],
       },
+      {
+        test: /\.js$/,
+        exclude: [/node_modules/, /.spec.ts/],
+        parser: {
+          javascript: {
+            worker: ["AudioWorklet() from audio-worklet", "..."]
+          }
+        }
+      }
     ],
   },
   resolve: {
