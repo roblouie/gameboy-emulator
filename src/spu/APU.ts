@@ -1,10 +1,19 @@
 import { CPU } from "@/cpu/cpu";
+import { Sound1 } from "@/spu/sound1";
 
 export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
+  private audioContext = new AudioContext();
   private cyclesToFrameSequencer = 0;
+
+  private sound1: Sound1;
+
+  constructor() {
+    this.sound1 = new Sound1(this.audioContext);
+  }
+
 
   tick(cycles: number) {
     this.cyclesToFrameSequencer += cycles;
