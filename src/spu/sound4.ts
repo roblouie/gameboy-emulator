@@ -13,11 +13,14 @@ export class Sound4 {
   whiteNoiseSampleRate?: AudioParam;
   whiteNoiseChangesPerSecond?: AudioParam;
 
+  private envelopePeriodTimer = 0;
+  private lengthTimer = 0;
+
   constructor(audioContext: AudioContext) {
     this.gainNode = new GainNode(audioContext);
     this.audioContext = audioContext;
 
-    this.gainNode.gain.value = 1;
+    this.gainNode.gain.value = 0;
 
     audioContext.audioWorklet.addModule(new URL('./white-noise-gain-processor.js', import.meta.url).toString())
       .then(() => {
@@ -34,6 +37,7 @@ export class Sound4 {
   private isStarted = false;
 
   private cyclesToFrequency = 0;
+  private previousFrequency = 0;
 
   tick(cycles: number) {
     if (this.whiteNoiseModuleLoaded) {
@@ -43,37 +47,74 @@ export class Sound4 {
           .connect(this.audioContext.destination);
         this.isStarted = true;
       }
-      this.checkIfModesInitialized();
+
+      if (continuousSelectionRegister.isInitialize) {
+        this.playSound();
+        continuousSelectionRegister.isInitialize = false;
+      }
     }
 
-    if (this.cyclesToFrequency >= 8) {
-      this.whiteNoiseChangesPerSecond!.value = polynomialRegister.frequency;
+    this.cyclesToFrequency++;
+    if (this.cyclesToFrequency > 50) {
+      const frequency = polynomialRegister.frequency;
+      if (frequency !== this.previousFrequency) {
+        this.whiteNoiseChangesPerSecond!.value = frequency;
+        this.previousFrequency = frequency;
+      }
       this.cyclesToFrequency = 0;
     }
+
   }
 
-  private checkIfModesInitialized() {
-    if (continuousSelectionRegister.isInitialize) {
-      this.gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
-      this.whiteNoiseChangesPerSecond!.value = polynomialRegister.frequency;
-      this.setEnvelope();
+  private playSound() {
+    this.whiteNoiseChangesPerSecond!.value = polynomialRegister.frequency;
 
-      if (!continuousSelectionRegister.isContinuousSelection) {
-        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime + soundLengthRegister.lengthInSeconds);
-        console.log(`White noise sound length: ${soundLengthRegister.lengthInSeconds}`);
+    this.volume = envelopeControlRegister.initialVolume;
+    this.envelopePeriodTimer = envelopeControlRegister.lengthOfEnvelopeStep;
+
+    // Initialize length
+    this.lengthTimer = soundLengthRegister.soundLength - 64;
+  }
+
+  clockVolume() {
+    const { lengthOfEnvelopeStep, isEnvelopeRising} = envelopeControlRegister;
+    if (lengthOfEnvelopeStep === 0) {
+      return;
+    }
+
+    if (this.envelopePeriodTimer > 0) {
+      this.envelopePeriodTimer--;
+    }
+
+    if (this.envelopePeriodTimer === 0) {
+      this.envelopePeriodTimer = envelopeControlRegister.lengthOfEnvelopeStep;
+
+      if (isEnvelopeRising && this.volume < 0xf) {
+        this.volume++;
       }
-      continuousSelectionRegister.isInitialize = false;
+
+      if (!isEnvelopeRising && this.volume > 0) {
+        this.volume--;
+      }
     }
   }
 
-  async setEnvelope() {
-    this.gainNode.gain.value = envelopeControlRegister.defaultVolumeAsDecimal;
+  clockLength() {
+    if (!continuousSelectionRegister.isContinuousSelection) {
+      this.lengthTimer--;
 
-    if (envelopeControlRegister.lengthOfEnvelopSteps > 0) {
-      const gainToRampTo = envelopeControlRegister.isEnvelopeRising ? 1 : 0;
-      this.gainNode.gain.linearRampToValueAtTime(gainToRampTo, this.audioContext.currentTime + envelopeControlRegister.lengthOfEnvelopeInSeconds);
-      console.log(`White noise ramping to ${gainToRampTo} in ${envelopeControlRegister.lengthOfEnvelopeInSeconds}`);
+      if (this.lengthTimer === 0) {
+        this.volume = 0;
+      }
     }
+  }
+
+  get volume() {
+    return this.gainNode.gain.value * 0xf;
+  }
+
+  set volume(newVolume) {
+    this.gainNode.gain.value = newVolume / 15;
   }
 
   // private linearFeedbackShift = 0x7fff;

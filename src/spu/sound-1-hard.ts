@@ -40,7 +40,6 @@ export class Sound1Hard {
   tick(cycles: number) {
     if (this.soundBuffer.length < this.audioBuffer.getChannelData(0).length) {
 
-
       this.cycleCounter += cycles;
       if (this.cycleCounter >= this.cyclesPerSample) {
         const sample = this.dutyCycles[lengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];

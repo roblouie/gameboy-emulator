@@ -5,13 +5,18 @@ import {
   lengthAndDutyCycleRegister, lowOrderFrequencyRegister
 } from "@/memory/shared-memory-registers/sound-registers/sound-2-mode/sound-2-mode-registers";
 import {memory} from "@/memory/memory";
+import { CPU } from "@/cpu/cpu";
+
 
 export class Sound2 {
-  pulseOscillator: PulseOscillatorNode;
-  gainNode: GainNode;
+  private pulseOscillator: PulseOscillatorNode;
+  private gainNode: GainNode;
 
-  audioContext: AudioContext;
-  isContextStarted = true;
+  private audioContext: AudioContext;
+  private isContextStarted = true;
+
+  private envelopePeriodTimer = 0;
+  private lengthTimer = 0;
 
   constructor(audioContext: AudioContext) {
     this.pulseOscillator = new PulseOscillatorNode(audioContext);
@@ -27,17 +32,19 @@ export class Sound2 {
 
   tick(elapsedTime: number) {
     //TODO: Take this out of here once there is a mute/unmute button that can start audio contexts correctly
-    // this.gainNode.gain.value = 1;
     if (this.isContextStarted) {
       this.pulseOscillator.start();
       this.isContextStarted = false;
     }
 
 
-    this.checkIfModesInitialized();
+    if (highOrderFrequencyRegister.isInitialize) {
+      this.playSound();
+      highOrderFrequencyRegister.isInitialize = false;
+    }
   }
 
-  private updateDutyCycle() {
+  private setDutyCycle() {
     switch (lengthAndDutyCycleRegister.waveformDutyCycle) {
       case 0:
         this.pulseOscillator.setTwelvePointFivePercentPulseWidth();
@@ -54,31 +61,68 @@ export class Sound2 {
     }
   }
 
-  private checkIfModesInitialized() {
-    if (highOrderFrequencyRegister.isInitialize) {
-      this.gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
-      this.pulseOscillator.frequency.value = this.getFrequency();
-      this.setEnvelope();
-      this.updateDutyCycle();
+  private playSound() {
+    // Initialize frequency
+    const frequency = this.getFrequency();
+    this.pulseOscillator.frequency.value = this.convertGameboyFrequencyToHertz(frequency);
 
-      if (!highOrderFrequencyRegister.isContinuousSelection) {
-        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime + lengthAndDutyCycleRegister.soundLengthInSeconds);
-      }
-      highOrderFrequencyRegister.isInitialize = false;
-    }
+    // Initialize envelope
+    this.volume = envelopeControlRegister.initialVolume;
+    this.envelopePeriodTimer = envelopeControlRegister.lengthOfEnvelopeStep;
+
+    // Initialize length
+    this.lengthTimer = lengthAndDutyCycleRegister.soundLength - 64;
+
+    // Set duty cycle
+    this.setDutyCycle();
   }
 
   private getFrequency() {
-    const rawValue = memory.readWord(lowOrderFrequencyRegister.offset) & 0b11111111111;
-    return 4194304 / (32 * (2048 - rawValue));
+    return memory.readWord(lowOrderFrequencyRegister.offset) & 0b11111111111;
   }
 
-  private setEnvelope() {
-    this.gainNode.gain.value = envelopeControlRegister.defaultVolumeAsDecimal;
+  private convertGameboyFrequencyToHertz(gameboyFrequency: number) {
+    return CPU.OperatingHertz / (32 * (2048 - gameboyFrequency));
+  }
 
-    if (envelopeControlRegister.lengthOfEnvelopSteps > 0) {
-      const gainToRampTo = envelopeControlRegister.isEnvelopeRising ? 1 : 0;
-      this.gainNode.gain.linearRampToValueAtTime(gainToRampTo, envelopeControlRegister.lengthOfEnvelopeInSeconds);
+  clockVolume() {
+    const { lengthOfEnvelopeStep, isEnvelopeRising} = envelopeControlRegister;
+    if (lengthOfEnvelopeStep === 0) {
+      return;
     }
+
+    if (this.envelopePeriodTimer > 0) {
+      this.envelopePeriodTimer--;
+    }
+
+    if (this.envelopePeriodTimer === 0) {
+      this.envelopePeriodTimer = envelopeControlRegister.lengthOfEnvelopeStep;
+
+      if (isEnvelopeRising && this.volume < 0xf) {
+        this.volume++;
+      }
+
+      if (!isEnvelopeRising && this.volume > 0) {
+        this.volume--;
+      }
+    }
+  }
+
+  clockLength() {
+    if (!highOrderFrequencyRegister.isContinuousSelection) {
+      this.lengthTimer--;
+
+      if (this.lengthTimer === 0) {
+        this.volume = 0;
+      }
+    }
+  }
+
+  get volume() {
+    return this.gainNode.gain.value * 0xf;
+  }
+
+  set volume(newVolume) {
+    this.gainNode.gain.value = newVolume / 15;
   }
 }

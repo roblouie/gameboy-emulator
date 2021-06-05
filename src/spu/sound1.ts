@@ -5,13 +5,21 @@ import {
 } from "@/memory/shared-memory-registers/sound-registers/sound-1-mode/sound-1-mode-registers";
 import { memory } from "@/memory/memory";
 import { PulseOscillatorNode } from "@/spu/pulse-oscillator";
+import { CPU } from "@/cpu/cpu";
 
 export class Sound1 {
-  pulseOscillator: PulseOscillatorNode;
-  gainNode: GainNode;
+  private pulseOscillator: PulseOscillatorNode;
+  private gainNode: GainNode;
 
-  audioContext: AudioContext;
-  isContextStarted = true;
+  private audioContext: AudioContext;
+  private isContextStarted = true;
+
+  private envelopePeriodTimer = 0;
+  private lengthTimer = 0;
+
+  private isSweepEnabled = false;
+  private shadowFrequency = 0;
+  private sweepTimer = 0;
 
   constructor(audioContext: AudioContext) {
     this.pulseOscillator = new PulseOscillatorNode(audioContext);
@@ -33,10 +41,13 @@ export class Sound1 {
     }
 
 
-    this.checkIfModesInitialized();
+    if (highOrderFrequencyRegister.isInitialize) {
+      this.playSound();
+      highOrderFrequencyRegister.isInitialize = false;
+    }
   }
 
-  private updateDutyCycle() {
+  private setDutyCycle() {
     switch (lengthAndDutyCycleRegister.waveformDutyCycle) {
       case 0:
         this.pulseOscillator.setTwelvePointFivePercentPulseWidth();
@@ -53,48 +64,115 @@ export class Sound1 {
     }
   }
 
-  private checkIfModesInitialized() {
-    if (highOrderFrequencyRegister.isInitialize) {
-      this.gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
-      this.pulseOscillator.frequency.value = this.getFrequency();
-      this.setEnvelope();
-      this.setSweepShift();
-      this.updateDutyCycle();
+  private playSound() {
+      // Initialize frequency
+      const frequency = this.getFrequency();
+      this.pulseOscillator.frequency.value = this.convertGameboyFrequencyToHertz(frequency);
 
-      if (!highOrderFrequencyRegister.isContinuousSelection) {
-        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime + lengthAndDutyCycleRegister.soundLengthInSeconds);
-      }
-      highOrderFrequencyRegister.isInitialize = false;
+      // Initialize envelope
+      this.volume = envelopeControlRegister.initialVolume;
+      this.envelopePeriodTimer = envelopeControlRegister.lengthOfEnvelopeStep;
+
+      // Initialize length
+      this.lengthTimer = lengthAndDutyCycleRegister.soundLength - 64;
+
+      // Initialize sweep
+      const { sweepTime, sweepAmount } = sweepControlRegister;
+      this.shadowFrequency = frequency;
+      this.resetSweepTimer();
+      this.isSweepEnabled = sweepTime > 0 || sweepAmount > 0;
+
+      // Set duty cycle
+      this.setDutyCycle();
+  }
+
+  private resetSweepTimer() {
+    this.sweepTimer = sweepControlRegister.sweepTime;
+    if (this.sweepTimer === 0) {
+      this.sweepTimer = 8;
     }
   }
 
   private getFrequency() {
-    const rawValue = memory.readWord(lowOrderFrequencyRegister.offset) & 0b11111111111;
-    return 4194304 / (32 * (2048 - rawValue));
+    return memory.readWord(lowOrderFrequencyRegister.offset) & 0b11111111111;
   }
 
-  private setEnvelope() {
-    this.gainNode.gain.value = envelopeControlRegister.defaultVolumeAsDecimal;
-
-    if (envelopeControlRegister.lengthOfEnvelopSteps > 0) {
-      const gainToRampTo = envelopeControlRegister.isEnvelopeRising ? 1 : 0;
-      this.gainNode.gain.linearRampToValueAtTime(gainToRampTo, envelopeControlRegister.lengthOfEnvelopeInSeconds);
-    }
+  private convertGameboyFrequencyToHertz(gameboyFrequency: number) {
+    return CPU.OperatingHertz / (32 * (2048 - gameboyFrequency));
   }
 
-  //TODO: Sweep is wrong, it does the full sweep in sweep time instead of one step. Fix
-  // Might need to use actual cycles to set this
-  private setSweepShift() {
-    if (sweepControlRegister.sweepTime === 0) {
+  clockVolume() {
+    const { lengthOfEnvelopeStep, isEnvelopeRising} = envelopeControlRegister;
+    if (lengthOfEnvelopeStep === 0) {
       return;
     }
 
-    const shiftExponent = Math.pow(2, sweepControlRegister.sweepShiftNumber);
-    const pitchValue = this.pulseOscillator.frequency.value / shiftExponent;
-    const pitchDirectionalValue = sweepControlRegister.isSweepInrease ? -pitchValue : pitchValue;
-    const pitchTarget = this.pulseOscillator.frequency.value + pitchDirectionalValue;
-    const timeTarget = this.audioContext.currentTime + sweepControlRegister.sweepTimeInSeconds;
+    if (this.envelopePeriodTimer > 0) {
+      this.envelopePeriodTimer--;
+    }
 
-    this.pulseOscillator.frequency.linearRampToValueAtTime(pitchTarget, timeTarget);
+    if (this.envelopePeriodTimer === 0) {
+      this.envelopePeriodTimer = envelopeControlRegister.lengthOfEnvelopeStep;
+
+      if (isEnvelopeRising && this.volume < 0xf) {
+        this.volume++;
+      }
+
+      if (!isEnvelopeRising && this.volume > 0) {
+        this.volume--;
+      }
+    }
+  }
+
+  clockLength() {
+    if (!highOrderFrequencyRegister.isContinuousSelection) {
+      this.lengthTimer--;
+
+      if (this.lengthTimer === 0) {
+        this.volume = 0;
+      }
+    }
+  }
+
+  clockSweep() {
+    if (this.sweepTimer > 0) {
+      this.sweepTimer--;
+    }
+
+    if (this.sweepTimer === 0) {
+      this.resetSweepTimer();
+
+      if (this.isSweepEnabled && sweepControlRegister.sweepTime > 0) {
+        const newFrequency = this.calculateNewSweepFrequency();
+
+        if (newFrequency < 2048 && sweepControlRegister.sweepAmount > 0) {
+          this.shadowFrequency = newFrequency;
+          this.pulseOscillator.frequency.value = this.convertGameboyFrequencyToHertz(newFrequency);
+        }
+      }
+
+    }
+  }
+
+  private calculateNewSweepFrequency() {
+    const { sweepAmount, isSweepIncrease } = sweepControlRegister;
+    const shiftedFrequency = this.shadowFrequency >> sweepAmount;
+    const shiftFrequencyBy = isSweepIncrease ? -shiftedFrequency : shiftedFrequency;
+
+    const newFrequency = this.shadowFrequency + shiftFrequencyBy;
+
+    if (newFrequency >= 2048) {
+      this.volume = 0;
+    }
+
+    return newFrequency
+  }
+
+  get volume() {
+    return this.gainNode.gain.value * 0xf;
+  }
+
+  set volume(newVolume) {
+    this.gainNode.gain.value = newVolume / 15;
   }
 }

@@ -43,7 +43,7 @@ class WhiteNoiseGainProcessor extends AudioWorkletProcessor {
 
   process (inputs, outputs, parameters) {
     const samplesUntilNextValue = parameters.sampleRate / parameters.changesPerSecond;
-    const output = outputs[0]
+    const output = outputs[0];
 
     output.forEach(channel => {
       for (let i = 0; i < channel.length; i++) {

@@ -18,11 +18,11 @@ export class SweepControlRegister implements SingleByteMemoryRegister {
     return this.sweepTime / 1280;
   }
 
-  get isSweepInrease() {
+  get isSweepIncrease() {
     return ((this.value >> 3) & 0b1) === 0b1; 
   }
 
-  get sweepShiftNumber() {
+  get sweepAmount() {
     return this.value & 0b111;
   }
 }

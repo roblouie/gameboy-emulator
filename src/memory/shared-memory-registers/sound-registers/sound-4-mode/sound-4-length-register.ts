@@ -10,6 +10,10 @@ export class Sound4LengthRegister implements SingleByteMemoryRegister {
     return memory.readByte(this.offset);
   }
 
+  get soundLength() {
+    return this.value & 0b111111;
+  }
+
   get lengthInSeconds() {
     const rawValue = this.value & 0b111111;
     return (64 - rawValue) * (1/256);

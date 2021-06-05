@@ -11,10 +11,12 @@ import { Cartridge } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
 import { Spu } from "./spu/spu";
 import { lcdControlRegister } from "@/memory/shared-memory-registers";
+import { APU } from "@/spu/APU";
 
 const cpu = new CPU();
 const gpu = new GPU();
 const spu = new Spu();
+const apu = new APU();
 
 export class Gameboy {
   frameFinishedCallback?: Function;
@@ -46,7 +48,8 @@ export class Gameboy {
       while (cycles <= GPU.CyclesPerFrame) {
         const cycleForTick = cpu.tick();
         gpu.tick(cycleForTick);
-        spu.tick(cycleForTick, currentTime);
+        // spu.tick(cycleForTick, currentTime);
+        apu.tick(cycleForTick);
         cycles += cycleForTick;
       }
 

@@ -1,21 +1,36 @@
 import { CPU } from "@/cpu/cpu";
 import { Sound1 } from "@/spu/sound1";
+import { Sound4 } from "@/spu/sound4";
+import { Sound2 } from "@/spu/sound2";
 
 export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
-  private audioContext = new AudioContext();
+  private audioContext = new AudioContext({ sampleRate: 48000 });
   private cyclesToFrameSequencer = 0;
 
   private sound1: Sound1;
+  private sound2: Sound2;
+  private sound4: Sound4;
+
 
   constructor() {
+    // @ts-ignore
+    document.querySelector('html').addEventListener('click',() => {
+      this.audioContext.resume();
+    });
     this.sound1 = new Sound1(this.audioContext);
+    this.sound2 = new Sound2(this.audioContext);
+    this.sound4 = new Sound4(this.audioContext);
   }
 
 
   tick(cycles: number) {
+    this.sound1.tick(cycles);
+    this.sound2.tick(cycles);
+    this.sound4.tick(cycles);
+
     this.cyclesToFrameSequencer += cycles;
 
     if (this.cyclesToFrameSequencer >= this.FrameSequencerInterval) {
@@ -24,7 +39,7 @@ export class APU {
     }
   }
 
-  // Frame Sequencer
+  //  Frame Sequencer
   //  Step   Length Ctr  Vol Env     Sweep
   // ---------------------------------------
   //   0      Clock       -           -
@@ -66,14 +81,18 @@ export class APU {
   }
 
   private clockLength() {
-
+    this.sound1.clockLength();
+    this.sound2.clockLength();
+    this.sound4.clockLength();
   }
 
   private clockSweep() {
-
+    this.sound1.clockSweep();
   }
 
   private clockVolume() {
-
+    this.sound1.clockVolume();
+    this.sound2.clockVolume();
+    this.sound4.clockVolume();
   }
 }
