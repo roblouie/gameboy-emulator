@@ -1,7 +1,7 @@
 import { Operation } from "../operation.model";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
-import { CpuRegister } from "@/cpu/registers/cpu-register";
+import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export function createRegisterToMemoryOperations(cpu: CPU): Operation[] {
   const registerToMemoryInstructions: Operation[] = [];

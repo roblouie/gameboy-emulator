@@ -1,21 +1,20 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import { asUint8, clearBit, getBit } from "@/helpers/binary-helpers";
-import {
-  backgroundPaletteRegister,
-  interruptRequestRegister,
-  lcdControlRegister,
-  lcdStatusRegister, lineYCompareRegister,
-  lineYRegister,
-  objectAttributeMemoryRegisters,
-  objectPaletteRegisters,
-  scrollXRegister,
-  scrollYRegister
-} from "@/memory/shared-memory-registers";
-import { LcdStatusMode } from "@/memory/shared-memory-registers/lcd-display-registers/lcd-status-mode.enum";
-import { windowYRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-y-register";
-import { windowXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-x-register";
-import { drawSpriteTileAt } from "@/helpers/gpu-debug-helpers";
+
+import { LcdStatusMode } from "@/gpu/registers/lcd-status-mode.enum";
+import { windowYRegister } from "@/gpu/registers/window-y-register";
+import { windowXRegister } from "@/gpu/registers/window-x-register";
+import { lcdStatusRegister } from "@/gpu/registers/lcd-status-register";
+import { lineYRegister } from "@/gpu/registers/line-y-register";
+import { lineYCompareRegister } from "@/gpu/registers/line-y-compare-register";
+import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
+import { backgroundPaletteRegister } from "@/gpu/registers/background-palette-register";
+import { scrollYRegister } from "@/gpu/registers/scroll-y-register";
+import { scrollXRegister } from "@/gpu/registers/scroll-x-register";
+import { objectAttributeMemoryRegisters } from "@/gpu/registers/object-attribute-memory-registers";
+import { objectPaletteRegisters } from "@/gpu/registers/object-palette-registers";
+import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 
 const colors = [
   255, // white

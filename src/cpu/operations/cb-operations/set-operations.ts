@@ -2,7 +2,7 @@ import { CPU } from "@/cpu/cpu";
 import { Operation } from "@/cpu/operations/operation.model";
 import { setBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
-import { CpuRegister } from "@/cpu/registers/cpu-register";
+import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export function getSetSubOperations(cpu: CPU): Operation[] {
   const subOperations: Operation[] = [];

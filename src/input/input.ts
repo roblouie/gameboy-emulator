@@ -1,7 +1,5 @@
 import { GameboyButton } from "@/input/gameboy-button.enum";
-import { controllerDataRegister } from "@/memory/shared-memory-registers";
 import { setBit } from "@/helpers/binary-helpers";
-import { memory } from "@/memory/memory";
 
 export class Input {
   isPressingUp = false;
