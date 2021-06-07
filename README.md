@@ -1,20 +1,23 @@
-## TypeScript Gameboy Emulator
+## TypeScript GameBoy Emulator
+
+### Running
+```
+npm install
+npm run serve
+```
+
+### Using
+Presently interface is extremely basic as emulator is being worked on. Click "Choose File" to select a rom 
+in .gb format. Arrow keys are dpad, Enter is Start, a is A, b is B. Nicer UI and controller support to be
+added when emulator is farther along.
+
+### Emulator Test Status
+There are various test roms for GameBoy emulators to test accuracy. So far fully passing tests are:
+
+#### Blargg CPU Instruction Test
+![Blargg Results](./readme_docs/blargg-test-result.png)
+
+#### DMG Acid 2
+![Acid2 Results](./readme_docs/acid-test-result.png)
 
 
-### Blargg Test Suite Status:
-#### Cpu Instructions
-* 01 Special ✔️
-* 02 Interrupts ✔️
-* 03 Op SP, HL ✔️
-* 04 Op R, imm ✔️
-* 05 Op RP ✔️
-* 06 Ld R, R ✔️
-* 07 JR, JP, Call, Ret, Rst ✔️
-* 08 Misc Instructions ✔️
-* 09 Op R, R ✔️
-* 10 Bit Ops ✔️
-* 11 Op A, (HL) ✔️
-
-
-## Audio Docs
-https://nightshade256.github.io/2021/03/27/gb-sound-emulation.html
