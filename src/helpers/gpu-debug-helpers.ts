@@ -1,11 +1,10 @@
 import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import { getBit } from "@/helpers/binary-helpers";
-import {
-  backgroundPaletteRegister,
-  lcdControlRegister, objectAttributeMemoryRegisters,
-  objectPaletteRegisters
-} from "@/memory/shared-memory-registers";
+import { backgroundPaletteRegister } from "@/gpu/registers/background-palette-register";
+import { objectAttributeMemoryRegisters } from "@/gpu/registers/object-attribute-memory-registers";
+import { objectPaletteRegisters } from "@/gpu/registers/object-palette-registers";
+
 
 const colors = [
   255, // white

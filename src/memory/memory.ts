@@ -1,8 +1,9 @@
 import { Cartridge } from "@/cartridge/cartridge";
-import { controllerDataRegister, dmaTransferRegister } from "@/memory/shared-memory-registers";
 import { dmaTransferController } from "@/memory/dma-transfer-controller";
 import { input } from "@/input/input";
-import { dividerRegister } from "@/memory/shared-memory-registers/timer-registers/divider-register";
+import { dividerRegister } from "@/cpu/registers/divider-register";
+import { dmaTransferRegister } from "@/gpu/registers/dma-transfer-register";
+import { controllerDataRegister } from "@/input/port-mode-registers/controller-data-register";
 
 const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);

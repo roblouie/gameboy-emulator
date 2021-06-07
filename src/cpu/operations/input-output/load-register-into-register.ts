@@ -1,6 +1,6 @@
 import { Operation } from "../operation.model"
 import { CPU } from "@/cpu/cpu";
-import { CpuRegister } from "@/cpu/registers/cpu-register";
+import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export function createRegisterToRegisterOperations(cpu: CPU): Operation[] {
   const registerToRegisterInstructions: Operation[] = [];
@@ -13,8 +13,8 @@ export function createRegisterToRegisterOperations(cpu: CPU): Operation[] {
     return (1 << 6) + (rCode << 3) + rCode2;
   }
 
-  cpu.registers.baseRegisters.forEach(firstRegister => {
-    cpu.registers.baseRegisters.forEach(secondRegister => {
+  registers.baseRegisters.forEach(firstRegister => {
+    registers.baseRegisters.forEach(secondRegister => {
       registerToRegisterInstructions.push({
         byteDefinition: getLoadRR1ByteDefinition(firstRegister.code, secondRegister.code),
         instruction: `LD ${firstRegister.name}, ${secondRegister.name}`,

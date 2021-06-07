@@ -1,4 +1,4 @@
-import { EnvelopeControlRegister } from "@/memory/shared-memory-registers/sound-registers/envelope-control-register";
+import { EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
 
 export class Enveloper {
   private envelopePeriodTimer = 0;

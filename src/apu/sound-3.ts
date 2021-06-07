@@ -2,10 +2,9 @@ import { memory } from "@/memory/memory";
 
 import { CPU } from "@/cpu/cpu";
 import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
-import {
-  higherOrderFrequencyRegister,
-  lowOrderFrequencyRegister, outputLevelRegister
-} from "@/memory/shared-memory-registers/sound-registers/sound-3-mode/sound-3-mode-registers";
+import { sound3HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
+import { sound3OutputLevelRegister } from "@/apu/registers/sound-3-output-level-register";
+import { sound3LowOrderFrequencyRegister } from "@/apu/registers/low-order-frequency-registers";
 
 
 export class Sound3 {
@@ -32,9 +31,9 @@ export class Sound3 {
   }
 
   tick(cycles: number) {
-    if (higherOrderFrequencyRegister.isInitialize) {
+    if (sound3HighOrderFrequencyRegister.isInitialize) {
       this.playSound();
-      higherOrderFrequencyRegister.isInitialize = false;
+      sound3HighOrderFrequencyRegister.isInitialize = false;
     }
 
     this.cycleCounter += cycles;
@@ -85,12 +84,12 @@ export class Sound3 {
       const waveData = memory.readByte(this.waveTableMemoryAddress + memoryAddress);
 
       const sample = (waveData >> 4) & 0b1111;
-      const volumeSample = sample >> this.shifts[outputLevelRegister.outputLevel];
+      const volumeSample = sample >> this.shifts[sound3OutputLevelRegister.outputLevel];
       return volumeSample;
     } else {
       const waveData = memory.readByte(this.waveTableMemoryAddress + memoryAddress);
       const sample = waveData & 0b1111;
-      const volumeSample = sample >> this.shifts[outputLevelRegister.outputLevel];
+      const volumeSample = sample >> this.shifts[sound3OutputLevelRegister.outputLevel];
       return volumeSample;
     }
   }
@@ -100,7 +99,7 @@ export class Sound3 {
   }
 
   private getFrequencyPeriod() {
-    const rawValue = memory.readWord(lowOrderFrequencyRegister.offset) & 0b11111111111;
+    const rawValue = memory.readWord(sound3LowOrderFrequencyRegister.offset) & 0b11111111111;
     return (2048 - rawValue) * 2;
   }
 }

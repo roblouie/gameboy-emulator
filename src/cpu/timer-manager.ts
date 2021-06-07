@@ -1,9 +1,9 @@
-import { timerControllerRegister } from "@/memory/shared-memory-registers/timer-registers/timer-controller-register";
-import { timerCounterRegister } from "@/memory/shared-memory-registers/timer-registers/timer-counter-register";
-import { interruptRequestRegister } from "@/memory/shared-memory-registers";
-import { timerModuloRegister } from "@/memory/shared-memory-registers/timer-registers/timer-modulo-register";
-import { dividerRegister } from "@/memory/shared-memory-registers/timer-registers/divider-register";
+import { timerControllerRegister } from "@/cpu/registers/timer-controller-register";
+import { timerCounterRegister } from "@/cpu/registers/timer-counter-register";
+import { timerModuloRegister } from "@/cpu/registers/timer-modulo-register";
+import { dividerRegister } from "@/cpu/registers/divider-register";
 import { asUint16, getMostSignificantByte } from "@/helpers/binary-helpers";
+import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 
 export class TimerManager {
   private timerCycles = 0;

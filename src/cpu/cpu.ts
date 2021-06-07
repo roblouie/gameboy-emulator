@@ -1,4 +1,4 @@
-import { CpuRegisterCollection } from "./registers/cpu-register-collection";
+import { CpuRegisterCollection } from "./internal-registers/cpu-register-collection";
 import { memory } from "@/memory/memory";
 import * as arithmeticAndLogicalOperations from '@/cpu/operations/arithmetic-and-logical';
 import * as inputOutputOperations from '@/cpu/operations/input-output';
@@ -12,9 +12,10 @@ import {
   registerStateCache, updateInstructionCache, updateRegisterStateCache,
 } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
-import { interruptEnableRegister, interruptRequestRegister } from "@/memory/shared-memory-registers";
 import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
 import { TimerManager } from "@/cpu/timer-manager";
+import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
+import { interruptEnableRegister } from "@/cpu/registers/interrupt-enable-register";
 
 
 export class CPU {

@@ -1,13 +1,12 @@
 import { memory } from "@/memory/memory";
-import {
-  envelopeControlRegister,
-  highOrderFrequencyRegister,
-  lengthAndDutyCycleRegister,
-  lowOrderFrequencyRegister, sweepControlRegister
-} from "@/memory/shared-memory-registers/sound-registers/sound-1-mode/sound-1-mode-registers";
 import { CPU } from "@/cpu/cpu";
 import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
 import { Enveloper } from "@/apu/enveloper";
+import { sound1EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
+import { sweepControlRegister } from "@/apu/registers/sweep-control-register";
+import { sound1LengthAndDutyCycleRegister } from "@/apu/registers/length-and-duty-cycle-registers";
+import { sound1HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
+import { sound1LowOrderFrequencyRegister } from "@/apu/registers/low-order-frequency-registers";
 
 export class Sound1 {
   audioContext: AudioContext;
@@ -44,14 +43,14 @@ export class Sound1 {
   }
 
   tick(cycles: number) {
-    if (highOrderFrequencyRegister.isInitialize) {
+    if (sound1HighOrderFrequencyRegister.isInitialize) {
       this.playSound();
-      highOrderFrequencyRegister.isInitialize = false;
+      sound1HighOrderFrequencyRegister.isInitialize = false;
     }
 
       this.cycleCounter += cycles;
       if (this.cycleCounter >= this.cyclesPerSample) {
-        const sample = this.dutyCycles[lengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
+        const sample = this.dutyCycles[sound1LengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
         this.ringBufferPlayer.writeSample(sample * this.getConvertedVolume());
         this.cycleCounter -= this.cyclesPerSample;
       }
@@ -69,15 +68,15 @@ export class Sound1 {
     this.frequencyTimer = this.frequencyPeriod;
 
     // Initialize envelope
-    this.volume = envelopeControlRegister.initialVolume;
-    this.enveloper.initializeTimer(envelopeControlRegister.lengthOfEnvelopeStep);
+    this.volume = sound1EnvelopeControlRegister.initialVolume;
+    this.enveloper.initializeTimer(sound1EnvelopeControlRegister.lengthOfEnvelopeStep);
 
     // Initialize length
-    this.lengthTimer = 64 - lengthAndDutyCycleRegister.soundLength;
+    this.lengthTimer = 64 - sound1LengthAndDutyCycleRegister.soundLength;
   }
 
   clockLength() {
-    if (!highOrderFrequencyRegister.isContinuousSelection) {
+    if (!sound1HighOrderFrequencyRegister.isContinuousSelection) {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
@@ -87,7 +86,7 @@ export class Sound1 {
   }
 
   clockVolume() {
-    this.volume = this.enveloper.clockVolume(this.volume, envelopeControlRegister);
+    this.volume = this.enveloper.clockVolume(this.volume, sound1EnvelopeControlRegister);
   }
 
   clockSweep() {
@@ -135,7 +134,7 @@ export class Sound1 {
   }
 
   private getFrequencyPeriod() {
-    const rawValue = memory.readWord(lowOrderFrequencyRegister.offset) & 0b11111111111;
+    const rawValue = memory.readWord(sound1LowOrderFrequencyRegister.offset) & 0b11111111111;
     return ((2048 - rawValue) * 4);
   }
 }

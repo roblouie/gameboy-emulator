@@ -9,8 +9,8 @@ import {
 import { memory } from "@/memory/memory";
 import { Cartridge } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
-import { lcdControlRegister } from "@/memory/shared-memory-registers";
 import { APU } from "@/apu/apu";
+import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
 
 const cpu = new CPU();
 const gpu = new GPU();

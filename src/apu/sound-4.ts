@@ -1,13 +1,12 @@
-import {
-  envelopeControlRegister,
-  soundLengthRegister,
-  continuousSelectionRegister,
-} from "@/memory/shared-memory-registers/sound-registers/sound-4-mode/sound-4-mode-registers";
+
 import { CPU } from "@/cpu/cpu";
 import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
 import { Enveloper } from "@/apu/enveloper";
 import { getBit, setBit } from "@/helpers/binary-helpers";
-import { polynomialRegister } from "@/memory/shared-memory-registers/sound-registers/sound-4-mode/polynomial-register";
+import { sound4PolynomialRegister } from "@/apu/registers/sound-4-polynomial-register";
+import { sound4EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
+import { sound4ContinuousSelectionRegister } from "@/apu/registers/sound-4-continuous-selection-register";
+import { sound4LengthRegister } from "@/apu/registers/sound-4-length-register";
 
 export class Sound4 {
   audioContext: AudioContext;
@@ -33,9 +32,9 @@ export class Sound4 {
   }
 
   tick(cycles: number) {
-    if (continuousSelectionRegister.isInitialize) {
+    if (sound4ContinuousSelectionRegister.isInitialize) {
       this.playSound();
-      continuousSelectionRegister.isInitialize = false;
+      sound4ContinuousSelectionRegister.isInitialize = false;
     }
 
     this.cycleCounter += cycles;
@@ -52,7 +51,7 @@ export class Sound4 {
   }
 
   getFrequencyPeriod() {
-    return polynomialRegister.divisor << polynomialRegister.clockShift;
+    return sound4PolynomialRegister.divisor << sound4PolynomialRegister.clockShift;
   }
 
   playSound() {
@@ -62,25 +61,25 @@ export class Sound4 {
     this.frequencyTimer = this.frequencyPeriod;
 
     // Initialize envelope
-    this.volume = envelopeControlRegister.initialVolume;
-    this.enveloper.initializeTimer(envelopeControlRegister.lengthOfEnvelopeStep);
+    this.volume = sound4EnvelopeControlRegister.initialVolume;
+    this.enveloper.initializeTimer(sound4EnvelopeControlRegister.lengthOfEnvelopeStep);
 
     // Initialize length
-    this.lengthTimer = 64 - soundLengthRegister.soundLength;
+    this.lengthTimer = 64 - sound4LengthRegister.soundLength;
   }
 
   clockLength() {
-    if (!continuousSelectionRegister.isContinuousSelection) {
+    if (!sound4ContinuousSelectionRegister.isContinuousSelection) {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        continuousSelectionRegister.isInitialize = false;
+        sound4ContinuousSelectionRegister.isInitialize = false;
       }
     }
   }
 
   clockVolume() {
-    this.volume = this.enveloper.clockVolume(this.volume, envelopeControlRegister);
+    this.volume = this.enveloper.clockVolume(this.volume, sound4EnvelopeControlRegister);
   }
 
   private getConvertedVolume() {
@@ -95,7 +94,7 @@ export class Sound4 {
     this.linearFeedbackShift >>= 1;
     this.linearFeedbackShift = setBit(this.linearFeedbackShift, 14, result);
 
-    if (polynomialRegister.counterWidth === 7) {
+    if (sound4PolynomialRegister.counterWidth === 7) {
       this.linearFeedbackShift = setBit(this.linearFeedbackShift, 6, result);
     }
   }
