@@ -5,10 +5,8 @@ import { OutputLevelRegister } from "./output-level-register";
 import { LowOrderFrequencyRegister } from "../low-order-frequency-register";
 
 
-export const sound3ModeRegisters = {
-  disableOutput: new DisableOutputRegister(),
-  soundLength: new Sound3LengthRegister(),
-  outputLevel: new OutputLevelRegister(),
-  lowOrderFrequency: new LowOrderFrequencyRegister(0xff1d, 'NR33'),
-  higherOrderFrequency: new HighOrderFrequencyRegister(0xff1e, 'NR34'),
-}
+export const disableOutputRegister = new DisableOutputRegister();
+export const sound3LengthRegister = new Sound3LengthRegister();
+export const outputLevelRegister = new OutputLevelRegister();
+export const lowOrderFrequencyRegister = new LowOrderFrequencyRegister(0xff1d, 'NR33');
+export const higherOrderFrequencyRegister = new HighOrderFrequencyRegister(0xff1e, 'NR34');

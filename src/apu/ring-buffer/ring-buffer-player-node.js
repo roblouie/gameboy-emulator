@@ -1,5 +1,6 @@
+// Ring buffer reader class declared in the same file as the node since presently native js imports aren't supported
+// in worklet modules. There's probably a way with webpack bundling but just leaving it here for now. Actual node below.
 class RingBufferReader {
-
   constructor(sharedArrayBuffer, type) {
     this.capacity = (sharedArrayBuffer.byteLength - 8) / type.BYTES_PER_ELEMENT;
     this.buf = sharedArrayBuffer;
@@ -62,7 +63,9 @@ class RingBufferReader {
   }
 }
 
-
+// Plays audio from its audio queue shared array buffer. Also allows parameters to be changed via index.
+// Currently parameter changes aren't used, but might be in the future. Current implementation supports gain, but
+// for gameboy that is determined by the gameboy logic itself.
 class RingBufferProcessor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
     return [];
@@ -86,7 +89,7 @@ class RingBufferProcessor extends AudioWorkletProcessor {
     this.paramReadBuffer = new RingBufferReader(paramQueue, Uint8Array);
   }
 
-  dequeueChange() {
+  dequeueParameterChange() {
     if (this.paramReadBuffer.isEmpty()) {
       return false;
     }
@@ -99,13 +102,11 @@ class RingBufferProcessor extends AudioWorkletProcessor {
 
   process(inputs, outputs) {
     // Get any param changes
-    if (this.dequeueChange(this.parameterObject)) {
+    if (this.dequeueParameterChange(this.parameterObject)) {
       console.log("param change: ", this.parameterObject.index, this.parameterObject.value);
       this.amp = this.parameterObject.value;
     }
 
-    // read 128 frames from the queue, deinterleave, and write to output
-    // buffers.
     this.audioReadBuffer.dequeue(this.interleaved);
 
     for (var i = 0; i < 128; i++) {
@@ -116,4 +117,4 @@ class RingBufferProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("processor", RingBufferProcessor);
+registerProcessor('ring-buffer-processor', RingBufferProcessor);

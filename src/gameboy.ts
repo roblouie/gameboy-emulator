@@ -9,13 +9,11 @@ import {
 import { memory } from "@/memory/memory";
 import { Cartridge } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
-import { Spu } from "./spu/spu";
 import { lcdControlRegister } from "@/memory/shared-memory-registers";
-import { APU } from "@/spu/APU";
+import { APU } from "@/apu/apu";
 
 const cpu = new CPU();
 const gpu = new GPU();
-const spu = new Spu();
 const apu = new APU();
 
 export class Gameboy {

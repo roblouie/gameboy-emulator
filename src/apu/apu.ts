@@ -1,7 +1,8 @@
 import { CPU } from "@/cpu/cpu";
-import { Sound1 } from "@/spu/sound1";
-import { Sound4 } from "@/spu/sound4";
-import { Sound2 } from "@/spu/sound2";
+import { Sound1 } from "@/apu/sound-1";
+import { Sound2 } from "@/apu/sound-2";
+import { Sound4 } from "@/apu/sound-4";
+import { Sound3 } from "@/apu/sound-3";
 
 export class APU {
   private static FrameSequencerHertz = 512;
@@ -12,23 +13,28 @@ export class APU {
 
   private sound1: Sound1;
   private sound2: Sound2;
+  private sound3: Sound3;
   private sound4: Sound4;
 
-
   constructor() {
+    //TODO: Handle enabling audio in a nicer way than this
     // @ts-ignore
     document.querySelector('html').addEventListener('click',() => {
       this.audioContext.resume();
     });
+
     this.sound1 = new Sound1(this.audioContext);
     this.sound2 = new Sound2(this.audioContext);
+    this.sound3 = new Sound3(this.audioContext);
     this.sound4 = new Sound4(this.audioContext);
   }
 
 
   tick(cycles: number) {
+
     this.sound1.tick(cycles);
     this.sound2.tick(cycles);
+    this.sound3.tick(cycles);
     this.sound4.tick(cycles);
 
     this.cyclesToFrameSequencer += cycles;

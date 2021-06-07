@@ -32,6 +32,7 @@ export class RingBufferWriter<BufferClassType extends ArrayBufferClassTypes> {
     const availableToWrite = this.#availableWrite(readPosition, writePosition);
 
     if (availableToWrite === 0) {
+      console.log('full');
       return 0;
     }
 

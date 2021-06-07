@@ -10,7 +10,7 @@ import { scrollYRegister } from "@/memory/shared-memory-registers/lcd-display-re
 import { objectAttributeMemoryRegisters } from "./lcd-display-registers/object-attribute-memory-registers";
 // import { sound1ModeRegisters } from "./sound-registers/sound-1-mode/sound-1-mode-registers";
 // import { sound2ModeRegisters } from "./sound-registers/sound-2-mode/sound-2-mode-registers";
-import { sound3ModeRegisters } from "./sound-registers/sound-3-mode/sound-3-mode-registers";
+// import { sound3ModeRegisters } from "./sound-registers/sound-3-mode/sound-3-mode-registers";
 // import { sound4ModeRegisters } from "./sound-registers/sound-4-mode/sound-4-mode-registers";
 import { soundControlRegister } from "./sound-registers/sound-control-registers/sound-control-registers";
 
@@ -35,7 +35,7 @@ export {
 
   // sound1ModeRegisters,
   // sound2ModeRegisters,
-  sound3ModeRegisters,
+  // sound3ModeRegisters,
   // sound4ModeRegisters,
   soundControlRegister,
   dmaTransferRegister,

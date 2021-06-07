@@ -17,7 +17,6 @@ import { windowYRegister } from "@/memory/shared-memory-registers/lcd-display-re
 import { windowXRegister } from "@/memory/shared-memory-registers/lcd-display-registers/window-x-register";
 import { drawSpriteTileAt } from "@/helpers/gpu-debug-helpers";
 
-//TODO: Move colors to its own file, posibly create new class for custom colors
 const colors = [
   255, // white
   192, // light gray

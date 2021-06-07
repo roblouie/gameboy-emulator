@@ -18,10 +18,6 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
   get initialVolume() {
     return this.value >> 4;
   }
-
-  get defaultVolumeAsDecimal() {
-    return this.initialVolume / 15;
-  }
   
   get isEnvelopeRising() {
     return ((this.value >> 3) & 0b1) === 1;
@@ -29,9 +25,5 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
   
   get lengthOfEnvelopeStep() {
     return this.value & 0b111;
-  }
-  
-  get lengthOfEnvelopeInSeconds() {
-    return this.initialVolume * this.lengthOfEnvelopeStep * (1/64);
   }
 }
