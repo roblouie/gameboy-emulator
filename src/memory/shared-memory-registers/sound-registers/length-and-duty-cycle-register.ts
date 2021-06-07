@@ -6,8 +6,8 @@ export class LengthAndDutyCycleRegister implements SingleByteMemoryRegister {
   name: string;
 
   constructor(offset: number, name: string) {
-    this.offset = offset,
-    this.name = name
+    this.offset = offset;
+    this.name = name;
   }
 
   get value() {
@@ -23,6 +23,7 @@ export class LengthAndDutyCycleRegister implements SingleByteMemoryRegister {
   }
 
   get soundLengthInSeconds() {
-    return this.soundLength * (1 / 64)
+    return (64 - this.soundLength) * (1 / 256);
+    //return this.soundLength * (1 / 64)
   }
 }

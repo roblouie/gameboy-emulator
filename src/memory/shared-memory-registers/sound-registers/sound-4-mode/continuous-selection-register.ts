@@ -1,5 +1,6 @@
 import { memory } from "@/memory/memory";
 import { SingleByteMemoryRegister } from "../../memory-register";
+import { setBit } from "@/helpers/binary-helpers";
 
 
 export class ContinuousSelectionRegister implements SingleByteMemoryRegister {
@@ -14,9 +15,9 @@ export class ContinuousSelectionRegister implements SingleByteMemoryRegister {
     return this.value >> 7 === 1;
   }
 
-  set isInitialize(value) {
-    const NR44CurrentValue = this.value;
-    // TODO: logic for setting single bit here
+  set isInitialize(value: boolean) {
+    const newValue = setBit(this.value, 7, value ? 1 : 0);
+    memory.writeByte(this.offset, newValue);
   }
 
   get isContinuousSelection() {

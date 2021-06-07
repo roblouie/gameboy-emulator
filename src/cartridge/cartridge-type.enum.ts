@@ -14,7 +14,7 @@ export enum CartridgeType {
   MBC3_TIMER_RAM_BATTERY,
   MBC3,
   MBC3_RAM,
-  MBC_RAM_BATTERY,
+  MBC3_RAM_BATTERY,
   MBC5 = 0x19,
   MBC5_RAM = 0x1a,
   MBC5_RAM_BATTERY,

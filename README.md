@@ -14,3 +14,7 @@
 * 09 Op R, R ✔️
 * 10 Bit Ops ✔️
 * 11 Op A, (HL) ✔️
+
+
+## Audio Docs
+https://nightshade256.github.io/2021/03/27/gb-sound-emulation.html

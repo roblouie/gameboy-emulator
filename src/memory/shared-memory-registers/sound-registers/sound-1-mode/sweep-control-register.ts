@@ -10,16 +10,19 @@ export class SweepControlRegister implements SingleByteMemoryRegister {
     return memory.readByte(this.offset)
   }
 
-  get sweepTimeInSeconds() {
-    const rawValue = (this.value >> 4) & 0b111;
-    return rawValue / 1280;
+  get sweepTime() {
+    return (this.value >> 4) & 0b111;
   }
 
-  get isSweepInrease() {
+  get sweepTimeInSeconds() {
+    return this.sweepTime / 1280;
+  }
+
+  get isSweepIncrease() {
     return ((this.value >> 3) & 0b1) === 0b1; 
   }
 
-  get sweepShiftNumber() {
+  get sweepAmount() {
     return this.value & 0b111;
   }
 }
