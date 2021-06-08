@@ -3,13 +3,19 @@ import { Sound1 } from "@/apu/sound-1";
 import { Sound2 } from "@/apu/sound-2";
 import { Sound4 } from "@/apu/sound-4";
 import { Sound3 } from "@/apu/sound-3";
+import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
 
 export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
   private audioContext = new AudioContext({ sampleRate: 48000 });
-  private cyclesToFrameSequencer = 0;
+
+  private frameSequencerCycleCounter = 0;
+
+  private cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
+  private sampleCycleCounter = 0;
+  private ringBufferPlayer: RingBufferPlayer;
 
   private sound1: Sound1;
   private sound2: Sound2;
@@ -23,26 +29,37 @@ export class APU {
       this.audioContext.resume();
     });
 
-    this.sound1 = new Sound1(this.audioContext);
-    this.sound2 = new Sound2(this.audioContext);
-    this.sound3 = new Sound3(this.audioContext);
-    this.sound4 = new Sound4(this.audioContext);
+    this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 256);
+
+    this.sound1 = new Sound1();
+    this.sound2 = new Sound2();
+    this.sound3 = new Sound3();
+    this.sound4 = new Sound4();
   }
 
 
   tick(cycles: number) {
-
     this.sound1.tick(cycles);
     this.sound2.tick(cycles);
     this.sound3.tick(cycles);
     this.sound4.tick(cycles);
 
-    this.cyclesToFrameSequencer += cycles;
-
-    if (this.cyclesToFrameSequencer >= this.FrameSequencerInterval) {
-      this.advanceFrameSequencer();
-      this.cyclesToFrameSequencer -= this.FrameSequencerInterval;
+    this.sampleCycleCounter += cycles;
+    if (this.sampleCycleCounter >= this.cyclesPerSample) {
+      this.sampleChannels()
+      this.sampleCycleCounter -= this.cyclesPerSample;
     }
+
+    this.frameSequencerCycleCounter += cycles;
+    if (this.frameSequencerCycleCounter >= this.FrameSequencerInterval) {
+      this.advanceFrameSequencer();
+      this.frameSequencerCycleCounter -= this.FrameSequencerInterval;
+    }
+  }
+
+  private sampleChannels() {
+    const sample = (this.sound1.getSample() + this.sound2.getSample() + this.sound3.getSample() + this.sound4.getSample()) / 4;
+    this.ringBufferPlayer.writeSample(sample);
   }
 
   //  Frame Sequencer
@@ -89,6 +106,7 @@ export class APU {
   private clockLength() {
     this.sound1.clockLength();
     this.sound2.clockLength();
+    this.sound3.clockLength();
     this.sound4.clockLength();
   }
 

@@ -1,23 +1,14 @@
-
-import { CPU } from "@/cpu/cpu";
-import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
 import { Enveloper } from "@/apu/enveloper";
 import { getBit, setBit } from "@/helpers/binary-helpers";
 import { sound4PolynomialRegister } from "@/apu/registers/sound-4-polynomial-register";
 import { sound4EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
 import { sound4ContinuousSelectionRegister } from "@/apu/registers/sound-4-continuous-selection-register";
 import { sound4LengthRegister } from "@/apu/registers/sound-4-length-register";
+import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
 export class Sound4 {
-  audioContext: AudioContext;
-
-  private cyclesPerSample: number;
-  private cycleCounter: number = 0;
-
   private frequencyTimer = 0;
   private frequencyPeriod = this.getFrequencyPeriod();
-
-  private ringBufferPlayer: RingBufferPlayer;
 
   private lengthTimer = 0;
   private enveloper = new Enveloper();
@@ -25,22 +16,10 @@ export class Sound4 {
 
   private linearFeedbackShift = 0;
 
-  constructor(audioContext: AudioContext) {
-    this.audioContext = audioContext;
-    this.cyclesPerSample = CPU.OperatingHertz / audioContext.sampleRate;
-    this.ringBufferPlayer = new RingBufferPlayer(audioContext, 256);
-  }
-
   tick(cycles: number) {
     if (sound4ContinuousSelectionRegister.isInitialize) {
       this.playSound();
       sound4ContinuousSelectionRegister.isInitialize = false;
-    }
-
-    this.cycleCounter += cycles;
-    if (this.cycleCounter >= this.cyclesPerSample) {
-      this.ringBufferPlayer.writeSample(this.getValue() * this.getConvertedVolume());
-      this.cycleCounter -= this.cyclesPerSample;
     }
 
     this.frequencyTimer -= cycles; // count down the frequency timer
@@ -55,6 +34,9 @@ export class Sound4 {
   }
 
   playSound() {
+    // Enable channel
+    soundsOnRegister.isSound4On = true;
+
     // Initialize frequency
     this.linearFeedbackShift = 0x7fff;
     this.frequencyPeriod = this.getFrequencyPeriod();
@@ -73,17 +55,13 @@ export class Sound4 {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        sound4ContinuousSelectionRegister.isInitialize = false;
+        soundsOnRegister.isSound4On = false;
       }
     }
   }
 
   clockVolume() {
     this.volume = this.enveloper.clockVolume(this.volume, sound4EnvelopeControlRegister);
-  }
-
-  private getConvertedVolume() {
-    return this.volume / 15;
   }
 
   stepLinearFeedbackShift() {
@@ -99,7 +77,14 @@ export class Sound4 {
     }
   }
 
-  getValue() {
-    return ~(this.linearFeedbackShift) & 0b1;
+  getSample() {
+    const sample = ~(this.linearFeedbackShift) & 0b1;
+
+    if (soundsOnRegister.isSound4On && this.volume > 0) {
+      const volumeAdjustedSample = sample * this.volume;
+      return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
+    } else {
+      return 0;
+    }
   }
 }

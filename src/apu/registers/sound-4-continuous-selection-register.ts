@@ -21,7 +21,7 @@ export class Sound4ContinuousSelectionRegister implements SingleByteMemoryRegist
   }
 
   get isContinuousSelection() {
-    return ((this.value >> 6) & 0b1) === 1;
+    return ((this.value >> 6) & 0b1) === 0;
   }
 }
 

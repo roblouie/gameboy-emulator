@@ -1,18 +1,12 @@
 import { memory } from "@/memory/memory";
-import { CPU } from "@/cpu/cpu";
-import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
 import { Enveloper } from "@/apu/enveloper";
 import { sound2EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
 import { sound2HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
 import { sound2LengthAndDutyCycleRegister } from "@/apu/registers/length-and-duty-cycle-registers";
 import { sound2LowOrderFrequencyRegister } from "@/apu/registers/low-order-frequency-registers";
+import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
 export class Sound2 {
-  audioContext: AudioContext;
-
-  private cyclesPerSample: number;
-  private cycleCounter: number = 0;
-
   private dutyCycles = [
     [0, 0, 0, 0, 0, 0, 0, 1], // 12.5 %
     [1, 0, 0, 0, 0, 0, 0, 1], // 25 %
@@ -25,30 +19,15 @@ export class Sound2 {
   private frequencyTimer = 0;
   private frequencyPeriod = this.getFrequencyPeriod();
 
-  private ringBufferPlayer: RingBufferPlayer;
-
   private lengthTimer = 0;
   private enveloper = new Enveloper();
   private volume = 0;
-
-  constructor(audioContext: AudioContext) {
-    this.audioContext = audioContext;
-    this.cyclesPerSample = CPU.OperatingHertz / audioContext.sampleRate;
-    this.ringBufferPlayer = new RingBufferPlayer(audioContext, 256);
-  }
 
   tick(cycles: number) {
     if (sound2HighOrderFrequencyRegister.isInitialize) {
       this.playSound();
       sound2HighOrderFrequencyRegister.isInitialize = false;
     }
-
-      this.cycleCounter += cycles;
-      if (this.cycleCounter >= this.cyclesPerSample) {
-        const sample = this.dutyCycles[sound2LengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
-        this.ringBufferPlayer.writeSample(sample * this.getConvertedVolume());
-        this.cycleCounter -= this.cyclesPerSample;
-      }
 
       this.frequencyTimer -= cycles; // count down the frequency timer
       if (this.frequencyTimer <= 0) {
@@ -58,6 +37,9 @@ export class Sound2 {
   }
 
   playSound() {
+    // Enable channel
+    soundsOnRegister.isSound2On = true;
+
     // Initialize frequency
     this.frequencyPeriod = this.getFrequencyPeriod();
     this.frequencyTimer = this.frequencyPeriod;
@@ -75,7 +57,7 @@ export class Sound2 {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        this.volume = 0;
+        soundsOnRegister.isSound2On = false;
       }
     }
   }
@@ -84,8 +66,15 @@ export class Sound2 {
     this.volume = this.enveloper.clockVolume(this.volume, sound2EnvelopeControlRegister);
   }
 
-  private getConvertedVolume() {
-    return this.volume / 15;
+  getSample() {
+    const sample = this.dutyCycles[sound2LengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
+
+    if (soundsOnRegister.isSound2On && this.volume > 0) {
+      const volumeAdjustedSample = sample * this.volume;
+      return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
+    } else {
+      return 0;
+    }
   }
 
   private getFrequencyPeriod() {

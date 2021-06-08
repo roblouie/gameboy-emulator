@@ -21,11 +21,6 @@ export class LengthAndDutyCycleRegister implements SingleByteMemoryRegister {
   get soundLength() {
     return this.value & 0b111111;
   }
-
-  get soundLengthInSeconds() {
-    return (64 - this.soundLength) * (1 / 256);
-    //return this.soundLength * (1 / 64)
-  }
 }
 
 export const sound1LengthAndDutyCycleRegister = new LengthAndDutyCycleRegister(0xff11, 'NR11');
