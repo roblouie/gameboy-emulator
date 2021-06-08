@@ -6,10 +6,10 @@ class TimerControllerRegister implements SingleByteMemoryRegister {
   name = 'TAC';
 
   private inputClockSpeedValueToCycles = [
+    1024,
+    8,
+    32,
     256,
-    4,
-    16,
-    64,
   ]
 
   get value() {

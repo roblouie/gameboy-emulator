@@ -1,4 +1,5 @@
 const path = require('path');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: './src/index.ts',
@@ -7,6 +8,12 @@ module.exports = {
     contentBase: './dist',
     hot: true,
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'Gameboy',
+      template: './index.html'
+    })
+  ],
   module: {
     rules: [
       {
@@ -22,7 +29,7 @@ module.exports = {
             worker: ["AudioWorklet() from audio-worklet", "..."]
           }
         }
-      }
+      },
     ],
   },
   resolve: {
