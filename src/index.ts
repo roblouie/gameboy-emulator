@@ -37,6 +37,10 @@ window.addEventListener('load', () => {
   oamCanvas = document.querySelector('#oam') as HTMLCanvasElement;
   oamContext = oamCanvas.getContext('2d') as CanvasRenderingContext2D;
 
+  document.querySelector('#fullscreen')?.addEventListener('click', () => {
+    scaledDrawCanvas.requestFullscreen();
+  })
+
   // document.querySelector('#play-audio').addEventListener('click', playAudio);
 });
 
@@ -66,12 +70,15 @@ async function onFileChange(event: Event) {
       if (event.code === 'ArrowDown') {
         gameboy.input.isPressingDown = true;
       }
+
       if (event.code === 'ArrowUp') {
         gameboy.input.isPressingUp = true;
       }
+
       if (event.code === 'ArrowLeft') {
         gameboy.input.isPressingLeft = true;
       }
+
       if (event.code === 'ArrowRight') {
         gameboy.input.isPressingRight = true;
       }
@@ -96,12 +103,15 @@ async function onFileChange(event: Event) {
       if (event.code === 'ArrowDown') {
         gameboy.input.isPressingDown = false;
       }
+
       if (event.code === 'ArrowUp') {
         gameboy.input.isPressingUp = false;
       }
+
       if (event.code === 'ArrowLeft') {
         gameboy.input.isPressingLeft = false;
       }
+
       if (event.code === 'ArrowRight') {
         gameboy.input.isPressingRight = false;
       }

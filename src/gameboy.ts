@@ -11,6 +11,7 @@ import { Cartridge } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
 import { APU } from "@/apu/apu";
 import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
+import { controllerManager } from "@/input/controller-manager";
 
 const cpu = new CPU();
 const gpu = new GPU();
@@ -50,6 +51,8 @@ export class Gameboy {
         apu.tick(cycleForTick);
         cycles += cycleForTick;
       }
+
+      controllerManager.queryButtons();
 
       if (this.frameFinishedCallback) {
         this.frameFinishedCallback(gpu.screen, this.fps, cpu.registers);
