@@ -37,6 +37,18 @@ class SoundsOnRegister implements SingleByteMemoryRegister {
   set isSound1On(isOn: boolean) {
     this.value = setBit(this.value, 0, isOn ? 1 : 0);
   }
+
+  set isSound2On(isOn: boolean) {
+    this.value = setBit(this.value, 1, isOn ? 1 : 0);
+  }
+
+  set isSound3On(isOn: boolean) {
+    this.value = setBit(this.value, 2, isOn ? 1 : 0);
+  }
+
+  set isSound4On(isOn: boolean) {
+    this.value = setBit(this.value, 3, isOn ? 1 : 0);
+  }
 }
 
 export const soundsOnRegister = new SoundsOnRegister();

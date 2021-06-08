@@ -35,3 +35,11 @@ export function getLeastSignificantByte(word: number) {
 export function getMostSignificantByte(word: number) {
   return (word >> 8) & 0xff;
 }
+
+export function getLowerNibble(byte: number) {
+  return byte & 0b1111;
+}
+
+export function getUpperNibble(byte: number) {
+  return (byte >> 4) & 0b1111;
+}
