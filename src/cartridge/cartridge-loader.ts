@@ -6,7 +6,7 @@ import { Mbc3Cartridge } from "@/cartridge/mbc3-cartridge";
 export class CartridgeLoader {
   static TypeOffset = 0x147;
 
-  static FromArrayBuffer(gameData: ArrayBuffer): Cartridge {
+  static FromArrayBuffer(gameData: ArrayBuffer): Cartridge | Mbc1Cartridge | Mbc3Cartridge {
     const gameDataView = new DataView(gameData);
     const type = gameDataView.getUint8(CartridgeLoader.TypeOffset) as CartridgeType;
 

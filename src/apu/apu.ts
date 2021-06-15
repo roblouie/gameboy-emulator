@@ -22,14 +22,11 @@ export class APU {
   private sound3: Sound3;
   private sound4: Sound4;
 
-  constructor() {
-    //TODO: Handle enabling audio in a nicer way than this
-    // @ts-ignore
-    document.querySelector('html').addEventListener('click',() => {
-      this.audioContext.resume();
-    });
+  private isAudioEnabled = false;
 
-    this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 256);
+  constructor() {
+    this.audioContext.suspend();
+    this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 512);
 
     this.sound1 = new Sound1();
     this.sound2 = new Sound2();
@@ -37,8 +34,21 @@ export class APU {
     this.sound4 = new Sound4();
   }
 
+  enableSound() {
+    this.isAudioEnabled = true;
+    this.audioContext.resume();
+  }
+
+  disableSound() {
+    this.isAudioEnabled = false;
+    this.audioContext.suspend();
+  }
 
   tick(cycles: number) {
+    if (!this.isAudioEnabled) {
+      return;
+    }
+
     this.sound1.tick(cycles);
     this.sound2.tick(cycles);
     this.sound3.tick(cycles);

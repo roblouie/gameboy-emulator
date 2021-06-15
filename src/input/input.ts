@@ -1,4 +1,3 @@
-import { GameboyButton } from "@/input/gameboy-button.enum";
 import { setBit } from "@/helpers/binary-helpers";
 
 export class Input {
@@ -15,14 +14,6 @@ export class Input {
 
   isPollingDirections = false;
   isPollingButtons = false;
-
-  buttonPressed(button: GameboyButton) {
-    this.setState(button, true);
-  }
-
-  buttonReleased(button: GameboyButton) {
-    this.setState(button, false);
-  }
 
   setInputToCheck(byte: number) {
     this.isPollingButtons = ((byte >> 4) & 0b1) === 1;
@@ -50,37 +41,6 @@ export class Input {
     inputValue = setBit(inputValue, 5, this.isPollingDirections ? 0 : 1);
 
     return inputValue;
-  }
-
-  private setState(button: GameboyButton, isPressed: boolean) {
-    switch (button) {
-      case GameboyButton.Up:
-        this.isPressingUp = isPressed;
-        break;
-      case GameboyButton.Down:
-        this.isPressingDown = isPressed;
-        break;
-      case GameboyButton.Left:
-        this.isPressingLeft = isPressed;
-        break;
-      case GameboyButton.Right:
-        this.isPressingRight = isPressed;
-        break;
-
-      case GameboyButton.Select:
-        this.isPressingSelect = isPressed;
-        break;
-      case GameboyButton.Start:
-        this.isPressingStart = isPressed;
-        break;
-
-      case GameboyButton.A:
-        this.isPressingA = isPressed;
-        break;
-      case GameboyButton.B:
-        this.isPressingB = isPressed;
-        break;
-    }
   }
 }
 

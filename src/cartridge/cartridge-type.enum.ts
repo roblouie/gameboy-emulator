@@ -4,7 +4,7 @@ export enum CartridgeType {
   MBC1_RAM,
   MBC1_RAM_BATTERY,
   MBC2 = 5,
-  MBSC2_BATTERY,
+  MBC2_BATTERY,
   ROM_RAM = 8,
   ROM_RAM_BATTERY,
   MMM01 = 0xb,
