@@ -1,80 +1,118 @@
 import { GPU } from "@/gpu/gpu";
 import { CPU } from "@/cpu/cpu";
-import {
-  instructionCache,
-  registerStateCache,
-  updateInstructionCache,
-  updateRegisterStateCache
-} from "@/helpers/cpu-debug-helpers";
 import { memory } from "@/memory/memory";
 import { Cartridge } from "@/cartridge/cartridge";
 import { input, Input } from "@/input/input";
 import { APU } from "@/apu/apu";
 import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
 import { controllerManager } from "@/input/controller-manager";
+import { CartridgeType } from "@/cartridge/cartridge-type.enum";
+import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
+import { CartridgeLoader } from "@/cartridge/cartridge-loader";
+import { keyboardManager } from "@/input/keyboard-manager";
 
-const cpu = new CPU();
-const gpu = new GPU();
-const apu = new APU();
+
 
 export class Gameboy {
+  cpu = new CPU();
+  gpu = new GPU();
+  apu = new APU();
+
   frameFinishedCallback?: Function;
   fps = 0;
-  input: Input;
+  input = input;
+  controllerManager = controllerManager;
+  keyboardManager = keyboardManager;
 
-  constructor() {
-    this.input = input;
-  }
+  private maxFps = 60;
+  private interval = 1000 / this.maxFps;
+
+  private cycles = 0;
+
+  private previousTime = 0;
 
   run() {
-    let cycles = 0;
 
-    let previousTime = 0;
 
     let debug = true;
 
     // Initialize registers, probalby should be moved to CPU
-    cpu.registers.programCounter.value = Cartridge.EntryPointOffset;
-    cpu.registers.stackPointer.value = 0xfffe;
-    cpu.registers.HL.value = 0x014d;
-    cpu.registers.C.value = 0x13;
-    cpu.registers.E.value = 0xD8;
-    cpu.registers.A.value = 1;
-    cpu.registers.F.value = 0xb0;
+    this.cpu.registers.programCounter.value = Cartridge.EntryPointOffset;
+    this.cpu.registers.stackPointer.value = 0xfffe;
+    this.cpu.registers.HL.value = 0x014d;
+    this.cpu.registers.C.value = 0x13;
+    this.cpu.registers.E.value = 0xD8;
+    this.cpu.registers.A.value = 1;
+    this.cpu.registers.F.value = 0xb0;
     lcdControlRegister.value = 0x83; // initial value from official guide
 
-    const runFrame = (currentTime: number) => {
-      while (cycles <= GPU.CyclesPerFrame) {
-        const cycleForTick = cpu.tick();
-        gpu.tick(cycleForTick);
-        // spu.tick(cycleForTick, currentTime);
-        apu.tick(cycleForTick);
-        cycles += cycleForTick;
+    requestAnimationFrame(diff => this.runFrame(diff));
+  }
+
+    runFrame(currentTime: number) {
+
+      const delta = currentTime - this.previousTime
+
+      if (delta >= this.interval || !this.previousTime) {
+        this.fps = 1000 / (currentTime - this.previousTime);
+
+        this.previousTime = currentTime - (delta % this.interval);
+
+        while (this.cycles <= GPU.CyclesPerFrame) {
+          const cycleForTick = this.cpu.tick();
+          this.gpu.tick(cycleForTick);
+          this.apu.tick(cycleForTick);
+          this.cycles += cycleForTick;
+        }
+
+        controllerManager.queryButtons();
+
+        if (this.frameFinishedCallback) {
+          this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
+        }
+
+        // previousTime = currentTime;
+        this.cycles = this.cycles % GPU.CyclesPerFrame;
       }
 
-      controllerManager.queryButtons();
 
-      if (this.frameFinishedCallback) {
-        this.frameFinishedCallback(gpu.screen, this.fps, cpu.registers);
-      }
 
-      this.fps = 1000 / (currentTime - previousTime);
-      previousTime = currentTime;
-      cycles = cycles % GPU.CyclesPerFrame;
-
-      requestAnimationFrame(runFrame);
-    }
-
-    requestAnimationFrame(runFrame);
+    requestAnimationFrame(diff => this.runFrame(diff));
   }
 
   onFrameFinished(callback: Function) {
     this.frameFinishedCallback = callback;
   }
 
-  instertCartridge(cartridge: Cartridge) {
+  loadGame(arrayBuffer: ArrayBuffer) {
+    const cartridge = CartridgeLoader.FromArrayBuffer(arrayBuffer);
     memory.insertCartridge(cartridge);
+    console.log('title: ' + cartridge.title);
+    console.log('version: ' + cartridge.versionNumber);
+    console.log('type: ' + cartridge.typeName);
+    console.log('rom size: ' + cartridge.romSize);
+    console.log('ram size: ' + cartridge.ramSize);
   }
 
+  setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY) {
+      const cartridge = memory.cartridge as Mbc1Cartridge;
+      cartridge.setRam(sramArrayBuffer);
+    }
+  }
+
+  getCartridgeSaveRam() {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY) {
+      const cartridge = memory.cartridge as Mbc1Cartridge;
+      return cartridge.dumpRam();
+    }
+  }
+
+  setOnWriteToCartridgeRam(onSramWrite: Function) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY) {
+      const cartridge = memory.cartridge as Mbc1Cartridge;
+      cartridge.onSramWrite = onSramWrite
+    }
+  }
 }
 

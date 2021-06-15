@@ -1,18 +1,13 @@
 const path = require('path');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: './src/gameboy.ts',
   mode: 'production',
   plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Gameboy',
-      template: './index.html'
-    }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: './src/apu/ring-buffer/ring-buffer-player-node.js' }
+        { from: 'src/apu/ring-buffer/ring-buffer-player-node.js' }
       ]
     })
   ],
@@ -32,7 +27,11 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'gameboy.js',
     path: path.resolve(__dirname, 'dist'),
+    library: {
+      name: 'gameboy',
+      type: 'umd'
+    }
   },
 };

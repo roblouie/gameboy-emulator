@@ -16,13 +16,6 @@ import { objectAttributeMemoryRegisters } from "@/gpu/registers/object-attribute
 import { objectPaletteRegisters } from "@/gpu/registers/object-palette-registers";
 import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 
-const colors = [
-  255, // white
-  192, // light gray
-  96, // dark gray
-  0, // black
-]
-
 export class GPU {
   static ScreenWidth = 160;
   static ScreenHeight = 144;
@@ -40,6 +33,13 @@ export class GPU {
   private cycleCounter = 0;
 
   private windowLinesDrawn = 0;
+
+  colors = [
+    { red: 255, green: 255, blue: 255 },
+    { red: 192, green: 192, blue: 192 },
+    { red: 96, green: 96, blue: 96 },
+    { red: 0, green: 0, blue: 0 },
+  ]
 
   constructor() {
     this.screen = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
@@ -144,17 +144,11 @@ export class GPU {
 
   drawBackgroundLine() {
     const backgroundLineValues = [];
-    let backgroundTileMap: Uint8Array | Int8Array;
     const bytesPerCharacter = 2;
-    const tileMapStart = lcdControlRegister.backgroundTileMapStartAddress;
     const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
 
-    if (lcdControlRegister.backgroundCharacterData === 0) {
-      const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
-      backgroundTileMap = new Int8Array(originalData);
-    } else {
-      backgroundTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
-    }
+    const { backgroundTileMapStartAddress, backgroundCharacterData } = lcdControlRegister;
+    const memoryReadMethod = backgroundCharacterData === 0 ? memory.readSignedByte : memory.readByte;
 
     const palette = backgroundPaletteRegister.backgroundPalette;
 
@@ -165,9 +159,9 @@ export class GPU {
       // refactored to avoid if/else with drawing
       if (!lcdControlRegister.isBackgroundDisplayOn) {
         const paletteColor = palette[0];
-        const color = colors[paletteColor];
+        const color = this.colors[paletteColor];
         backgroundLineValues.push(0);
-        this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
+        this.screen.setPixel(screenX, lineYRegister.value, color.red, color.green, color.blue);
       } else {
         const scrolledX = asUint8(screenX + scrollXRegister.value);
         const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
@@ -179,7 +173,7 @@ export class GPU {
         const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
         const relativeOffset = lcdControlRegister.backgroundCharacterData === 0 ? 128 : 0;
-        const tileCharIndex = backgroundTileMap[tileMapIndex] + relativeOffset;
+        const tileCharIndex = memoryReadMethod(backgroundTileMapStartAddress + tileMapIndex) + relativeOffset;
         const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
         const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
@@ -190,9 +184,9 @@ export class GPU {
         backgroundLineValues.push(paletteIndex);
 
         const paletteColor = palette[paletteIndex];
-        const color = colors[paletteColor];
+        const color = this.colors[paletteColor];
 
-        this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
+        this.screen.setPixel(screenX, lineYRegister.value, color.red, color.green, color.blue);
       }
     }
 
@@ -259,9 +253,9 @@ export class GPU {
       const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
       windowLineValues.push(paletteIndex);
       const paletteColor = palette[paletteIndex];
-      const color = colors[paletteColor];
+      const color = this.colors[paletteColor];
 
-      this.screen.setPixel(screenX, lineYRegister.value, color, color, color);
+      this.screen.setPixel(screenX, lineYRegister.value, color.red, color.green, color.blue);
     }
 
     // The number of window lines drawn must be kept track of. This is reset after each frame is drawn.
@@ -336,7 +330,7 @@ export class GPU {
 
         const palette = objectPaletteRegisters[paletteNumber].palette;
         const paletteColor = palette[paletteIndex];
-        const color = colors[paletteColor];
+        const color = this.colors[paletteColor];
         const screenX = spriteX + xPixelInTile;
 
         const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
@@ -345,7 +339,7 @@ export class GPU {
         const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
 
         if (paletteIndex !== 0 && !isPixelBehindBackground) {
-          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color, color, color);
+          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color.red, color.green, color.blue);
         }
       }
     });

@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TypeScript Greeter</title>
+    <title>TypeScript GameBoy</title>
 </head>
-<body style="background-color: black;">
-<canvas width="160" height="144"></canvas>
+<body style="background-color: black; color: white;">
 
 <div id="fps">FPS: </div>
 
-<input class="file-input" type="file">
+Load Rom: <input class="file-input" type="file" multiple>
+<!--Load Sram <input class="sram-file-input" type="file">-->
 
 <canvas id="scaled-draw" width="640" height="576" style="display: block"></canvas>
+<div>
 <button id="fullscreen">Fullscreen</button>
-
+<button id="save-sram">Save Sram</button>
+<button id="advance-frame">Advance Frame</button>
+</div>
 <canvas id="background" width="512" height="512" style="margin-top: 20px;"></canvas>
 
 <canvas id="oam" width="640" height="256" style="display: block; background-color: #f0f;"></canvas>

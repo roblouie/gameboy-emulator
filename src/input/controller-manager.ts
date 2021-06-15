@@ -1,6 +1,6 @@
 import { input } from "@/input/input";
 
-enum Xbox360ControllerButtons {
+export enum Xbox360ControllerButtons {
   A,
   B,
   X,
@@ -20,27 +20,35 @@ enum Xbox360ControllerButtons {
 }
 
 class ControllerManager {
-  constructor() {
-    // window.addEventListener('gamepadconnected', ({ gamepad }) => this.setController(gamepad));
-  }
+  controller = 0;
+  left: number = Xbox360ControllerButtons.DpadLeft;
+  right: number = Xbox360ControllerButtons.DpadRight;
+  up: number = Xbox360ControllerButtons.DpadUp;
+  down: number = Xbox360ControllerButtons.DpadDown;
+
+  select = Xbox360ControllerButtons.Select;
+  start = Xbox360ControllerButtons.Start;
+
+  x = Xbox360ControllerButtons.X;
+  a = Xbox360ControllerButtons.A;
 
   queryButtons() {
-    const gamepad = navigator.getGamepads()[0];
+    const gamepad = navigator.getGamepads()[this.controller];
 
     if (!gamepad) {
       return;
     }
 
-    input.isPressingLeft = gamepad.buttons[Xbox360ControllerButtons.DpadLeft].value === 1;
-    input.isPressingRight = gamepad.buttons[Xbox360ControllerButtons.DpadRight].pressed;
-    input.isPressingUp = gamepad.buttons[Xbox360ControllerButtons.DpadUp].pressed;
-    input.isPressingDown = gamepad.buttons[Xbox360ControllerButtons.DpadDown].pressed;
+    input.isPressingLeft = gamepad.buttons[this.left].pressed;
+    input.isPressingRight = gamepad.buttons[this.right].pressed;
+    input.isPressingUp = gamepad.buttons[this.up].pressed;
+    input.isPressingDown = gamepad.buttons[this.down].pressed;
 
-    input.isPressingSelect = gamepad.buttons[Xbox360ControllerButtons.Select].pressed;
-    input.isPressingStart = gamepad.buttons[Xbox360ControllerButtons.Start].pressed;
+    input.isPressingSelect = gamepad.buttons[this.select].pressed;
+    input.isPressingStart = gamepad.buttons[this.start].pressed;
 
-    input.isPressingB = gamepad.buttons[Xbox360ControllerButtons.X].pressed;
-    input.isPressingA = gamepad.buttons[Xbox360ControllerButtons.A].pressed;
+    input.isPressingB = gamepad.buttons[this.x].pressed;
+    input.isPressingA = gamepad.buttons[this.a].pressed;
   }
 }
 

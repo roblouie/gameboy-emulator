@@ -2,9 +2,11 @@
   "name": "gameboy-emulator",
   "version": "1.0.0",
   "description": "A gameboy emulator written with typescript",
-  "main": "index.js",
+  "main": "./dist/gameboy.js",
+  "module": "./dist/gameboy.js",
   "devDependencies": {
     "@types/jest": "^26.0.20",
+    "copy-webpack-plugin": "^9.0.0",
     "html-webpack-plugin": "^5.3.1",
     "jest": "^26.6.3",
     "jest-canvas-mock": "^2.3.1",
@@ -16,8 +18,9 @@
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
-    "serve": "webpack serve --mode=development",
+    "serve": "webpack serve --mode=development --host=0.0.0.0",
     "build": "webpack --config webpack.prod.js",
+    "npm-package": "webpack --config webpack.npm-package.js",
     "test": "jest"
   },
   "author": "",

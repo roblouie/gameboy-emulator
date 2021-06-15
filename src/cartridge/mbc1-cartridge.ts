@@ -1,5 +1,5 @@
 import { Cartridge } from "@/cartridge/cartridge";
-import { instructionCache } from "@/helpers/cpu-debug-helpers";
+import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 
 enum Mbc1WriteType {
   RamGateRegister,
@@ -17,30 +17,58 @@ enum Mbc1ReadType {
   Invalid
 }
 
-export class Mbc1Cartridge extends Cartridge{
+export class Mbc1Cartridge extends Cartridge {
   private isRamEnabled = false;
   private bank1 = 0b00001;
   private bank2 = 0b0;
   private mode = 0b0;
+  private ramData: ArrayBuffer;
   private ramDataView: DataView;
   private ramBytes: Uint8Array;
 
+  // Used to debounce calls to on sram write callback. Allows auto saving data without
+  // hammering writes
+  private writeTimeout: any;
+  onSramWrite?: Function;
 
   constructor(gameDataView: DataView) {
     super(gameDataView);
-    this.ramDataView = new DataView(new ArrayBuffer(this.ramSize));
+    this.ramData = new ArrayBuffer(this.ramSize)
+    this.ramDataView = new DataView(this.ramData);
     this.ramBytes = new Uint8Array(this.ramDataView.buffer);
     this.ramBytes.fill(0xff);
   }
 
+  setRam(sramArrayBuffer: ArrayBuffer) {
+    this.ramData = sramArrayBuffer;
+    this.ramDataView = new DataView(this.ramData);
+    this.ramBytes = new Uint8Array(this.ramDataView.buffer);
+  }
+
+  dumpRam(): ArrayBuffer {
+    return this.ramDataView.buffer;
+  }
+
 
   override writeByte(address: number, value: number) {
-    const sramWrite = (address: number, value: number) => this.ramDataView.setUint8(address, value);
+    const sramWrite = (address: number, value: number) => {
+      this.ramDataView.setUint8(address, value);
+      if (this.type === CartridgeType.MBC1_RAM_BATTERY && this.onSramWrite) {
+        clearTimeout(this.writeTimeout);
+        this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
+      }
+    }
     this.write(address, value, sramWrite);
   }
 
   override writeWord(address: number, value: number) {
-    const sramWrite = (address: number, value: number) => this.ramDataView.setUint16(address, value, true);
+    const sramWrite = (address: number, value: number) => {
+      this.ramDataView.setUint16(address, value, true);
+      if (this.type === CartridgeType.MBC1_RAM_BATTERY && this.onSramWrite) {
+        clearTimeout(this.writeTimeout);
+        this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
+      }
+    }
     this.write(address, value, sramWrite);
   }
 
