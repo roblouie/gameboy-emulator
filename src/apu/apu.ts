@@ -9,7 +9,7 @@ export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
-  private audioContext = new AudioContext({ sampleRate: 48000 });
+  private audioContext = new AudioContext({ sampleRate: 44100 });
 
   private frameSequencerCycleCounter = 0;
 
@@ -26,7 +26,7 @@ export class APU {
 
   constructor() {
     this.audioContext.suspend();
-    this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 512);
+    this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 1024);
 
     this.sound1 = new Sound1();
     this.sound2 = new Sound2();

@@ -31,8 +31,12 @@ export class Gameboy {
 
   private previousTime = 0;
 
-  run() {
+  private tickTimerId = 0;
+  private drawTimerId = 0;
 
+  run() {
+    window.cancelAnimationFrame(this.drawTimerId);
+    clearTimeout(this.tickTimerId);
 
     let debug = true;
 
@@ -44,40 +48,33 @@ export class Gameboy {
     this.cpu.registers.E.value = 0xD8;
     this.cpu.registers.A.value = 1;
     this.cpu.registers.F.value = 0xb0;
+    memory.reset();
     lcdControlRegister.value = 0x83; // initial value from official guide
 
-    requestAnimationFrame(diff => this.runFrame(diff));
+    this.runFrame();
+    this.drawTimerId = requestAnimationFrame(() => this.drawFrame());
   }
 
-    runFrame(currentTime: number) {
+    runFrame() {
+      this.tickTimerId = window.setTimeout(() => this.runFrame(), 1000/60);
 
-      const delta = currentTime - this.previousTime
-
-      if (delta >= this.interval || !this.previousTime) {
-        this.fps = 1000 / (currentTime - this.previousTime);
-
-        this.previousTime = currentTime - (delta % this.interval);
-
-        while (this.cycles <= GPU.CyclesPerFrame) {
-          const cycleForTick = this.cpu.tick();
-          this.gpu.tick(cycleForTick);
-          this.apu.tick(cycleForTick);
-          this.cycles += cycleForTick;
-        }
-
-        controllerManager.queryButtons();
-
-        if (this.frameFinishedCallback) {
-          this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
-        }
-
-        // previousTime = currentTime;
-        this.cycles = this.cycles % GPU.CyclesPerFrame;
+      while (this.cycles <= GPU.CyclesPerFrame) {
+        const cycleForTick = this.cpu.tick();
+        this.gpu.tick(cycleForTick);
+        this.apu.tick(cycleForTick);
+        this.cycles += cycleForTick;
       }
 
+    controllerManager.queryButtons();
 
+    this.cycles = this.cycles % GPU.CyclesPerFrame;
+  }
 
-    requestAnimationFrame(diff => this.runFrame(diff));
+  drawFrame() {
+    if (this.frameFinishedCallback) {
+      this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
+    }
+    this.drawTimerId = requestAnimationFrame(() => this.drawFrame());
   }
 
   onFrameFinished(callback: Function) {
@@ -95,24 +92,28 @@ export class Gameboy {
   }
 
   setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer) {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY  || CartridgeType.MBC3_RAM_BATTERY) {
       const cartridge = memory.cartridge as Mbc1Cartridge;
       cartridge.setRam(sramArrayBuffer);
     }
   }
 
   getCartridgeSaveRam() {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY  || CartridgeType.MBC3_RAM_BATTERY) {
       const cartridge = memory.cartridge as Mbc1Cartridge;
       return cartridge.dumpRam();
     }
   }
 
   setOnWriteToCartridgeRam(onSramWrite: Function) {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
       const cartridge = memory.cartridge as Mbc1Cartridge;
       cartridge.onSramWrite = onSramWrite
     }
+  }
+
+  get cartridge() {
+    return memory.cartridge;
   }
 }
 
