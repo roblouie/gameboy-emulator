@@ -26,7 +26,10 @@ window.addEventListener('load', () => {
   oamCanvas = document.querySelector('#oam') as HTMLCanvasElement;
   oamContext = oamCanvas.getContext('2d') as CanvasRenderingContext2D;
 
-  frameButton = document.querySelector('#advance-frame') as HTMLButtonElement;
+  frameButton = document.querySelector('#enable-audio') as HTMLButtonElement;
+  frameButton.addEventListener('click', () => {
+    gameboy.apu.enableSound();
+  });
 
   document.querySelector('#fullscreen')?.addEventListener('click', () => {
     scaledDrawCanvas.requestFullscreen();
@@ -38,7 +41,31 @@ window.addEventListener('load', () => {
       saveFileToDevice(sram, 'test1');
     }
   });
+
+  document.querySelector('.test')!.addEventListener('click', getFile);
+
 });
+
+
+let directoryHandle;
+
+async function getFile() {
+  // open file picker
+  // @ts-ignore
+  directoryHandle = await window.showDirectoryPicker();
+
+  if (directoryHandle.kind === 'file') {
+    // run file code
+  } else if (directoryHandle.kind === 'directory') {
+    // run directory code
+    console.log(directoryHandle);
+    const entries = await directoryHandle.entries();
+    const firstEntry = await entries.next();
+    console.log(firstEntry);
+    debugger;
+  }
+
+}
 
 async function onFileChange(event: Event) {
   const fileElement = event.target as HTMLInputElement;
@@ -54,7 +81,7 @@ async function onFileChange(event: Event) {
     gameboy.loadGame(romArrayBuffer);
     gameboy.setOnWriteToCartridgeRam(() => console.log('write stopped'));
 
-    gameboy.gpu.colors[0] = { red: 0, green: 255, blue: 0 }
+    // gameboy.gpu.colors[0] = { red: 0, green: 255, blue: 0 };
 
 
     if (fileElement.files[1]) {
@@ -70,7 +97,7 @@ async function onFileChange(event: Event) {
     gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
       const currentTime = Date.now();
       scaledDrawContext.putImageData(imageData, 0, 0);
-      // scaledDrawContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, 640, 576);
+      scaledDrawContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, 640, 576);
 
       if (fpsDiv) {
         fpsDiv.innerHTML = 'elapsed: ' + (currentTime - previousTime); //`FPS: ${fps}`;
