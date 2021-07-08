@@ -1,0 +1,53 @@
+.top-menu {
+    border-bottom: 3px solid #b2ada9;
+    font-family: 'M PLUS 1p', sans-serif;
+    display: flex;
+    user-select: none;
+}
+
+.menu-button {
+    border: 2px solid #b2ada9;
+    display: inline-block;
+    margin: 5px;
+    padding: 1px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #8a8581;
+    cursor: pointer;
+    width: 67px;
+}
+
+.left-bar {
+    width: 3px;
+    margin-left: 20px;
+    background-color: #b2ada9;
+}
+
+.right-bar {
+    width: 3px;
+    margin-left: 20px;
+    background-color: #b2ada9;
+    position: absolute;
+    right: 20px;
+    height: 34px;
+    top: 0;
+}
+
+.file-input {
+    display: none;
+}
+
+@media screen and (orientation:landscape) and (max-device-width: 832px) {
+    .top-menu {
+        position: absolute;
+        border: none;
+    }
+
+    .left-bar {
+        display: none;
+    }
+
+    .right-bar {
+        display: none;
+    }
+}

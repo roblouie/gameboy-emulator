@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@100;300&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: Orbitron, sans-serif;
+    color: #0b0ba7;
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.app {
+    overflow: hidden;
+    width: 100vw;
+    height: 100%;
+    background-color: #c6c1bd;
+    display: flex;
+    flex-direction: column;
+}
+
+* {
+    user-select: none;
+}
+
+.move {
+    left: 250px;
+}
+
+.controls-section {
+    flex-grow: 1;
+    position: relative;
+}
+
+.arranger {
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+}
+
+
+.start-select {
+    height: 100px;
+}
+
+.button-spacer {
+    width: 200px;
+    height: 100px;
+    display: flex;
+}
+
+@media screen and (orientation:landscape) {
+    .arranger {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .d-pad {
+        order: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-around;
+        flex-grow: 1;
+        padding-top: 20px;
+        margin-left: 10px;
+    }
+
+    .screen {
+        order: 1;
+        align-self: center;
+    }
+
+    .buttons {
+        order: 2;
+        flex-grow: 1;
+        align-self: center;
+        display: flex;
+        justify-content: space-around;
+        height: 100%;
+        flex-direction: column;
+        padding-top: 20px;
+        align-items: flex-end;
+    }
+
+
+
+}
+
+
+
+@media screen and (orientation:portrait) {
+
+    .arranger {
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .d-pad {
+        width: 50%;
+        height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .start-select {
+        position: relative;
+        left: calc(50vw - 102px);
+    }
+
+    .buttons {
+        width: 50%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .screen {
+        width: 100%;
+    }
+
+    .portrait-spacer {
+        width: 100%;
+        height: 100%;
+    }
+}

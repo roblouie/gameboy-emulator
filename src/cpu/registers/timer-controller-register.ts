@@ -7,10 +7,10 @@ class TimerControllerRegister implements SingleByteMemoryRegister {
 
   private inputClockSpeedValueToCycles = [
     1024,
-    8,
-    32,
+    16,
+    64,
     256,
-  ]
+  ];
 
   get value() {
     return memory.readByte(this.offset);

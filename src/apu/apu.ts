@@ -22,7 +22,7 @@ export class APU {
   private sound3: Sound3;
   private sound4: Sound4;
 
-  private isAudioEnabled = false;
+  #isAudioEnabled = false;
 
   constructor() {
     this.audioContext.suspend();
@@ -34,18 +34,22 @@ export class APU {
     this.sound4 = new Sound4();
   }
 
+  get isAudioEnabled() {
+    return this.#isAudioEnabled;
+  }
+
   enableSound() {
-    this.isAudioEnabled = true;
+    this.#isAudioEnabled = true;
     this.audioContext.resume();
   }
 
   disableSound() {
-    this.isAudioEnabled = false;
+    this.#isAudioEnabled = false;
     this.audioContext.suspend();
   }
 
   tick(cycles: number) {
-    if (!this.isAudioEnabled) {
+    if (!this.#isAudioEnabled) {
       return;
     }
 

@@ -1,26 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TypeScript GameBoy</title>
-</head>
-<body style="background-color: black; color: white;">
+    <link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="app">
+    <gameboy-top-menu></gameboy-top-menu>
 
-<div id="fps">FPS: </div>
+    <div class="arranger">
+        <section class="screen">
+            <gameboy-screen></gameboy-screen>
+        </section>
 
-Load Rom: <input class="file-input" type="file" multiple>
-<!--Load Sram <input class="sram-file-input" type="file">-->
+        <section class="d-pad">
+            <gameboy-d-pad></gameboy-d-pad>
 
-<canvas id="scaled-draw" width="640" height="576" style="display: block"></canvas>
-<div>
-<button id="fullscreen">Fullscreen</button>
-<button id="save-sram">Save Sram</button>
-<button id="enable-audio">Enable audio</button>
-    <button class="test">Test</button>
+            <section class="start-select">
+                <round-button label="SELECT" shape="oval"></round-button>
+                <round-button label="START" shape="oval" style="position: relative; left: 100px; top: -40px;"></round-button>
+            </section>
+        </section>
+
+        <section class="buttons">
+            <div class="button-spacer">
+                <round-button label="B" style="margin-right: 20px; margin-top: 40px;" ></round-button>
+                <round-button label="A" style="margin-right: 15px;"></round-button>
+            </div>
+
+            <div style="height: 100px">&nbsp;</div>
+        </section>
+
+        <section class="portrait-spacer"></section>
+
+    </div>
+
+    <gameboy-speaker></gameboy-speaker>
 </div>
-<canvas id="background" width="512" height="512" style="margin-top: 20px;"></canvas>
-
-<canvas id="oam" width="640" height="256" style="display: block; background-color: #f0f;"></canvas>
-
-<button id="play-audio">Play Audio</button>
 </body>
 </html>
