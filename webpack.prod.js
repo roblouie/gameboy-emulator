@@ -1,6 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.ts',
@@ -10,11 +10,13 @@ module.exports = {
       title: 'Gameboy',
       template: './index.html'
     }),
-    new CopyWebpackPlugin({
+    new CopyPlugin({
       patterns: [
-        { from: './src/apu/ring-buffer/ring-buffer-player-node.js' }
-      ]
-    })
+        {
+          from: path.resolve(__dirname, "style.css"),
+        },
+      ],
+    }),
   ],
   module: {
     rules: [
@@ -22,6 +24,11 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: [/node_modules/, /.spec.ts/],
+      },
+      {
+        test: [/\.css$/, /\.node.js$/, /\.svg$/],
+        include: [ path.resolve(__dirname, './src')],
+        use: 'raw-loader',
       },
     ],
   },

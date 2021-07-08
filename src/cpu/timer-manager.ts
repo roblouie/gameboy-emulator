@@ -8,7 +8,7 @@ import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-regi
 export class TimerManager {
   private timerCycles = 0;
   private frequencyCounter = 0;
-  private cycleMultiplier = 2;
+  private cycleMultiplier = 4;
 
   updateTimers(cycles: number) {
     this.frequencyCounter = asUint16(this.frequencyCounter + (cycles * this.cycleMultiplier));

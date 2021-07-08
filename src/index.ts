@@ -1,103 +1,32 @@
 import { Gameboy } from "@/gameboy";
+import "@/ui/gameboy-button/gameboy-button";
+import "@/ui/gameboy-d-pad/gameboy-d-pad";
+import "@/ui/gameboy-speaker/gameboy-speaker";
+import "@/ui/gameboy-top-menu/gameboy-top-menu";
+import "@/ui/gameboy-screen/gameboy-screen";
 
-let scaledDrawCanvas: HTMLCanvasElement;
+let scaledDrawCanvas: any;
 let scaledDrawContext: CanvasRenderingContext2D;
-//
-let backgroundCanvas: HTMLCanvasElement;
-let backgroundContext: CanvasRenderingContext2D;
-
-let oamCanvas: HTMLCanvasElement;
-let oamContext: CanvasRenderingContext2D;
 
 let gameboy: Gameboy;
 
-let frameButton: HTMLButtonElement;
 
 window.addEventListener('load', () => {
-  const fileInput = document.querySelector('.file-input') as HTMLInputElement;
-  fileInput?.addEventListener('change', onFileChange);
+  const screenElement = document.querySelector('gameboy-screen')! as any;
 
-  scaledDrawCanvas = document.querySelector('#scaled-draw') as HTMLCanvasElement;
-  scaledDrawContext = scaledDrawCanvas.getContext('2d') as CanvasRenderingContext2D;
-  //
-  backgroundCanvas = document.querySelector('#background') as HTMLCanvasElement;
-  backgroundContext = backgroundCanvas.getContext('2d') as CanvasRenderingContext2D;
+  document.querySelector('gameboy-d-pad')!.addEventListener('directionchange', (event: any) => console.log(event.detail));
 
-  oamCanvas = document.querySelector('#oam') as HTMLCanvasElement;
-  oamContext = oamCanvas.getContext('2d') as CanvasRenderingContext2D;
-
-  frameButton = document.querySelector('#enable-audio') as HTMLButtonElement;
-  frameButton.addEventListener('click', () => {
-    gameboy.apu.enableSound();
-  });
-
-  document.querySelector('#fullscreen')?.addEventListener('click', () => {
-    scaledDrawCanvas.requestFullscreen();
-  });
-
-  document.querySelector('#save-sram')?.addEventListener('click', () => {
-    const sram = gameboy.getCartridgeSaveRam();
-    if (sram) {
-      saveFileToDevice(sram, 'test1');
-    }
-  });
-
-  document.querySelector('.test')!.addEventListener('click', getFile);
-
-});
-
-
-let directoryHandle;
-
-async function getFile() {
-  // open file picker
-  // @ts-ignore
-  directoryHandle = await window.showDirectoryPicker();
-
-  if (directoryHandle.kind === 'file') {
-    // run file code
-  } else if (directoryHandle.kind === 'directory') {
-    // run directory code
-    console.log(directoryHandle);
-    const entries = await directoryHandle.entries();
-    const firstEntry = await entries.next();
-    console.log(firstEntry);
-    debugger;
-  }
-
-}
-
-async function onFileChange(event: Event) {
-  const fileElement = event.target as HTMLInputElement;
-
-  if (fileElement.files && fileElement.files[0]) {
-    const romArrayBuffer = await fileToArrayBuffer(fileElement.files[0]);
-    let ramArrayBuffer;
-
-
-
-
+  document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', (event: any) => {
     gameboy = new Gameboy();
-    gameboy.loadGame(romArrayBuffer);
-    gameboy.setOnWriteToCartridgeRam(() => console.log('write stopped'));
-
-    // gameboy.gpu.colors[0] = { red: 0, green: 255, blue: 0 };
-
-
-    if (fileElement.files[1]) {
-      ramArrayBuffer = await fileToArrayBuffer(fileElement.files[1]);
-      gameboy.setCartridgeSaveRam(ramArrayBuffer);
-    }
-
-
-
-    scaledDrawContext.imageSmoothingEnabled = false;
+    gameboy.loadGame(event.detail.fileBuffer);
+    scaledDrawCanvas = screenElement.getCanvas();
     const fpsDiv = document.querySelector('#fps');
     let previousTime = 0;
+
     gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
       const currentTime = Date.now();
-      scaledDrawContext.putImageData(imageData, 0, 0);
-      scaledDrawContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, 640, 576);
+      screenElement.renderingContext.putImageData(imageData, 0, 0);
+      screenElement.renderingContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, screenElement.width, screenElement.height);
 
       if (fpsDiv) {
         fpsDiv.innerHTML = 'elapsed: ' + (currentTime - previousTime); //`FPS: ${fps}`;
@@ -106,41 +35,14 @@ async function onFileChange(event: Event) {
     });
 
     gameboy.run();
-  }
-}
-
-function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
-  const fileReader = new FileReader();
-
-  return new Promise((resolve, reject) => {
-    fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
-
-    fileReader.onerror = () => {
-      fileReader.abort();
-      reject(new DOMException('Error parsing file'))
-    }
-
-    fileReader.readAsArrayBuffer(file);
   });
-}
 
-function saveFileToDevice(arrayBuffer: ArrayBuffer, filename: string, mimeType?: string): void {
-  if (!mimeType) {
-    mimeType = 'application/octet-stream';
-  }
+  document.querySelector('gameboy-speaker')!.addEventListener('click', () => {
+    if (gameboy.apu.isAudioEnabled) {
+      gameboy.apu.disableSound();
+    } else {
+      gameboy.apu.enableSound();
+    }
+  })
 
-  const blob = new Blob([arrayBuffer], { type: mimeType });
-
-  const link = document.createElement('a');
-
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-}
+});

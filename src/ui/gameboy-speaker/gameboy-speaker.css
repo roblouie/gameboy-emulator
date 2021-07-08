@@ -1,0 +1,36 @@
+.speaker {
+    position: absolute;
+    bottom: 0;
+    right: 10px;
+    width: 150px;
+    height: 80px;
+    cursor: pointer;
+}
+
+.grill-wrapper {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    transform: rotateZ(-30deg);
+    height: 80px;
+    position: absolute;
+    bottom: 30px;
+    width: 150px;
+}
+
+.grill {
+    width: 10px;
+    height: 80%;
+    background-color: #b2ada9;
+    border-radius: 20px;
+    box-shadow: inset 1px 1px 3px 0 #000000ab;
+}
+
+.icon {
+    width: 40px;
+    height: 40px;
+    fill: rgba(140, 140, 140, 0.4);
+    position: absolute;
+    bottom: 12px;
+    right: 10px;
+}
