@@ -31,12 +31,8 @@ export class Gameboy {
 
   private previousTime = 0;
 
-  private tickTimerId = 0;
-  private drawTimerId = 0;
-
   run() {
-    window.cancelAnimationFrame(this.drawTimerId);
-    clearTimeout(this.tickTimerId);
+
 
     let debug = true;
 
@@ -51,30 +47,38 @@ export class Gameboy {
     memory.reset();
     lcdControlRegister.value = 0x83; // initial value from official guide
 
-    this.runFrame();
-    this.drawTimerId = requestAnimationFrame(() => this.drawFrame());
+    requestAnimationFrame(diff => this.runFrame(diff));
   }
 
-    runFrame() {
-      this.tickTimerId = window.setTimeout(() => this.runFrame(), 1000/60);
+    runFrame(currentTime: number) {
 
-      while (this.cycles <= GPU.CyclesPerFrame) {
-        const cycleForTick = this.cpu.tick();
-        this.gpu.tick(cycleForTick);
-        this.apu.tick(cycleForTick);
-        this.cycles += cycleForTick;
+      const delta = currentTime - this.previousTime
+
+      if (delta >= this.interval || !this.previousTime) {
+        this.fps = 1000 / (currentTime - this.previousTime);
+
+        this.previousTime = currentTime - (delta % this.interval);
+
+        while (this.cycles <= GPU.CyclesPerFrame) {
+          const cycleForTick = this.cpu.tick();
+          this.gpu.tick(cycleForTick);
+          this.apu.tick(cycleForTick);
+          this.cycles += cycleForTick;
+        }
+
+        controllerManager.queryButtons();
+
+        if (this.frameFinishedCallback) {
+          this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
+        }
+
+        // previousTime = currentTime;
+        this.cycles = this.cycles % GPU.CyclesPerFrame;
       }
 
-    controllerManager.queryButtons();
 
-    this.cycles = this.cycles % GPU.CyclesPerFrame;
-  }
 
-  drawFrame() {
-    if (this.frameFinishedCallback) {
-      this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
-    }
-    this.drawTimerId = requestAnimationFrame(() => this.drawFrame());
+    requestAnimationFrame(diff => this.runFrame(diff));
   }
 
   onFrameFinished(callback: Function) {

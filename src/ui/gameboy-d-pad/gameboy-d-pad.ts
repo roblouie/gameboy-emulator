@@ -86,6 +86,7 @@ export class GameboyDPad extends HTMLElement {
   private onTouchEnd() {
     this.directionChangeEvent.detail.direction = '';
     this.dispatchEvent(this.directionChangeEvent);
+    this.dpadElement.setAttribute('class', 'dpad');
   }
 
   private setDirection(event: any) {
@@ -133,6 +134,8 @@ export class GameboyDPad extends HTMLElement {
     } else if (angle > 337.5 && angle <= 360) {
       this.direction = 'right';
     }
+
+    this.dpadElement.setAttribute('class', `dpad ${this.direction}`);
   }
 }
 
