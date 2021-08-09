@@ -13,7 +13,7 @@ class RingBufferReader {
     const read = Atomics.load(this.readPointer, 0);
     const write = Atomics.load(this.writePointer, 0);
 
-    const availableToRead = this.#availableRead(read, write);
+    const availableToRead = this.availableRead(read, write);
 
     if (availableToRead === 0) {
       return 0;
@@ -25,8 +25,8 @@ class RingBufferReader {
     let sizeUpToEndOfArray = Math.min(this.capacity - read, howManyToRead);
     let sizeFromStartOfTheArrayOrZero = howManyToRead - sizeUpToEndOfArray;
 
-    this.#copy(this.storage, read, elements, 0, sizeUpToEndOfArray);
-    this.#copy(this.storage, 0, elements, sizeUpToEndOfArray, sizeFromStartOfTheArrayOrZero);
+    this.copy(this.storage, read, elements, 0, sizeUpToEndOfArray);
+    this.copy(this.storage, 0, elements, sizeUpToEndOfArray, sizeFromStartOfTheArrayOrZero);
 
     const readPointerPositionAfterRead = (read + howManyToRead) % this.capacity;
     Atomics.store(this.readPointer, 0, readPointerPositionAfterRead);
@@ -48,7 +48,7 @@ class RingBufferReader {
     return this.pop(byteArray);
   }
 
-  #availableRead(readPosition, writePosition) {
+  availableRead(readPosition, writePosition) {
     if (writePosition > readPosition) {
       return writePosition - readPosition;
     } else {
@@ -56,7 +56,7 @@ class RingBufferReader {
     }
   }
 
-  #copy(input, inputOffset, output, outputOffset, size) {
+  copy(input, inputOffset, output, outputOffset, size) {
     for (let i = 0; i < size; i++) {
       output[outputOffset + i] = input[inputOffset + i];
     }
