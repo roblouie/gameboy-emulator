@@ -65,7 +65,7 @@ export class GameboyTopMenu extends HTMLElement {
             
             <div>
               <img src="${loadGameImage}" width="120px"/>
-              <p>Open ROM with the Load Game button</p>
+              <p>Open ROM with the Load Game button. Supports .zip and .gb</p>
             </div>
             
             <div>

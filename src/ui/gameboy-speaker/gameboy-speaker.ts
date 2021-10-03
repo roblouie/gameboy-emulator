@@ -4,7 +4,7 @@ const unmuteIcon = require("./unmute-icon.svg").default as string;
 
 export class GameboySpeaker extends HTMLElement {
   private speakerElement: HTMLDivElement;
-  private isMuted = true;
+  isMuted = true;
 
   constructor() {
     super();
@@ -43,7 +43,7 @@ export class GameboySpeaker extends HTMLElement {
     return grills;
   }
 
-  private onClick() {
+  onClick() {
     if (this.isMuted) {
       this.speakerElement.querySelector('.icon-wrapper')!.innerHTML = unmuteIcon;
       this.isMuted = false;

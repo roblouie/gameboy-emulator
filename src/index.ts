@@ -5,6 +5,7 @@ import "@/ui/gameboy-speaker/gameboy-speaker";
 import "@/ui/gameboy-top-menu/gameboy-top-menu";
 import "@/ui/gameboy-screen/gameboy-screen";
 import {gameboy} from "@/ui/gameboy-instance";
+import {GameboySpeaker} from "@/ui/gameboy-speaker/gameboy-speaker";
 
 let scaledDrawCanvas: any;
 
@@ -23,7 +24,7 @@ window.addEventListener('load', () => {
   document.querySelector('.b-button')!.addEventListener('touchstart', () => gameboy.input.isPressingB = true);
   document.querySelector('.b-button')!.addEventListener('touchend', () => gameboy.input.isPressingB = false);
 
-  document.querySelector('gameboy-d-pad')!.addEventListener('touchend', (event: any) => {
+  document.querySelector('gameboy-d-pad')!.addEventListener('touchend', () => {
     gameboy.input.isPressingUp = false;
     gameboy.input.isPressingLeft = false;
     gameboy.input.isPressingRight = false;
@@ -70,9 +71,13 @@ window.addEventListener('load', () => {
     }
   });
 
+  const gameboySpeaker = document.querySelector<GameboySpeaker>('gameboy-speaker')!;
+
   document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', async (event: any) => {
     gameboy.loadGame(event.detail.fileBuffer);
-
+    gameboy.apu.enableSound();
+    gameboySpeaker.isMuted = false;
+    gameboySpeaker.onClick();
     // @ts-ignore
     const gameSram = await localforage.getItem(gameboy.cartridge!.title);
 
@@ -88,7 +93,7 @@ window.addEventListener('load', () => {
 
     scaledDrawCanvas = screenElement.getCanvas();
 
-    gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
+    gameboy.onFrameFinished((imageData: ImageData) => {
       screenElement.renderingContext.putImageData(imageData, 0, 0);
       screenElement.renderingContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, screenElement.width, screenElement.height);
     });
@@ -96,7 +101,7 @@ window.addEventListener('load', () => {
     gameboy.run();
   });
 
-  document.querySelector('gameboy-speaker')!.addEventListener('click', () => {
+  gameboySpeaker.addEventListener('click', () => {
     if (gameboy.apu.isAudioEnabled) {
       gameboy.apu.disableSound();
     } else {

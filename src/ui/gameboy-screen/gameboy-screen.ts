@@ -79,7 +79,7 @@ export class GameboyScreen extends HTMLElement {
     } else {
       const topMenuHeight = 80;
       const landscapeModeScreenHeight = clientHeight - borderSize - topMenuHeight;
-      const controlsWidth = 400;
+      const controlsWidth = 410;
       const landscapeWidth = clientWidth - borderSize - controlsWidth;
 
       if ((landscapeWidth / aspectRatio) <= landscapeModeScreenHeight) {
