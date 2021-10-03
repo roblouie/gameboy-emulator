@@ -1,5 +1,6 @@
 .screen {
     background-color: #80b141;
+    image-rendering: pixelated;
 }
 
 .screen-border {

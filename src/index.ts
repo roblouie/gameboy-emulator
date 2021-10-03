@@ -1,15 +1,12 @@
-import { Gameboy } from "@/gameboy";
+
 import "@/ui/gameboy-button/gameboy-button";
 import "@/ui/gameboy-d-pad/gameboy-d-pad";
 import "@/ui/gameboy-speaker/gameboy-speaker";
 import "@/ui/gameboy-top-menu/gameboy-top-menu";
 import "@/ui/gameboy-screen/gameboy-screen";
+import {gameboy} from "@/ui/gameboy-instance";
 
 let scaledDrawCanvas: any;
-let scaledDrawContext: CanvasRenderingContext2D;
-
-let gameboy: Gameboy;
-
 
 window.addEventListener('load', () => {
   const screenElement = document.querySelector('gameboy-screen')! as any;
@@ -34,8 +31,6 @@ window.addEventListener('load', () => {
   });
 
   document.querySelector('gameboy-d-pad')!.addEventListener('directionchange', (event: any) => {
-    console.log(event.detail.direction);
-
     gameboy.input.isPressingUp = false;
     gameboy.input.isPressingLeft = false;
     gameboy.input.isPressingRight = false;
@@ -75,22 +70,27 @@ window.addEventListener('load', () => {
     }
   });
 
-  document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', (event: any) => {
-    gameboy = new Gameboy();
+  document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', async (event: any) => {
     gameboy.loadGame(event.detail.fileBuffer);
+
+    // @ts-ignore
+    const gameSram = await localforage.getItem(gameboy.cartridge!.title);
+
+    if (gameSram) {
+      gameboy.setCartridgeSaveRam(gameSram);
+    }
+
+    // Sync game data saves to SRam
+    gameboy.setOnWriteToCartridgeRam(() => {
+      // @ts-ignore
+      localforage.setItem(gameboy.cartridge!.title, gameboy.getCartridgeSaveRam());
+    });
+
     scaledDrawCanvas = screenElement.getCanvas();
-    const fpsDiv = document.querySelector('#fps');
-    let previousTime = 0;
 
     gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
-      const currentTime = Date.now();
       screenElement.renderingContext.putImageData(imageData, 0, 0);
       screenElement.renderingContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, screenElement.width, screenElement.height);
-
-      if (fpsDiv) {
-        fpsDiv.innerHTML = 'elapsed: ' + (currentTime - previousTime); //`FPS: ${fps}`;
-        previousTime = currentTime;
-      }
     });
 
     gameboy.run();
@@ -103,5 +103,4 @@ window.addEventListener('load', () => {
       gameboy.apu.enableSound();
     }
   })
-
 });

@@ -29,7 +29,7 @@ class ControllerManager {
   select = Xbox360ControllerButtons.Select;
   start = Xbox360ControllerButtons.Start;
 
-  x = Xbox360ControllerButtons.X;
+  b = Xbox360ControllerButtons.X;
   a = Xbox360ControllerButtons.A;
 
   queryButtons() {
@@ -47,7 +47,7 @@ class ControllerManager {
     input.isPressingSelect = gamepad.buttons[this.select].pressed;
     input.isPressingStart = gamepad.buttons[this.start].pressed;
 
-    input.isPressingB = gamepad.buttons[this.x].pressed;
+    input.isPressingB = gamepad.buttons[this.b].pressed;
     input.isPressingA = gamepad.buttons[this.a].pressed;
   }
 }

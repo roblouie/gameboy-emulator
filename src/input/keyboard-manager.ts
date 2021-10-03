@@ -1,5 +1,4 @@
 import { input } from "@/input/input";
-import { Xbox360ControllerButtons } from "@/input/controller-manager";
 
 class KeyboardManager {
   down = 'ArrowDown';

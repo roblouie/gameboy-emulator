@@ -181,8 +181,6 @@ export class CPU {
       ...getInterruptOperations(this),
     ];
 
-    console.log(unorderedOperations.length);
-
     const orderedOperations: Operation[] = [];
     const { registers } = this;
 
@@ -208,7 +206,6 @@ export class CPU {
       }
     }
 
-    console.log(orderedOperations);
     return orderedOperations;
   }
 }

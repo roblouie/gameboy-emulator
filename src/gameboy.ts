@@ -2,7 +2,7 @@ import { GPU } from "@/gpu/gpu";
 import { CPU } from "@/cpu/cpu";
 import { memory } from "@/memory/memory";
 import { Cartridge } from "@/cartridge/cartridge";
-import { input, Input } from "@/input/input";
+import { input } from "@/input/input";
 import { APU } from "@/apu/apu";
 import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
 import { controllerManager } from "@/input/controller-manager";
@@ -10,8 +10,6 @@ import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
 import { CartridgeLoader } from "@/cartridge/cartridge-loader";
 import { keyboardManager } from "@/input/keyboard-manager";
-
-
 
 export class Gameboy {
   cpu = new CPU();
@@ -32,10 +30,6 @@ export class Gameboy {
   private previousTime = 0;
 
   run() {
-
-
-    let debug = true;
-
     // Initialize registers, probalby should be moved to CPU
     this.cpu.registers.programCounter.value = Cartridge.EntryPointOffset;
     this.cpu.registers.stackPointer.value = 0xfffe;
@@ -50,33 +44,29 @@ export class Gameboy {
     requestAnimationFrame(diff => this.runFrame(diff));
   }
 
-    runFrame(currentTime: number) {
+  runFrame(currentTime: number) {
+    const delta = currentTime - this.previousTime
 
-      const delta = currentTime - this.previousTime
+    if (delta >= this.interval || !this.previousTime) {
+      this.fps = 1000 / (currentTime - this.previousTime);
 
-      if (delta >= this.interval || !this.previousTime) {
-        this.fps = 1000 / (currentTime - this.previousTime);
+      this.previousTime = currentTime - (delta % this.interval);
 
-        this.previousTime = currentTime - (delta % this.interval);
-
-        while (this.cycles <= GPU.CyclesPerFrame) {
-          const cycleForTick = this.cpu.tick();
-          this.gpu.tick(cycleForTick);
-          this.apu.tick(cycleForTick);
-          this.cycles += cycleForTick;
-        }
-
-        controllerManager.queryButtons();
-
-        if (this.frameFinishedCallback) {
-          this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
-        }
-
-        // previousTime = currentTime;
-        this.cycles = this.cycles % GPU.CyclesPerFrame;
+      while (this.cycles <= GPU.CyclesPerFrame) {
+        const cycleForTick = this.cpu.tick();
+        this.gpu.tick(cycleForTick);
+        this.apu.tick(cycleForTick);
+        this.cycles += cycleForTick;
       }
 
+      controllerManager.queryButtons();
 
+      if (this.frameFinishedCallback) {
+        this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
+      }
+
+      this.cycles = this.cycles % GPU.CyclesPerFrame;
+    }
 
     requestAnimationFrame(diff => this.runFrame(diff));
   }
@@ -120,4 +110,3 @@ export class Gameboy {
     return memory.cartridge;
   }
 }
-
