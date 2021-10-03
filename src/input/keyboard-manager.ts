@@ -10,7 +10,7 @@ class KeyboardManager {
   b = 'KeyB';
 
   start = 'Enter';
-  select = 'Control';
+  select = 'ControlRight';
 
   constructor() {
     document.addEventListener('keydown', event => this.handleKeyEvent(event.code, true));

@@ -106,6 +106,27 @@ table button {
     margin: 10px;
 }
 
+.color {
+    height: 100px;
+    border: 1px solid black;
+}
+
+.color1 {
+    background-color: #fff;
+}
+
+.color2 {
+    background-color: rgb(192, 192, 192);
+}
+
+.color3 {
+    background-color: rgb(96, 96, 96);
+}
+
+.color4 {
+    background-color: #000;
+}
+
 .help div {
     display: flex;
     align-items: center;

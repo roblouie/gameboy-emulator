@@ -99,50 +99,50 @@ export class GameboyTopMenu extends HTMLElement {
               <tbody>
                 <tr>
                   <td>Left</td>
-                  <td><button>Button ${gameboy.controllerManager.left}</button></td>
-                  <td><button>${gameboy.keyboardManager.left}</button></td>
+                  <td><button class="controller" data-key="left" disabled>Button ${gameboy.controllerManager.left}</button></td>
+                  <td><button class="keyboard" data-key="left">${gameboy.keyboardManager.left}</button></td>
                 </tr>
                 
                 <tr>
                   <td>Right</td>
-                  <td><button>Button ${gameboy.controllerManager.right}</button></td>
-                  <td><button>${gameboy.keyboardManager.right}</button></td>
+                  <td><button class="controller" data-key="right" disabled>Button ${gameboy.controllerManager.right}</button></td>
+                  <td><button class="keyboard" data-key="right">${gameboy.keyboardManager.right}</button></td>
                 </tr>
                 
                 <tr>
                   <td>Up</td>
-                  <td><button>Button ${gameboy.controllerManager.up}</button></td>
-                  <td><button>${gameboy.keyboardManager.up}</button></td>
+                  <td><button class="controller" data-key="up" disabled>Button ${gameboy.controllerManager.up}</button></td>
+                  <td><button class="keyboard" data-key="up">${gameboy.keyboardManager.up}</button></td>
                 </tr>
                 
                 <tr>
                   <td>Down</td>
-                  <td><button>Button ${gameboy.controllerManager.down}</button></td>
-                  <td><button>${gameboy.keyboardManager.down}</button></td>
+                  <td><button class="controller" data-key="down" disabled>Button ${gameboy.controllerManager.down}</button></td>
+                  <td><button class="keyboard" data-key="down">${gameboy.keyboardManager.down}</button></td>
                 </tr>
                 
                 <tr>
                   <td>A</td>
-                  <td><button>Button ${gameboy.controllerManager.a}</button></td>
-                  <td><button>${gameboy.keyboardManager.a}</button></td>
+                  <td><button class="controller" data-key="a" disabled>Button ${gameboy.controllerManager.a}</button></td>
+                  <td><button class="keyboard" data-key="a">${gameboy.keyboardManager.a}</button></td>
                 </tr>
                 
                 <tr>
                   <td>B</td>
-                  <td><button>Button ${gameboy.controllerManager.b}</button></td>
-                  <td><button>${gameboy.keyboardManager.b}</button></td>
+                  <td><button class="controller" data-key="b" disabled>Button ${gameboy.controllerManager.b}</button></td>
+                  <td><button class="keyboard" data-key="b">${gameboy.keyboardManager.b}</button></td>
                 </tr>
                 
                  <tr>
                   <td>Select</td>
-                  <td><button>Button ${gameboy.controllerManager.select}</button></td>
-                  <td><button>${gameboy.keyboardManager.select}</button></td>
+                  <td><button class="controller" data-key="select" disabled>Button ${gameboy.controllerManager.select}</button></td>
+                  <td><button class="keyboard" data-key="select">${gameboy.keyboardManager.select}</button></td>
                 </tr>
                 
                 <tr>
                   <td>Start</td>
-                  <td><button>Button ${gameboy.controllerManager.start}</button></td>
-                  <td><button>${gameboy.keyboardManager.start}</button></td>
+                  <td><button class="controller" data-key="start" disabled>Button ${gameboy.controllerManager.start}</button></td>
+                  <td><button class="keyboard" data-key="start">${gameboy.keyboardManager.start}</button></td>
                 </tr>
               </tbody>
             </table>
@@ -150,7 +150,29 @@ export class GameboyTopMenu extends HTMLElement {
           </section>
           
           <section class="colors">
-            COLORS
+            <label>
+              Color Scheme
+              <select class="color-select">
+                <option value="grayscale">Grayscale</option>
+                <option value="retro">Retro</option>
+                <option value="sunset">Sunset</option>
+                <option value="pastel">Pastel</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            
+            <div class="color color1">
+              <input class="color-input" type="color" style="display: none;"/>
+            </div>
+            <div class="color color2">
+              <input class="color-input" type="color" style="display: none;"/>
+            </div>
+            <div class="color color3">
+              <input class="color-input" type="color" style="display: none;"/>
+            </div>
+            <div class="color color4">
+              <input class="color-input" type="color" style="display: none;"/>
+            </div>
           </section>
         </div>
       
@@ -158,6 +180,9 @@ export class GameboyTopMenu extends HTMLElement {
 
       <input class="file-input" type="file" accept=".gb,.zip" multiple/>
     `;
+
+    let controllerIntervalId: number;
+
     const fileInput = menuElement.querySelector('.file-input');
     const modalMenuBackdrop = menuElement.querySelector<HTMLElement>('.modal-menu-backdrop')!;
     fileInput!.addEventListener('change', event => this.onFileChange(event));
@@ -169,10 +194,12 @@ export class GameboyTopMenu extends HTMLElement {
 
     menuElement.querySelector('.close-button')!.addEventListener('click', () => {
       modalMenuBackdrop.style.display = 'none';
+      clearInterval(controllerIntervalId);
     });
 
     modalMenuBackdrop.addEventListener('click', (event) => {
       modalMenuBackdrop.style.display = 'none';
+      clearInterval(controllerIntervalId);
     });
 
     menuElement.querySelector('.modal-menu')!.addEventListener('click', event => {
@@ -220,6 +247,8 @@ export class GameboyTopMenu extends HTMLElement {
 
     // CONTROLS SECTION
     const gamepadSelect = menuElement.querySelector<HTMLSelectElement>('.gamepad-select')!;
+    const controllerButtons = menuElement.querySelectorAll<HTMLButtonElement>('button.controller')!;
+    const keyboardButtons = menuElement.querySelectorAll<HTMLButtonElement>('button.keyboard')!;
 
     window.addEventListener("gamepadconnected", (e) => {
       this.gamepads.push(e.gamepad);
@@ -228,6 +257,7 @@ export class GameboyTopMenu extends HTMLElement {
       option.innerHTML = e.gamepad.id;
       option.id = `${option.value}-${option.innerHTML}`;
       gamepadSelect.appendChild(option);
+      controllerButtons.forEach(button => button.disabled = false);
     });
 
     window.addEventListener("gamepaddisconnected", (e) => {
@@ -237,6 +267,117 @@ export class GameboyTopMenu extends HTMLElement {
 
     gamepadSelect.addEventListener('change', event => {
       gameboy.controllerManager.controller = parseInt(gamepadSelect.value, 10);
+    });
+
+    controllerButtons.forEach(button => {
+      button.addEventListener('click', event => {
+        controllerButtons.forEach(button => button.disabled = true);
+        const clickedButton = event.target as HTMLButtonElement;
+        clickedButton.disabled = false;
+        clickedButton.textContent = '...';
+        controllerIntervalId = window.setInterval(() => {
+          const gamepad = navigator?.getGamepads()[gameboy.controllerManager.controller];
+          const pressedButton = gamepad?.buttons?.findIndex(button => button.pressed);
+          const gameboyButton = clickedButton.dataset.key!;
+          if (pressedButton !== -1) {
+            // @ts-ignore
+            gameboy.controllerManager[gameboyButton] = pressedButton;
+            clickedButton.textContent = `Button ${pressedButton}`;
+            controllerButtons.forEach(button => button.disabled = false);
+            clearInterval(controllerIntervalId);
+          }
+        }, 100);
+      });
+    });
+
+    keyboardButtons.forEach(button => {
+      button.addEventListener('click', event => {
+        keyboardButtons.forEach(button => button.disabled = true);
+        const clickedButton = event.target as HTMLButtonElement;
+        clickedButton.disabled = false;
+        clickedButton.textContent = '...';
+
+        const setKeyboardListener = (event: KeyboardEvent) => {
+          const gameboyButton = clickedButton.dataset.key!;
+
+          // @ts-ignore
+          gameboy.keyboardManager[gameboyButton] = event.code;
+          clickedButton.textContent = event.code;
+          keyboardButtons.forEach(button => button.disabled = false);
+          document.removeEventListener('keydown', setKeyboardListener);
+        }
+
+        document.addEventListener('keydown', setKeyboardListener);
+      });
+    });
+
+    // COLORS SECTION
+    const colors = {
+      grayscale: [
+        { red: 255, green: 255, blue: 255 },
+        { red: 192, green: 192, blue: 192 },
+        { red: 96, green: 96, blue: 96 },
+        { red: 0, green: 0, blue: 0 },
+      ],
+
+      retro: [
+        { red: 224, green: 248, blue: 208 },
+        { red: 136, green: 192, blue: 112 },
+        { red: 52, green: 104, blue: 86 },
+        { red: 8, green: 24, blue: 32 },
+      ],
+
+      sunset: [
+        { red: 254, green: 216, blue: 0 },
+        { red: 255, green: 111, blue: 1 },
+        { red: 253, green: 47, blue: 36 },
+        { red: 129, green: 29, blue: 94 },
+      ],
+
+      pastel: [
+        { red: 244, green: 235, blue: 193 },
+        { red: 160, green: 193, blue: 184 },
+        { red: 112, green: 159, blue: 176 },
+        { red: 114, green: 106, blue: 149 },
+      ],
+
+      custom: [
+        { red: 255, green: 255, blue: 255 },
+        { red: 192, green: 192, blue: 192 },
+        { red: 96, green: 96, blue: 96 },
+        { red: 0, green: 0, blue: 0 },
+      ],
+    }
+    const colorSelect = menuElement.querySelector<HTMLSelectElement>('.color-select')!;
+    colorSelect.addEventListener('change', () => {
+      const colorDivs = menuElement.querySelectorAll<HTMLElement>('.color')!;
+      // @ts-ignore
+      const selectedPallete = colors[colorSelect.value];
+      colorDivs.forEach((div, index) => {
+        const { red, green, blue } = selectedPallete[index];
+        div.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+      });
+
+      gameboy.gpu.colors = selectedPallete;
+
+      const colorInputs = menuElement.querySelectorAll<HTMLInputElement>('.color-input')!;
+      if (colorSelect.value === 'custom') {
+        colorInputs.forEach((input, index) => {
+          input.style.display = 'inline';
+
+          input.addEventListener('input', () => {
+            colorDivs[index].style.backgroundColor = input.value;
+            selectedPallete[index].red = parseInt(input.value.substring(1, 3), 16);
+            selectedPallete[index].green = parseInt(input.value.substring(3, 5), 16);
+            selectedPallete[index].blue = parseInt(input.value.substring(5, 8), 16);
+            gameboy.gpu.colors = selectedPallete
+          });
+
+          // input.addEventListener('change', () => );
+        });
+      } else {
+        colorInputs.forEach(input => input.style.display = 'none');
+      }
     });
 
 
