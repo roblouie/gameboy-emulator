@@ -1,6 +1,6 @@
 import { input } from "@/input/input";
 
-class KeyboardManager {
+export class KeyboardManager {
   down = 'ArrowDown';
   up = 'ArrowUp';
   left = 'ArrowLeft';

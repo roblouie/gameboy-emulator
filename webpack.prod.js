@@ -26,6 +26,10 @@ module.exports = {
         exclude: [/node_modules/, /.spec.ts/],
       },
       {
+        test: /\.(png|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+      },
+      {
         test: [/\.css$/, /\.node.js$/, /\.svg$/],
         include: [ path.resolve(__dirname, './src')],
         use: 'raw-loader',

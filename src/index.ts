@@ -1,4 +1,3 @@
-
 import "@/ui/gameboy-button/gameboy-button";
 import "@/ui/gameboy-d-pad/gameboy-d-pad";
 import "@/ui/gameboy-speaker/gameboy-speaker";
@@ -76,7 +75,6 @@ window.addEventListener('load', () => {
   document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', async (event: any) => {
     gameboy.loadGame(event.detail.fileBuffer);
     gameboy.apu.enableSound();
-    gameboySpeaker.isMuted = false;
     gameboySpeaker.onClick();
     // @ts-ignore
     const gameSram = await localforage.getItem(gameboy.cartridge!.title);

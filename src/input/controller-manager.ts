@@ -19,7 +19,7 @@ export enum Xbox360ControllerButtons {
   DpadRight,
 }
 
-class ControllerManager {
+export class ControllerManager {
   controller = 0;
   left: number = Xbox360ControllerButtons.DpadLeft;
   right: number = Xbox360ControllerButtons.DpadRight;

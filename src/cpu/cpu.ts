@@ -7,15 +7,13 @@ import { getInterruptOperations } from "@/cpu/operations/interupts/interupt-oper
 import { createJumpOperations } from "@/cpu/operations/jump/jump-operations";
 import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
 import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
-import {
-  instructionCache,
-  registerStateCache, updateInstructionCache, updateRegisterStateCache,
-} from "@/helpers/cpu-debug-helpers";
+import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
 import { TimerManager } from "@/cpu/timer-manager";
 import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 import { interruptEnableRegister } from "@/cpu/registers/interrupt-enable-register";
+import {Cartridge} from "@/cartridge/cartridge";
 
 
 export class CPU {
@@ -40,6 +38,17 @@ export class CPU {
     this.operations = this.initializeOperations();
     this.cbSubOperations = getCBSubOperations(this);
     this.timerManager = new TimerManager();
+    this.initialize();
+  }
+
+  initialize() {
+    this.registers.programCounter.value = Cartridge.EntryPointOffset;
+    this.registers.stackPointer.value = 0xfffe;
+    this.registers.HL.value = 0x014d;
+    this.registers.C.value = 0x13;
+    this.registers.E.value = 0xD8;
+    this.registers.A.value = 1;
+    this.registers.F.value = 0xb0;
   }
 
   tick(): number {
@@ -91,18 +100,6 @@ export class CPU {
     const operationIndex = memory.readByte(this.registers.programCounter.value);
     this.registers.programCounter.value++;
     const operation = this.operations[operationIndex];
-
-    // if (this.startDebugging) {
-    //   updateInstructionCache(
-    //     operation.instruction,
-    //     this.registers.programCounter.value,
-    //     this.registers.AF.value,
-    //     this.registers.BC.value,
-    //     this.registers.DE.value,
-    //     this.registers.HL.value,
-    //     this.registers.stackPointer.value,
-    //   );
-    // }
 
     if (operation.byteDefinition === 0xcb) {
       const cbOperationIndex = memory.readByte(this.registers.programCounter.value);

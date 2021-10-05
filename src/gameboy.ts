@@ -1,11 +1,10 @@
 import { GPU } from "@/gpu/gpu";
 import { CPU } from "@/cpu/cpu";
 import { memory } from "@/memory/memory";
-import { Cartridge } from "@/cartridge/cartridge";
 import { input } from "@/input/input";
 import { APU } from "@/apu/apu";
 import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
-import { controllerManager } from "@/input/controller-manager";
+import { controllerManager} from "@/input/controller-manager";
 import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
 import { CartridgeLoader } from "@/cartridge/cartridge-loader";
@@ -30,14 +29,7 @@ export class Gameboy {
   private previousTime = 0;
 
   run() {
-    // Initialize registers, probalby should be moved to CPU
-    this.cpu.registers.programCounter.value = Cartridge.EntryPointOffset;
-    this.cpu.registers.stackPointer.value = 0xfffe;
-    this.cpu.registers.HL.value = 0x014d;
-    this.cpu.registers.C.value = 0x13;
-    this.cpu.registers.E.value = 0xD8;
-    this.cpu.registers.A.value = 1;
-    this.cpu.registers.F.value = 0xb0;
+    this.cpu.initialize();
     memory.reset();
     lcdControlRegister.value = 0x83; // initial value from official guide
 

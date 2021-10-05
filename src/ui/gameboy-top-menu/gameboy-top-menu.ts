@@ -181,13 +181,19 @@ export class GameboyTopMenu extends HTMLElement {
       <input class="file-input" type="file" accept=".gb,.zip" multiple/>
     `;
 
+
     let controllerIntervalId: number;
 
-    const fileInput = menuElement.querySelector('.file-input');
+    const fileInput = menuElement.querySelector<HTMLInputElement>('.file-input')!;
     const modalMenuBackdrop = menuElement.querySelector<HTMLElement>('.modal-menu-backdrop')!;
     fileInput!.addEventListener('change', event => this.onFileChange(event));
     // @ts-ignore
-    menuElement.querySelector('.load-game').addEventListener('click', () => fileInput!.click());
+    localforage.getItem('hasUsed')
+      .then((hasUsed: string) => modalMenuBackdrop.style.display = hasUsed ? 'none' : 'flex');
+    // @ts-ignore
+    localforage.setItem('hasUsed', 'true');
+
+    menuElement.querySelector('.load-game')!.addEventListener('click', () => fileInput.click());
     menuElement.querySelector('.open-menu')!.addEventListener('click', () => {
       modalMenuBackdrop.style.display = 'flex';
     });
@@ -269,6 +275,62 @@ export class GameboyTopMenu extends HTMLElement {
       gameboy.controllerManager.controller = parseInt(gamepadSelect.value, 10);
     });
 
+    function saveControls(controlType: 'controller' | 'keyboard') {
+      const matchingManager = controlType === 'controller' ? gameboy.controllerManager : gameboy.keyboardManager;
+
+      // @ts-ignore
+      localforage.setItem(controlType, JSON.stringify({
+        left: matchingManager.left,
+        right: matchingManager.right,
+        up: matchingManager.up,
+        down: matchingManager.down,
+        a: matchingManager.a,
+        b: matchingManager.b,
+        select: matchingManager.select,
+        start: matchingManager.start,
+      }));
+    }
+
+    function loadControls(controlType: 'controller' | 'keyboard') {
+      const matchingManager = controlType === 'controller' ? gameboy.controllerManager : gameboy.keyboardManager;
+      const matchingButtons = controlType === 'controller' ? controllerButtons : keyboardButtons;
+      const prefix = controlType === 'controller' ? 'Button ' : '';
+
+      // @ts-ignore
+      localforage.getItem(controlType)
+        .then((controlsJson: string) => {
+          const controls = JSON.parse(controlsJson);
+          if (controls) {
+            matchingManager.left = controls.left;
+            matchingButtons[0].textContent = prefix + controls.left;
+
+            matchingManager.right = controls.right;
+            matchingButtons[1].textContent = prefix + controls.right;
+
+            matchingManager.up = controls.up;
+            matchingButtons[2].textContent = prefix + controls.up;
+
+            matchingManager.down = controls.down;
+            matchingButtons[3].textContent = prefix + controls.down;
+
+            matchingManager.a = controls.a;
+            matchingButtons[4].textContent = prefix + controls.a;
+
+            matchingManager.b = controls.b;
+            matchingButtons[5].textContent = prefix + controls.b;
+
+            matchingManager.select = controls.select;
+            matchingButtons[6].textContent = prefix + controls.select;
+
+            matchingManager.start = controls.start;
+            matchingButtons[7].textContent = prefix + controls.start;
+          }
+        })
+    }
+
+    loadControls('keyboard');
+    loadControls('controller');
+
     controllerButtons.forEach(button => {
       button.addEventListener('click', event => {
         controllerButtons.forEach(button => button.disabled = true);
@@ -284,6 +346,7 @@ export class GameboyTopMenu extends HTMLElement {
             gameboy.controllerManager[gameboyButton] = pressedButton;
             clickedButton.textContent = `Button ${pressedButton}`;
             controllerButtons.forEach(button => button.disabled = false);
+            saveControls('controller');
             clearInterval(controllerIntervalId);
           }
         }, 100);
@@ -304,6 +367,7 @@ export class GameboyTopMenu extends HTMLElement {
           gameboy.keyboardManager[gameboyButton] = event.code;
           clickedButton.textContent = event.code;
           keyboardButtons.forEach(button => button.disabled = false);
+          saveControls('keyboard');
           document.removeEventListener('keydown', setKeyboardListener);
         }
 
@@ -348,8 +412,11 @@ export class GameboyTopMenu extends HTMLElement {
         { red: 0, green: 0, blue: 0 },
       ],
     }
+
     const colorSelect = menuElement.querySelector<HTMLSelectElement>('.color-select')!;
     colorSelect.addEventListener('change', () => {
+      // @ts-ignore
+      localforage.setItem('selectedColors', colorSelect.value);
       const colorDivs = menuElement.querySelectorAll<HTMLElement>('.color')!;
       // @ts-ignore
       const selectedPallete = colors[colorSelect.value];
@@ -370,15 +437,32 @@ export class GameboyTopMenu extends HTMLElement {
             selectedPallete[index].red = parseInt(input.value.substring(1, 3), 16);
             selectedPallete[index].green = parseInt(input.value.substring(3, 5), 16);
             selectedPallete[index].blue = parseInt(input.value.substring(5, 8), 16);
-            gameboy.gpu.colors = selectedPallete
+            gameboy.gpu.colors = selectedPallete;
+            // @ts-ignore
+            localforage.setItem('customColors', JSON.stringify(selectedPallete));
           });
-
-          // input.addEventListener('change', () => );
         });
       } else {
         colorInputs.forEach(input => input.style.display = 'none');
       }
     });
+
+    // @ts-ignore
+    localforage.getItem('customColors')
+      .then((customColorJson: string) => {
+        const customColors = JSON.parse(customColorJson);
+        if (customColors) {
+          colors.custom = customColors;
+        }
+        // @ts-ignore
+        return localforage.getItem('selectedColors');
+      })
+      .then((selectedColorString: string) => {
+        if (selectedColorString) {
+          colorSelect.value = selectedColorString;
+          colorSelect.dispatchEvent(new Event('change'));
+        }
+      });
 
 
     // END SECTIONS
