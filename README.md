@@ -85,8 +85,6 @@ presses a button. You can add a mute button, or simply enable audio inside the e
 for file selection. For simplicity, we will add that to our event handler from above.
 
 ```js
-// inside onFileChange
-  
 // enable audio
 gameboy.apu.enableSound();
 
@@ -113,7 +111,6 @@ canvas {
 ```
 
 ```js
-// inside onFileChange
 const context = document.querySelector('canvas').getContext('2d');
 
 // draw the image data to canvas when a frame is drawn
@@ -406,7 +403,7 @@ buttons to use.
 * b: number
 * a: number
 
-##### keyboardManager
+#### keyboardManager
 Used for managing keyboard input. Stores the key code for the key to use.
 
 So for instance the default value for left is 'ArrowLeft'
@@ -424,25 +421,25 @@ console.log(gameboy.keyboardManager.left) // Prints ArrowLeft
 * b: string
 * a: string
 
-##### loadGame(romData: ArrayBuffer)
+#### loadGame(romData: ArrayBuffer)
 
 Loads a game cartridge into memory. Similar to inserting a cartridge into a GameBoy
 
-##### run()
+#### run()
 
 Starts emulation. Similar to turning on the power switch of the GameBoy.
 
-##### onFrameFinished(callback: Function)
+#### onFrameFinished(callback: Function)
 Set a callback that runs every time a frame is drawn. Passes an `ImageData` object to the callback
 that contains the current frame.
 
-##### setOnWriteToCartridgeRam(onSramWrite: Function)
+#### setOnWriteToCartridgeRam(onSramWrite: Function)
 Set a callback that runs every time a cartridge's SRAM is written to.
 
 NOTE! This is not passed any argument. You must retrieve the actual sram data by calling
 `getCartridgeSaveRam()`
 
-##### getCartridgeSaveRam()
+#### getCartridgeSaveRam()
 Returns an `ArrayBuffer` with the contents of the cartridge's SRAM.
 
 Combining this with `setOnWriteToCartridgeRam` will allow you to persist save data when
@@ -455,7 +452,7 @@ gameboy.setOnWriteToCartridgeRam(() => {
 })
 ```
 
-##### setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)
+#### setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)
 Set the sram in a cartridge. This will let you load saved data. Here's an example with localforage that
 should be called after the rom data is loaded
 
