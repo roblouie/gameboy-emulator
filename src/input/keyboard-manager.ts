@@ -1,7 +1,6 @@
 import { input } from "@/input/input";
-import { Xbox360ControllerButtons } from "@/input/controller-manager";
 
-class KeyboardManager {
+export class KeyboardManager {
   down = 'ArrowDown';
   up = 'ArrowUp';
   left = 'ArrowLeft';
@@ -11,7 +10,7 @@ class KeyboardManager {
   b = 'KeyB';
 
   start = 'Enter';
-  select = 'Control';
+  select = 'ControlRight';
 
   constructor() {
     document.addEventListener('keydown', event => this.handleKeyEvent(event.code, true));

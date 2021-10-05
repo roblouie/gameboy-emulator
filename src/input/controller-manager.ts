@@ -19,7 +19,7 @@ export enum Xbox360ControllerButtons {
   DpadRight,
 }
 
-class ControllerManager {
+export class ControllerManager {
   controller = 0;
   left: number = Xbox360ControllerButtons.DpadLeft;
   right: number = Xbox360ControllerButtons.DpadRight;
@@ -29,7 +29,7 @@ class ControllerManager {
   select = Xbox360ControllerButtons.Select;
   start = Xbox360ControllerButtons.Start;
 
-  x = Xbox360ControllerButtons.X;
+  b = Xbox360ControllerButtons.X;
   a = Xbox360ControllerButtons.A;
 
   queryButtons() {
@@ -39,15 +39,15 @@ class ControllerManager {
       return;
     }
 
-    input.isPressingLeft = gamepad.buttons[this.left].pressed;
-    input.isPressingRight = gamepad.buttons[this.right].pressed;
-    input.isPressingUp = gamepad.buttons[this.up].pressed;
-    input.isPressingDown = gamepad.buttons[this.down].pressed;
+    input.isPressingLeft = gamepad.buttons[this.left].pressed || gamepad.axes[0] < -0.1;
+    input.isPressingRight = gamepad.buttons[this.right].pressed || gamepad.axes[0] > 0.1;
+    input.isPressingUp = gamepad.buttons[this.up].pressed || gamepad.axes[1] < -0.1;
+    input.isPressingDown = gamepad.buttons[this.down].pressed || gamepad.axes[1] > 0.1;
 
     input.isPressingSelect = gamepad.buttons[this.select].pressed;
     input.isPressingStart = gamepad.buttons[this.start].pressed;
 
-    input.isPressingB = gamepad.buttons[this.x].pressed;
+    input.isPressingB = gamepad.buttons[this.b].pressed;
     input.isPressingA = gamepad.buttons[this.a].pressed;
   }
 }

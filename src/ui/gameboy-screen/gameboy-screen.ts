@@ -1,14 +1,6 @@
 import screenStyleText from "./gameboy-screen.css";
 
 export class GameboyScreen extends HTMLElement {
-  private screenSizeMultiples = [
-    { width: 800, height: 720 },
-    { width: 640, height: 576 },
-    { width: 480, height: 432 },
-    { width: 320, height: 288 },
-    { width: 160, height: 144 },
-  ];
-
   width = 160;
   height = 144;
 
@@ -29,7 +21,7 @@ export class GameboyScreen extends HTMLElement {
           <div class="fullscreen-with-controls" onClick={goFullscreenWithControls}> + CONTROLS</div>
           <div class="menu-border"></div>
         </div>
-        <canvas class="screen"></canvas>
+        <canvas class="screen" width="160" height="144"></canvas>
       </div>
     `;
     this.canvasElement = screenElement.querySelector('.screen')!;
@@ -70,21 +62,37 @@ export class GameboyScreen extends HTMLElement {
       throw new Error('why no canvas?');
     }
 
-    let sizeIndex = 0;
+    const aspectRatio = 10 / 9;
+    const borderSize = 60;
+    const size = { width: 160, height: 144 }; // native res
 
     if (clientWidth < clientHeight) {
-      sizeIndex = this.screenSizeMultiples.findIndex(size => {
-        return size.width <= clientWidth && size.height < (clientHeight / 2);
-      });
+      const portraitModeScreenHeight = (clientHeight / 2) - borderSize; // In portrait mode, screen can take up top half of page
+
+      if ((clientWidth / aspectRatio) <= portraitModeScreenHeight) {
+        size.width = clientWidth - borderSize;
+        size.height = size.width / aspectRatio;
+      } else {
+        size.height = portraitModeScreenHeight
+        size.width = size.height * aspectRatio;
+      }
     } else {
-      const controlsWidth = 400;
-      const borderWidth = 60;
-      sizeIndex = this.screenSizeMultiples.findIndex(size => {
-        return size.height <= clientHeight && size.width < (clientWidth - (controlsWidth + borderWidth));
-      });
+      const topMenuHeight = 80;
+      const landscapeModeScreenHeight = clientHeight - borderSize - topMenuHeight;
+      const controlsWidth = 410;
+      const landscapeWidth = clientWidth - borderSize - controlsWidth;
+
+      if ((landscapeWidth / aspectRatio) <= landscapeModeScreenHeight) {
+        size.width = landscapeWidth;
+        size.height = size.width / aspectRatio;
+      } else {
+        size.height = landscapeModeScreenHeight;
+        size.width = size.height * aspectRatio;
+      }
+
     }
 
-    return this.screenSizeMultiples[sizeIndex]
+    return size;
   }
 
   getCanvas() {

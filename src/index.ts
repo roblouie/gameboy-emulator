@@ -1,15 +1,12 @@
-import { Gameboy } from "@/gameboy";
 import "@/ui/gameboy-button/gameboy-button";
 import "@/ui/gameboy-d-pad/gameboy-d-pad";
 import "@/ui/gameboy-speaker/gameboy-speaker";
 import "@/ui/gameboy-top-menu/gameboy-top-menu";
 import "@/ui/gameboy-screen/gameboy-screen";
+import {gameboy} from "@/ui/gameboy-instance";
+import {GameboySpeaker} from "@/ui/gameboy-speaker/gameboy-speaker";
 
 let scaledDrawCanvas: any;
-let scaledDrawContext: CanvasRenderingContext2D;
-
-let gameboy: Gameboy;
-
 
 window.addEventListener('load', () => {
   const screenElement = document.querySelector('gameboy-screen')! as any;
@@ -26,7 +23,7 @@ window.addEventListener('load', () => {
   document.querySelector('.b-button')!.addEventListener('touchstart', () => gameboy.input.isPressingB = true);
   document.querySelector('.b-button')!.addEventListener('touchend', () => gameboy.input.isPressingB = false);
 
-  document.querySelector('gameboy-d-pad')!.addEventListener('touchend', (event: any) => {
+  document.querySelector('gameboy-d-pad')!.addEventListener('touchend', () => {
     gameboy.input.isPressingUp = false;
     gameboy.input.isPressingLeft = false;
     gameboy.input.isPressingRight = false;
@@ -34,8 +31,6 @@ window.addEventListener('load', () => {
   });
 
   document.querySelector('gameboy-d-pad')!.addEventListener('directionchange', (event: any) => {
-    console.log(event.detail.direction);
-
     gameboy.input.isPressingUp = false;
     gameboy.input.isPressingLeft = false;
     gameboy.input.isPressingRight = false;
@@ -75,33 +70,40 @@ window.addEventListener('load', () => {
     }
   });
 
-  document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', (event: any) => {
-    gameboy = new Gameboy();
-    gameboy.loadGame(event.detail.fileBuffer);
-    scaledDrawCanvas = screenElement.getCanvas();
-    const fpsDiv = document.querySelector('#fps');
-    let previousTime = 0;
+  const gameboySpeaker = document.querySelector<GameboySpeaker>('gameboy-speaker')!;
 
-    gameboy.onFrameFinished((imageData: ImageData, fps: number) => {
-      const currentTime = Date.now();
+  document.querySelector('gameboy-top-menu')!.addEventListener('fileloaded', async (event: any) => {
+    gameboy.loadGame(event.detail.fileBuffer);
+    gameboy.apu.enableSound();
+    gameboySpeaker.onClick();
+    // @ts-ignore
+    const gameSram = await localforage.getItem(gameboy.cartridge!.title);
+
+    if (gameSram) {
+      gameboy.setCartridgeSaveRam(gameSram);
+    }
+
+    // Sync game data saves to SRam
+    gameboy.setOnWriteToCartridgeRam(() => {
+      // @ts-ignore
+      localforage.setItem(gameboy.cartridge!.title, gameboy.getCartridgeSaveRam());
+    });
+
+    scaledDrawCanvas = screenElement.getCanvas();
+
+    gameboy.onFrameFinished((imageData: ImageData) => {
       screenElement.renderingContext.putImageData(imageData, 0, 0);
       screenElement.renderingContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, screenElement.width, screenElement.height);
-
-      if (fpsDiv) {
-        fpsDiv.innerHTML = 'elapsed: ' + (currentTime - previousTime); //`FPS: ${fps}`;
-        previousTime = currentTime;
-      }
     });
 
     gameboy.run();
   });
 
-  document.querySelector('gameboy-speaker')!.addEventListener('click', () => {
+  gameboySpeaker.addEventListener('click', () => {
     if (gameboy.apu.isAudioEnabled) {
       gameboy.apu.disableSound();
     } else {
       gameboy.apu.enableSound();
     }
   })
-
 });

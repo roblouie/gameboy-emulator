@@ -22,6 +22,5 @@ export function getCBSubOperations(cpu: CPU): Operation[] {
     }
   }
 
-  console.log(subOperations);
   return subOperations
 }

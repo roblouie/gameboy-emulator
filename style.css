@@ -67,6 +67,7 @@ body {
         flex-grow: 1;
         padding-top: 20px;
         margin-left: 10px;
+        width: 200px;
     }
 
     .screen {
@@ -84,10 +85,8 @@ body {
         flex-direction: column;
         padding-top: 20px;
         align-items: flex-end;
+        width: 200px;
     }
-
-
-
 }
 
 
