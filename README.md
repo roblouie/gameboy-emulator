@@ -1,7 +1,7 @@
 ## TypeScript GameBoy Emulator
 
 ### About
-TypeScript GameBoy Emulator is a from-scratch GameBoy emulator writting in plain TypeScript. Core emulator uses zero dependencies, only dev dependencies for TypeScript.
+TypeScript GameBoy Emulator is a from-scratch GameBoy emulator written in plain TypeScript. Core emulator uses zero dependencies, only dev dependencies for TypeScript.
 
 ### Running
 ```
