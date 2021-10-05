@@ -179,27 +179,11 @@ export class CPU {
     ];
 
     const orderedOperations: Operation[] = [];
-    const { registers } = this;
 
     for (let i = 0; i < 256; i++) {
       const operation = unorderedOperations.find(op => op.byteDefinition === i);
       if (operation) {
         orderedOperations[i] = operation;
-      } else {
-        orderedOperations[i] = {
-          instruction: '!!!! NOT IMPLEMENTED !!!!',
-          byteDefinition: i,
-          byteLength: 1,
-          cycleTime: 0,
-          execute() {
-            // Log out last X instructions so we see how we got to the unimplemented op code
-            console.log(instructionCache);
-            console.log(registerStateCache);
-            registers.programCounter.value = 0x100; // just restart the rom to stop infinite looping
-            console.log(`Opcode ${this.byteDefinition} not implemented`);
-            debugger;
-          }
-        }
       }
     }
 

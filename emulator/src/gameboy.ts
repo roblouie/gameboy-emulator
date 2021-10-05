@@ -15,7 +15,9 @@ export class Gameboy {
   gpu = new GPU();
   apu = new APU();
 
-  frameFinishedCallback?: Function;
+  memory = memory;
+
+  private frameFinishedCallback?: Function;
   fps = 0;
   input = input;
   controllerManager = controllerManager;
@@ -36,7 +38,7 @@ export class Gameboy {
     requestAnimationFrame(diff => this.runFrame(diff));
   }
 
-  runFrame(currentTime: number) {
+  private runFrame(currentTime: number) {
     const delta = currentTime - this.previousTime
 
     if (delta >= this.interval || !this.previousTime) {

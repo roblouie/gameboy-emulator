@@ -12,8 +12,8 @@ export class Input {
   isPressingA = false;
   isPressingB = false;
 
-  isPollingDirections = false;
-  isPollingButtons = false;
+  private isPollingDirections = false;
+  private isPollingButtons = false;
 
   setInputToCheck(byte: number) {
     this.isPollingButtons = ((byte >> 4) & 0b1) === 1;
