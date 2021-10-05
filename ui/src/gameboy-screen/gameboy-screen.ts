@@ -1,9 +1,6 @@
 import screenStyleText from "./gameboy-screen.css";
 
 export class GameboyScreen extends HTMLElement {
-  width = 160;
-  height = 144;
-
   private canvasElement: HTMLCanvasElement;
   renderingContext: CanvasRenderingContext2D;
 
@@ -26,10 +23,9 @@ export class GameboyScreen extends HTMLElement {
     `;
     this.canvasElement = screenElement.querySelector('.screen')!;
     const screenSize = this.getLargestScreenSize();
-    this.width = screenSize!.width;
-    this.height = screenSize!.height;
-    this.canvasElement!.width = screenSize!.width;
-    this.canvasElement!.height = screenSize!.height;
+
+    this.canvasElement!.style.width = screenSize!.width + 'px';
+    this.canvasElement!.style.height = screenSize!.height + 'px';
 
     this.renderingContext = this.canvasElement.getContext('2d')!;
     this.renderingContext.imageSmoothingEnabled = false;
@@ -97,10 +93,6 @@ export class GameboyScreen extends HTMLElement {
 
   getCanvas() {
     return this.canvasElement;
-  }
-
-  getContext() {
-    return this.renderingContext;
   }
 }
 

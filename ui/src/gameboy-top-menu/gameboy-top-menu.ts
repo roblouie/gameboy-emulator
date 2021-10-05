@@ -1,15 +1,12 @@
-// @ts-ignore
-import * as JSZip from "./jszip.min.js";
+import {gameboy} from "@/gameboy-instance";
+import localforage from "localforage";
+import JSZip from "jszip";
+
 import menuStyleText from "./gameboy-top-menu.css";
-// @ts-ignore
 import muteButtonImage from './mute-button.png';
-// @ts-ignore
 import loadGameImage from './load-game.png';
-// @ts-ignore
 import fullscreenImage from './fullscreen.png';
-// @ts-ignore
 import plusControlsImage from './plus-controls.png';
-import {gameboy} from "@/ui/gameboy-instance";
 
 export class GameboyTopMenu extends HTMLElement {
   private fileLoadedEvent: CustomEvent;
@@ -187,10 +184,9 @@ export class GameboyTopMenu extends HTMLElement {
     const fileInput = menuElement.querySelector<HTMLInputElement>('.file-input')!;
     const modalMenuBackdrop = menuElement.querySelector<HTMLElement>('.modal-menu-backdrop')!;
     fileInput!.addEventListener('change', event => this.onFileChange(event));
-    // @ts-ignore
-    localforage.getItem('hasUsed')
-      .then((hasUsed: string) => modalMenuBackdrop.style.display = hasUsed ? 'none' : 'flex');
-    // @ts-ignore
+    localforage.getItem<string>('hasUsed')
+      .then(hasUsed => modalMenuBackdrop.style.display = hasUsed ? 'none' : 'flex');
+
     localforage.setItem('hasUsed', 'true');
 
     menuElement.querySelector('.load-game')!.addEventListener('click', () => fileInput.click());
@@ -278,7 +274,6 @@ export class GameboyTopMenu extends HTMLElement {
     function saveControls(controlType: 'controller' | 'keyboard') {
       const matchingManager = controlType === 'controller' ? gameboy.controllerManager : gameboy.keyboardManager;
 
-      // @ts-ignore
       localforage.setItem(controlType, JSON.stringify({
         left: matchingManager.left,
         right: matchingManager.right,
@@ -296,11 +291,10 @@ export class GameboyTopMenu extends HTMLElement {
       const matchingButtons = controlType === 'controller' ? controllerButtons : keyboardButtons;
       const prefix = controlType === 'controller' ? 'Button ' : '';
 
-      // @ts-ignore
-      localforage.getItem(controlType)
-        .then((controlsJson: string) => {
-          const controls = JSON.parse(controlsJson);
-          if (controls) {
+      localforage.getItem<string>(controlType)
+        .then(controlsJson => {
+          if (controlsJson) {
+            const controls = JSON.parse(controlsJson);
             matchingManager.left = controls.left;
             matchingButtons[0].textContent = prefix + controls.left;
 
@@ -415,7 +409,6 @@ export class GameboyTopMenu extends HTMLElement {
 
     const colorSelect = menuElement.querySelector<HTMLSelectElement>('.color-select')!;
     colorSelect.addEventListener('change', () => {
-      // @ts-ignore
       localforage.setItem('selectedColors', colorSelect.value);
       const colorDivs = menuElement.querySelectorAll<HTMLElement>('.color')!;
       // @ts-ignore
@@ -438,7 +431,6 @@ export class GameboyTopMenu extends HTMLElement {
             selectedPallete[index].green = parseInt(input.value.substring(3, 5), 16);
             selectedPallete[index].blue = parseInt(input.value.substring(5, 8), 16);
             gameboy.gpu.colors = selectedPallete;
-            // @ts-ignore
             localforage.setItem('customColors', JSON.stringify(selectedPallete));
           });
         });
@@ -447,17 +439,14 @@ export class GameboyTopMenu extends HTMLElement {
       }
     });
 
-    // @ts-ignore
-    localforage.getItem('customColors')
-      .then((customColorJson: string) => {
-        const customColors = JSON.parse(customColorJson);
-        if (customColors) {
-          colors.custom = customColors;
+    localforage.getItem<string>('customColors')
+      .then(customColorJson => {
+        if (customColorJson) {
+          colors.custom = JSON.parse(customColorJson);
         }
-        // @ts-ignore
-        return localforage.getItem('selectedColors');
+        return localforage.getItem<string>('selectedColors');
       })
-      .then((selectedColorString: string) => {
+      .then(selectedColorString => {
         if (selectedColorString) {
           colorSelect.value = selectedColorString;
           colorSelect.dispatchEvent(new Event('change'));
@@ -480,7 +469,7 @@ export class GameboyTopMenu extends HTMLElement {
       const rom = await this.getRom(fileElement.files[0]);
 
       if (!rom) {
-        throw new Error('Invalid rom')
+        throw new Error('Invalid rom');
       }
 
       this.fileLoadedEvent.detail.fileBuffer = rom;

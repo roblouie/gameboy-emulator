@@ -1,16 +1,8 @@
 const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/gameboy.ts',
   mode: 'production',
-  plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'src/apu/ring-buffer/ring-buffer-player-node.js' }
-      ]
-    })
-  ],
   module: {
     rules: [
       {
@@ -18,13 +10,18 @@ module.exports = {
         use: 'ts-loader',
         exclude: [/node_modules/, /.spec.ts/],
       },
+      {
+        test: [/\.node.js$/],
+        include: [ path.resolve(__dirname, './src')],
+        use: 'raw-loader',
+      },
     ],
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
     },
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts'],
   },
   output: {
     filename: 'gameboy.js',
