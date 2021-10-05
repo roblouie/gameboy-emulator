@@ -9,10 +9,10 @@ The source code for this UI is also in the `ui/` folder in the package github re
 
 * [Installation](#installation)
 * [Usage](#usage)
-  * [Load Rom](#load-rom)
-  * [Enable Audio](#enable-audio)
-  * [Render to Canvas](#render-to-canvas)
-  * [Run](#run)
+    * [Load Rom](#load-rom)
+    * [Enable Audio](#enable-audio)
+    * [Render to Canvas](#render-to-canvas)
+    * [Run](#run)
 * [Default Controls](#default-controls)
 * [API](#api)
 
@@ -85,8 +85,6 @@ presses a button. You can add a mute button, or simply enable audio inside the e
 for file selection. For simplicity, we will add that to our event handler from above.
 
 ```js
-// inside onFileChange
-  
 // enable audio
 gameboy.apu.enableSound();
 
@@ -113,7 +111,6 @@ canvas {
 ```
 
 ```js
-// inside onFileChange
 const context = document.querySelector('canvas').getContext('2d');
 
 // draw the image data to canvas when a frame is drawn
@@ -193,63 +190,63 @@ the first active controller found. Default key bindings are:
 ## API
 
 * [Gameboy](#gameboy)
-  * [cpu: CPU](#cpu-cpu)
-    * [registers: CpuRegisterCollection](#registers-cpuregistercollection)
-    * [operations: Operation[]](#operations-operation)
-    * [cbSubOperations: Operation[]](#cbsuboperations-operation)
-  * [gpu](#gpu)
-    * [colors[]](#colors)
-    * [screen: ImageData](#screen-imagedata)
-  * [apu](#apu)
-    * [enableSound()](#enablesound)
-    * [disableSound()](#disablesound)
-  * [cartridge](#cartridge)
-    * title
-    * typeName
-    * romSize
-    * ramSize
-    * versionNumber
-  * [memory](#memory)
-    * [memoryBytes: Uint8Array](#memorybytes-uint8array)
-    * [readByte(address: number)](#readbyteaddress-number)
-    * [readWord(address: number)](#readwordaddress-number)
-    * [writeByte(address: number, value: number)](#writebyteaddress-number)
-    * [writeWord(address: number, value: number)](#writewordaddress-number)
-    * [reset()](#reset)
-  * [input](#input)
-    * isPressingUp: boolean
-    * isPressingDown: boolean
-    * isPressingLeft: boolean
-    * isPressingRight: boolean
-    * isPressingSelect: boolean
-    * isPressingStart: boolean
-    * isPressingA: boolean
-    * isPressingB: boolean
-  * [controllerManager](#controllermanager)
-    * controller: number
-    * left: number
-    * right: number
-    * up: number
-    * down: number
-    * select: number
-    * start: number
-    * b: number
-    * a: number
-  * [keyboardManager](#keyboardmanager)
-    * left: string
-    * right: string
-    * up: string
-    * down: string
-    * select: string
-    * start: string
-    * b: string
-    * a: string
-  * [loadGame(romData: ArrayBuffer)](#loadgameromdata-arraybuffer)
-  * [run()](#run)
-  * [onFrameFinished(callback: Function)](#onframefinishedcallback-function)
-  * [setOnWriteToCartridgeRam(onSramWrite: Function)](#setonwritetocartridgeramonsramwrite-function)
-  * [getCartridgeSaveRam(): ArrayBuffer](#getcartridgesaveram-arraybuffer)
-  * [setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)](#setcartridgesaveramsramarraybuffer-arraybuffer)
+    * [cpu: CPU](#cpu-cpu)
+        * [registers: CpuRegisterCollection](#registers-cpuregistercollection)
+        * [operations: Operation[]](#operations-operation)
+        * [cbSubOperations: Operation[]](#cbsuboperations-operation)
+    * [gpu](#gpu)
+        * [colors[]](#colors)
+        * [screen: ImageData](#screen-imagedata)
+    * [apu](#apu)
+        * [enableSound()](#enablesound)
+        * [disableSound()](#disablesound)
+    * [cartridge](#cartridge)
+        * title
+        * typeName
+        * romSize
+        * ramSize
+        * versionNumber
+    * [memory](#memory)
+        * [memoryBytes: Uint8Array](#memorybytes-uint8array)
+        * [readByte(address: number)](#readbyteaddress-number)
+        * [readWord(address: number)](#readwordaddress-number)
+        * [writeByte(address: number, value: number)](#writebyteaddress-number)
+        * [writeWord(address: number, value: number)](#writewordaddress-number)
+        * [reset()](#reset)
+    * [input](#input)
+        * isPressingUp: boolean
+        * isPressingDown: boolean
+        * isPressingLeft: boolean
+        * isPressingRight: boolean
+        * isPressingSelect: boolean
+        * isPressingStart: boolean
+        * isPressingA: boolean
+        * isPressingB: boolean
+    * [controllerManager](#controllermanager)
+        * controller: number
+        * left: number
+        * right: number
+        * up: number
+        * down: number
+        * select: number
+        * start: number
+        * b: number
+        * a: number
+    * [keyboardManager](#keyboardmanager)
+        * left: string
+        * right: string
+        * up: string
+        * down: string
+        * select: string
+        * start: string
+        * b: string
+        * a: string
+    * [loadGame(romData: ArrayBuffer)](#loadgameromdata-arraybuffer)
+    * [run()](#run)
+    * [onFrameFinished(callback: Function)](#onframefinishedcallback-function)
+    * [setOnWriteToCartridgeRam(onSramWrite: Function)](#setonwritetocartridgeramonsramwrite-function)
+    * [getCartridgeSaveRam(): ArrayBuffer](#getcartridgesaveram-arraybuffer)
+    * [setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)](#setcartridgesaveramsramarraybuffer-arraybuffer)
 
 ### Gameboy
 Constructor to create a new Gameboy instance:
@@ -406,7 +403,7 @@ buttons to use.
 * b: number
 * a: number
 
-##### keyboardManager
+#### keyboardManager
 Used for managing keyboard input. Stores the key code for the key to use.
 
 So for instance the default value for left is 'ArrowLeft'
@@ -424,25 +421,25 @@ console.log(gameboy.keyboardManager.left) // Prints ArrowLeft
 * b: string
 * a: string
 
-##### loadGame(romData: ArrayBuffer)
+#### loadGame(romData: ArrayBuffer)
 
 Loads a game cartridge into memory. Similar to inserting a cartridge into a GameBoy
 
-##### run()
+#### run()
 
 Starts emulation. Similar to turning on the power switch of the GameBoy.
 
-##### onFrameFinished(callback: Function)
+#### onFrameFinished(callback: Function)
 Set a callback that runs every time a frame is drawn. Passes an `ImageData` object to the callback
 that contains the current frame.
 
-##### setOnWriteToCartridgeRam(onSramWrite: Function)
+#### setOnWriteToCartridgeRam(onSramWrite: Function)
 Set a callback that runs every time a cartridge's SRAM is written to.
 
 NOTE! This is not passed any argument. You must retrieve the actual sram data by calling
 `getCartridgeSaveRam()`
 
-##### getCartridgeSaveRam()
+#### getCartridgeSaveRam()
 Returns an `ArrayBuffer` with the contents of the cartridge's SRAM.
 
 Combining this with `setOnWriteToCartridgeRam` will allow you to persist save data when
@@ -455,7 +452,7 @@ gameboy.setOnWriteToCartridgeRam(() => {
 })
 ```
 
-##### setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)
+#### setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)
 Set the sram in a cartridge. This will let you load saved data. Here's an example with localforage that
 should be called after the rom data is loaded
 
