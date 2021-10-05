@@ -1,10 +1,11 @@
-import "@/ui/gameboy-button/gameboy-button";
-import "@/ui/gameboy-d-pad/gameboy-d-pad";
-import "@/ui/gameboy-speaker/gameboy-speaker";
-import "@/ui/gameboy-top-menu/gameboy-top-menu";
-import "@/ui/gameboy-screen/gameboy-screen";
-import {gameboy} from "@/ui/gameboy-instance";
-import {GameboySpeaker} from "@/ui/gameboy-speaker/gameboy-speaker";
+import "@/gameboy-button/gameboy-button";
+import "@/gameboy-d-pad/gameboy-d-pad";
+import "@/gameboy-speaker/gameboy-speaker";
+import "@/gameboy-top-menu/gameboy-top-menu";
+import "@/gameboy-screen/gameboy-screen";
+import { gameboy } from "@/gameboy-instance";
+import { GameboySpeaker } from "@/gameboy-speaker/gameboy-speaker";
+import localforage from "localforage";
 
 let scaledDrawCanvas: any;
 
@@ -76,8 +77,8 @@ window.addEventListener('load', () => {
     gameboy.loadGame(event.detail.fileBuffer);
     gameboy.apu.enableSound();
     gameboySpeaker.onClick();
-    // @ts-ignore
-    const gameSram = await localforage.getItem(gameboy.cartridge!.title);
+
+    const gameSram = await localforage.getItem<ArrayBuffer>(gameboy.cartridge!.title);
 
     if (gameSram) {
       gameboy.setCartridgeSaveRam(gameSram);
@@ -85,7 +86,6 @@ window.addEventListener('load', () => {
 
     // Sync game data saves to SRam
     gameboy.setOnWriteToCartridgeRam(() => {
-      // @ts-ignore
       localforage.setItem(gameboy.cartridge!.title, gameboy.getCartridgeSaveRam());
     });
 
@@ -93,7 +93,6 @@ window.addEventListener('load', () => {
 
     gameboy.onFrameFinished((imageData: ImageData) => {
       screenElement.renderingContext.putImageData(imageData, 0, 0);
-      screenElement.renderingContext.drawImage(scaledDrawCanvas, 0, 0, 160, 144, 0, 0, screenElement.width, screenElement.height);
     });
 
     gameboy.run();

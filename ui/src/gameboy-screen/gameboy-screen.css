@@ -46,4 +46,9 @@
 
 .fullscreen-with-controls {
     padding-left: 15px;
+    cursor: pointer;
+}
+
+.fullscreen {
+    cursor: pointer;
 }
