@@ -7,7 +7,6 @@ import { getInterruptOperations } from "@/cpu/operations/interupts/interupt-oper
 import { createJumpOperations } from "@/cpu/operations/jump/jump-operations";
 import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
 import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
-import { instructionCache, registerStateCache } from "@/helpers/cpu-debug-helpers";
 import { Operation } from "@/cpu/operations/operation.model";
 import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
 import { TimerManager } from "@/cpu/timer-manager";

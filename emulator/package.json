@@ -1,7 +1,7 @@
 {
   "name": "gameboy-emulator",
-  "version": "1.0.0",
-  "description": "A gameboy emulator written with typescript",
+  "version": "1.0.1",
+  "description": "A GameBoy emulator written with typescript",
   "main": "./dist/gameboy.js",
   "module": "./dist/gameboy.js",
   "devDependencies": {
@@ -16,10 +16,18 @@
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roblouie/gameboy-emulator"
+  },
   "scripts": {
     "build": "webpack --config webpack.npm-package.js",
     "test": "jest"
   },
-  "author": "",
+  "keywords": [
+    "game",
+    "emulator",
+  ],
+  "author": "Robert Louie",
   "license": "ISC"
 }

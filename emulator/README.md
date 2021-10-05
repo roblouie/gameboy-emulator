@@ -1,6 +1,6 @@
 # TypeScript GameBoy Emulator
 
-TypeScript GameBoy Emulator is a GameBoy emulator written from scratch in TypeScript 
+TypeScript GameBoy Emulator is a GameBoy emulator written from scratch in TypeScript
 with zero dependencies.
 
 My implementation of a UI with this package can be seen here: https://roblouie.com/gameboy/
@@ -13,6 +13,7 @@ The source code for this UI is also in the `ui/` folder in the package github re
   * [Enable Audio](#enable-audio)
   * [Render to Canvas](#render-to-canvas)
   * [Run](#run)
+* [Default Controls](#default-controls)
 * [API](#api)
 
 ## Installation
@@ -48,7 +49,7 @@ add a file input to your html and add an event handler to convert the file to Ar
 ```
 
 ```js
-const fileInput = menuElement.querySelector('.file-input');
+const fileInput = document.querySelector('.file-input');
 fileInput.addEventListener('change', onFileChange);
 
 async function onFileChange(event) {
@@ -84,18 +85,11 @@ presses a button. You can add a mute button, or simply enable audio inside the e
 for file selection. For simplicity, we will add that to our event handler from above.
 
 ```js
-async function onFileChange(event) {
-  if (fileInput.files && fileInput.files[0]) {
-    // Convert the selected file into an array buffer
-    const rom = await fileToArrayBuffer(fileInput.files[0]);
+// inside onFileChange
+  
+// enable audio
+gameboy.apu.enableSound();
 
-    // load game
-    gameboy.loadGame(rom);
-    
-    // enable audio
-    gameboy.apu.enableSound();
-  }
-}
 ```
 
 ### Render to Canvas
@@ -106,6 +100,7 @@ callback named `onFrameFinished` that will pass you the ImageData for rendering.
 canvas to be larger than 160x144 (and you probably do), the simplest way is to increase the size
 with css, making sure to set `image-rendering: pixelated;` to stop the browser from blurring the image.
 
+This can be set up at any time, but for convenience we will set this callback in the same event handler:
 ```html
 <canvas width="160" height="144"></canvas>
 ```
@@ -118,27 +113,27 @@ canvas {
 ```
 
 ```js
-async function onFileChange(event) {
-  if (fileInput.files && fileInput.files[0]) {
-    const rom = await fileToArrayBuffer(fileInput.files[0]);
-    gameboy.loadGame(rom);
-    
-    gameboy.apu.enableSound();
-    
-    const context = document.querySelector('canvas').getContext('2d');
+// inside onFileChange
+const context = document.querySelector('canvas').getContext('2d');
 
-    // draw the image data to canvas when a frame is drawn
-    gameboy.onFrameFinished(imageData => {
-      context.putImageData(imageData, 0, 0);
-    });
-  }
-}
+// draw the image data to canvas when a frame is drawn
+gameboy.onFrameFinished(imageData => {
+  context.putImageData(imageData, 0, 0);
+});
 ```
 
 ### Run
 
-Finally, with the rom loaded and the frame callback set, run the game:
+Finally, with the rom loaded and the frame callback set, run the game with `gameboy.run()`
+
+Our full JavaScript that does everything we need looks like this:
 ```js
+import { Gameboy } from "gameboy-emulator";
+const gameboy = new Gameboy();
+
+const fileInput = document.querySelector('.file-input');
+fileInput.addEventListener('change', onFileChange);
+
 async function onFileChange(event) {
   if (fileInput.files && fileInput.files[0]) {
     const rom = await fileToArrayBuffer(fileInput.files[0]);
@@ -151,11 +146,49 @@ async function onFileChange(event) {
       context.putImageData(imageData, 0, 0);
     });
     
-    // Run game
-    gameboy.run();
+    gameboy.run(); // Run the game
   }
 }
+
+function fileToArrayBuffer(file) {
+  const fileReader = new FileReader();
+
+  return new Promise((resolve, reject) => {
+    fileReader.onload = () => resolve(fileReader.result);
+
+    fileReader.onerror = () => {
+      fileReader.abort();
+      reject(new Error('Error parsing file'))
+    }
+
+    fileReader.readAsArrayBuffer(file);
+  });
+}
 ```
+
+## Default Controls
+The emulator comes with built-in controller and keyboard support. It defaults to
+the first active controller found. Default key bindings are:
+
+### Controller
+* Left: Dpad left and first analog stick left
+* Right: Dpad right and first analog stick right
+* Up: Dpad up and first analog stick up
+* Down: Dpad down and first analog stick down
+* A: Button 2, which is the X button on an XBox controller
+* B: Button 0, which is the A button on an XBox controller
+* Select: Button 8, which is the select button on an Xbox controller
+* Start: Button 9, which is the start button on an Xbox controller
+
+### Keyboard
+* Left: Left Arrow
+* Right: Right Arrow
+* Up: Up Arrow
+* Down: Down Arrow
+* A: A key
+* B: B key
+* Select: Right Control
+* Start: Enter
 
 ## API
 
@@ -168,16 +201,22 @@ async function onFileChange(event) {
     * [colors[]](#colors)
     * [screen: ImageData](#screen-imagedata)
   * [apu](#apu)
-    * [enableSound()](#enablesound())
-    * [disableSound()](#disablesound())
+    * [enableSound()](#enablesound)
+    * [disableSound()](#disablesound)
+  * [cartridge](#cartridge)
+    * title
+    * typeName
+    * romSize
+    * ramSize
+    * versionNumber
   * [memory](#memory)
     * [memoryBytes: Uint8Array](#memorybytes-uint8array)
-    * readByte(address: number)
-    * readWord(address: number)
-    * writeByte(address: number, value: number)
-    * writeWord(address: number, value: number)
-    * reset()
-  * input
+    * [readByte(address: number)](#readbyteaddress-number)
+    * [readWord(address: number)](#readwordaddress-number)
+    * [writeByte(address: number, value: number)](#writebyteaddress-number)
+    * [writeWord(address: number, value: number)](#writewordaddress-number)
+    * [reset()](#reset)
+  * [input](#input)
     * isPressingUp: boolean
     * isPressingDown: boolean
     * isPressingLeft: boolean
@@ -186,8 +225,8 @@ async function onFileChange(event) {
     * isPressingStart: boolean
     * isPressingA: boolean
     * isPressingB: boolean
-  * controllerManager
-    * controller: number;
+  * [controllerManager](#controllermanager)
+    * controller: number
     * left: number
     * right: number
     * up: number
@@ -196,7 +235,7 @@ async function onFileChange(event) {
     * start: number
     * b: number
     * a: number
-  * keyboardManager
+  * [keyboardManager](#keyboardmanager)
     * left: string
     * right: string
     * up: string
@@ -204,11 +243,13 @@ async function onFileChange(event) {
     * select: string
     * start: string
     * b: string
-    * a: string 
-  * onFrameFinished(callback: Function)
-  * setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)
-  * getCartridgeSaveRam(): ArrayBuffer
-  * setOnWriteToCartridgeRam(onSramWrite: Function)
+    * a: string
+  * [loadGame(romData: ArrayBuffer)](#loadgameromdata-arraybuffer)
+  * [run()](#run)
+  * [onFrameFinished(callback: Function)](#onframefinishedcallback-function)
+  * [setOnWriteToCartridgeRam(onSramWrite: Function)](#setonwritetocartridgeramonsramwrite-function)
+  * [getCartridgeSaveRam(): ArrayBuffer](#getcartridgesaveram-arraybuffer)
+  * [setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)](#setcartridgesaveramsramarraybuffer-arraybuffer)
 
 ### Gameboy
 Constructor to create a new Gameboy instance:
@@ -231,6 +272,8 @@ gameboy.cpu.registers.AF.value;
 gameboy.cpu.registers.BC.value;
 gameboy.cpu.registers.DE.value;
 gameboy.cpu.registers.HL.value;
+gameboy.cpu.registers.stackPointer.value;
+gameboy.cpu.registers.programCounter.value;
 ```
 
 ##### operations: Operation[]
@@ -252,7 +295,7 @@ So if you'd like to see the assembly for all base instructions you could do:
 gameboy.cpu.operations.forEach(operation => console.log(operation.instruction));
 ```
 
-##### operations: Operation[]
+##### cbSubOperations: Operation[]
 The instruction at position `0xcb` uses the next byte to define a subset of operations.
 These operations are stored here, and are the same format as operations as described above.
 
@@ -290,3 +333,135 @@ Enables audio
 
 ##### disableSound()
 Disables audio
+
+#### cartridge
+The inserted cartridge. Information about the cartridge can be queried
+* title
+* typeName
+* romSize
+* ramSize
+* versionNumber
+
+```js
+// For Link's Adventure:
+
+console.log(gameboy.cartridge.title)    // prints ZELDA
+console.log(gameboy.cartridge.version)  // prints 0
+console.log(gameboy.cartridge.typeName) // prints MBC1_RAM_BATTERY
+console.log(gameboy.cartridge.romSize)  // prints 524288
+console.log(gameboy.cartridge.ramSize)  // prints 32768
+```
+
+#### memory
+System memory, including attached items like the cartridge
+
+##### memoryBytes: Uint8Array
+`Uint8Array` containing all of the systems memory
+
+##### readByte(address: number)
+Read the byte at a given address
+
+##### readWord(address: number)
+Read a word at the given address
+
+##### writeByte(address: number, value: number)
+Writes a byte value to the address specified
+
+##### writeWord(address: number, value: number)
+Writes a word value to the address specified
+
+##### reset()
+Resets all memory back to default value
+
+#### input
+This is the internal input state used by the GameBoy itself. The controller and keyboard
+in turn set these booleans to true or false.
+
+These can be used to programmatically set the input state. Useful for creating touch controls or any
+sort of programmatic input.
+
+* isPressingUp: boolean
+* isPressingDown: boolean
+* isPressingLeft: boolean
+* isPressingRight: boolean
+* isPressingSelect: boolean
+* isPressingStart: boolean
+* isPressingA: boolean
+* isPressingB: boolean
+
+#### controllerManager
+Used for managing controller input. Stores a number for the index of the controller to use, and
+then stores numbers representing the number of each button on the controller.
+
+You can change these values to change which controller to use (if multiple are active) and what
+buttons to use.
+
+* controller: number
+* left: number
+* right: number
+* up: number
+* down: number
+* select: number
+* start: number
+* b: number
+* a: number
+
+##### keyboardManager
+Used for managing keyboard input. Stores the key code for the key to use.
+
+So for instance the default value for left is 'ArrowLeft'
+
+```js
+console.log(gameboy.keyboardManager.left) // Prints ArrowLeft
+```
+
+* left: string
+* right: string
+* up: string
+* down: string
+* select: string
+* start: string
+* b: string
+* a: string
+
+##### loadGame(romData: ArrayBuffer)
+
+Loads a game cartridge into memory. Similar to inserting a cartridge into a GameBoy
+
+##### run()
+
+Starts emulation. Similar to turning on the power switch of the GameBoy.
+
+##### onFrameFinished(callback: Function)
+Set a callback that runs every time a frame is drawn. Passes an `ImageData` object to the callback
+that contains the current frame.
+
+##### setOnWriteToCartridgeRam(onSramWrite: Function)
+Set a callback that runs every time a cartridge's SRAM is written to.
+
+NOTE! This is not passed any argument. You must retrieve the actual sram data by calling
+`getCartridgeSaveRam()`
+
+##### getCartridgeSaveRam()
+Returns an `ArrayBuffer` with the contents of the cartridge's SRAM.
+
+Combining this with `setOnWriteToCartridgeRam` will allow you to persist save data when
+a player saves. Here's an example using localforage:
+
+```js
+// Will save a games save data with the key of it's title
+gameboy.setOnWriteToCartridgeRam(() => {
+  localforage.setItem(gameboy.cartridge.title, gameboy.getCartridgeSaveRam())
+})
+```
+
+##### setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer)
+Set the sram in a cartridge. This will let you load saved data. Here's an example with localforage that
+should be called after the rom data is loaded
+
+```js
+gameboy.loadGame(rom);
+const sram = await localforage.getItem(gameboy.cartridge.title);
+gameboy.setCartridgeSaveRam(sram);
+gameboy.run();
+```
