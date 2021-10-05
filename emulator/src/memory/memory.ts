@@ -9,7 +9,7 @@ const memoryBuffer = new ArrayBuffer(0x10000);
 const memoryView = new DataView(memoryBuffer);
 const memoryBytes = new Uint8Array(memoryBuffer);
 
-class Memory {
+export class Memory {
   cartridge?: Cartridge;
 
   insertCartridge(cartridge: Cartridge) {
