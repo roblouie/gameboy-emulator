@@ -12,8 +12,8 @@ export function createGeneralPurposeOperations(cpu: CPU): Operation[] {
     byteLength: 1,
     execute() {
       const { A, flags } = registers;
-      const onesPlaceCorrector = 0x06 * (flags.isSubtraction ? -1 : 1);
-      const tensPlaceCorrector = 0x60 * (flags.isSubtraction ? -1 : 1);
+      const onesPlaceCorrector = flags.isSubtraction ? -0x06 : 0x06;
+      const tensPlaceCorrector = flags.isSubtraction ? -0x60 : 0x60;
 
       const isAdditionBcdHalfCarry = !flags.isSubtraction && (A.value & 0x0f) > 9;
       const isAdditionBcdCarry = !flags.isSubtraction && A.value > 0x99;
