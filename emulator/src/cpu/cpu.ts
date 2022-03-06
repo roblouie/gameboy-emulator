@@ -13,6 +13,7 @@ import { TimerManager } from "@/cpu/timer-manager";
 import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 import { interruptEnableRegister } from "@/cpu/registers/interrupt-enable-register";
 import {Cartridge} from "@/cartridge/cartridge";
+import { cbOperation } from "@/cpu/operations/cb-operations/cb-operation";
 
 
 export class CPU {
@@ -175,6 +176,8 @@ export class CPU {
       ...createGeneralPurposeOperations(this),
       ...getCallAndReturnOperations(this),
       ...getInterruptOperations(this),
+
+      cbOperation,
     ];
 
     const orderedOperations: Operation[] = [];
