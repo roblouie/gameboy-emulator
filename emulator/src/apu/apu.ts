@@ -26,6 +26,16 @@ export class APU {
 
   constructor() {
     this.audioContext.suspend();
+
+    try {
+      const test = SharedArrayBuffer;
+    } catch(error) {
+      console.log('%cAudio requires SharedArrayBuffer','font-family:sans-serif; font-size: 20px');
+      console.log('This emulator uses a SharedArrayBuffer for buffered audio on a separate thread. To use ' +
+        'shared array buffer you must use https and add the following headers to your server:');
+      console.log(`%c'Cross-Origin-Opener-Policy': 'same-origin', \n'Cross-Origin-Embedder-Policy': 'require-corp'`,'font-family:monospace;');
+    }
+
     this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 1024);
 
     this.sound1 = new Sound1();

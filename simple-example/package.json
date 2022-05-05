@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "gameboy-emulator": "^1.0.1"
+    "gameboy-emulator": "^1.1.0"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.3.2",

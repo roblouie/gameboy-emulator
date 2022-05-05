@@ -1,12 +1,10 @@
-import { Operation } from "../operation.model";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
-export function createJumpOperations(cpu: CPU): Operation[] {
-  const jumpOperations: Operation[] = [];
-  const { registers } = cpu;
+export function createJumpOperations(this: CPU) {
+  const { registers } = this;
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       return `JP 0x${memory.readWord(registers.programCounter.value).toString(16)}`
     },
@@ -18,7 +16,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       return `JP NZ, 0x${memory.readWord(registers.programCounter.value).toString(16)}`
     },
@@ -36,7 +34,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       return `JP Z, 0x${memory.readWord(registers.programCounter.value).toString(16)}`
     },
@@ -54,7 +52,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       return `JP NC, 0x${memory.readWord(registers.programCounter.value).toString(16)}`
     },
@@ -72,7 +70,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       return `JP C, 0x${memory.readWord(registers.programCounter.value).toString(16)}`
     },
@@ -90,7 +88,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
@@ -109,7 +107,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
@@ -132,7 +130,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
@@ -155,7 +153,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
@@ -178,7 +176,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
       if (value >= 0) {
@@ -201,7 +199,7 @@ export function createJumpOperations(cpu: CPU): Operation[] {
     }
   });
 
-  jumpOperations.push({
+  this.addOperation({
     instruction: ' JP (HL)',
     byteDefinition: 0b11_101_001,
     cycleTime: 1,
@@ -210,6 +208,4 @@ export function createJumpOperations(cpu: CPU): Operation[] {
       registers.programCounter.value = registers.HL.value;
     }
   });
-
-  return jumpOperations;
 }

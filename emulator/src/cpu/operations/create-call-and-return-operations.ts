@@ -1,4 +1,3 @@
-import { Operation } from "../operation.model";
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
@@ -12,11 +11,11 @@ enum FlagCondition {
 // ****************
 // * Call nn
 // ****************
-export function getCallAndReturnOperations(cpu: CPU): Operation[] {
-  const callAndReturnOperations: Operation[] = [];
-  const { registers } = cpu;
+export function createCallAndReturnOperations(this: CPU) {
+  const { registers } = this;
+  const cpu = this;
 
-  callAndReturnOperations.push({
+  this.addOperation({
     get instruction() {
       const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL 0x${toAddress.toString(16)}`;
@@ -43,7 +42,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     return (0b11 << 6) + (flagCondition << 3) + 0b100;
   }
 
-  callAndReturnOperations.push({
+  this.addOperation({
     get instruction() {
       const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL NZ, 0x${toAddress.toString(16)}`;
@@ -68,7 +67,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     get instruction() {
       const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL Z, 0x${toAddress.toString(16)}`;
@@ -93,7 +92,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     get instruction() {
       const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL NC, 0x${toAddress.toString(16)}`;
@@ -118,7 +117,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     get instruction() {
       const toAddress = memory.readWord(registers.programCounter.value);
       return `CALL C, 0x${toAddress.toString(16)}`;
@@ -147,7 +146,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
 // ****************
 // * Return
 // ****************
-  callAndReturnOperations.push({
+  this.addOperation({
     instruction: 'RET',
     byteDefinition: 0b11_001_001,
     byteLength: 1,
@@ -157,7 +156,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     instruction: 'RETI',
     byteDefinition: 0b11_011_001,
     byteLength: 1,
@@ -176,7 +175,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     return (0b11 << 6) + (flagCondition << 3);
   }
 
-  callAndReturnOperations.push({
+  this.addOperation({
     instruction: 'RET NZ',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.NZ),
     byteLength: 1,
@@ -190,7 +189,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     instruction: 'RET Z',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.Z),
     byteLength: 1,
@@ -204,7 +203,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     instruction: 'RET NC',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.NC),
     byteLength: 1,
@@ -218,7 +217,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
     }
   });
 
-  callAndReturnOperations.push({
+  this.addOperation({
     instruction: 'RET C',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.C),
     byteLength: 1,
@@ -252,7 +251,7 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
   ];
 
   for (let operand = 0; operand < 8; operand++) {
-    callAndReturnOperations.push({
+    this.addOperation({
       byteDefinition: getRstConditionByteDefinition(operand),
       instruction: `RST ${operand}`,
       byteLength: 1,
@@ -263,6 +262,4 @@ export function getCallAndReturnOperations(cpu: CPU): Operation[] {
       }
     });
   }
-
-  return callAndReturnOperations;
 }
