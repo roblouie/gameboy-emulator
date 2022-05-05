@@ -1,11 +1,9 @@
 import { CPU } from "@/cpu/cpu";
-import { Operation } from "@/cpu/operations/operation.model";
 import { clearBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
 import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
-export function getResSubOperations(cpu: CPU): Operation[] {
-  const subOperations: Operation[] = [];
+export function getResSubOperations(cpu: CPU) {
   const { registers } = cpu;
 
   // ****************
@@ -17,7 +15,7 @@ export function getResSubOperations(cpu: CPU): Operation[] {
 
   cpu.registers.baseRegisters.forEach(register => {
     for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
-      subOperations.push({
+      cpu.addCbOperation({
         byteDefinition: getResBAByteDefinition(bitPosition, register.code),
         instruction: `RES ${bitPosition}, ${register.name}`,
         cycleTime: 2,
@@ -25,7 +23,7 @@ export function getResSubOperations(cpu: CPU): Operation[] {
         execute() {
           register.value = clearBit(register.value, bitPosition);
         }
-      })
+      });
     }
   });
 
@@ -39,7 +37,7 @@ export function getResSubOperations(cpu: CPU): Operation[] {
   }
 
   for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
-    subOperations.push({
+    cpu.addCbOperation({
       byteDefinition: getResHLByteDefinition(bitPosition),
       instruction: `RES ${bitPosition}, (HL)`,
       cycleTime: 3,
@@ -51,6 +49,4 @@ export function getResSubOperations(cpu: CPU): Operation[] {
       }
     })
   }
-
-  return subOperations;
 }

@@ -1,11 +1,9 @@
-import { Operation } from "../operation.model";
 import { CPU } from "@/cpu/cpu";
 
-export function createRotateShiftOperations(cpu: CPU): Operation[] {
-  const rotateShiftOperations: Operation[] = [];
-  const { registers } = cpu;
+export function createRotateShiftOperations(this: CPU) {
+  const { registers } = this;
 
-  rotateShiftOperations.push({
+  this.addOperation({
     instruction: 'RLCA',
     byteDefinition: 0b00_000_111,
     cycleTime: 1,
@@ -21,7 +19,7 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
     }
   });
 
-  rotateShiftOperations.push({
+  this.addOperation({
     instruction: 'RLA',
     byteDefinition: 0b00_010_111,
     cycleTime: 1,
@@ -38,7 +36,7 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
     }
   });
 
-  rotateShiftOperations.push({
+  this.addOperation({
     instruction: 'RRCA',
     byteDefinition: 0b00_001_111,
     cycleTime: 1,
@@ -54,7 +52,7 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
     }
   });
 
-  rotateShiftOperations.push({
+  this.addOperation({
     instruction: 'RRA',
     byteDefinition: 0b00_011_111,
     cycleTime: 1,
@@ -70,6 +68,4 @@ export function createRotateShiftOperations(cpu: CPU): Operation[] {
       registers.A.value = result;
     }
   });
-
-  return rotateShiftOperations;
 }

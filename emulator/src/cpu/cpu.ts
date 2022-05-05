@@ -1,31 +1,26 @@
 import { CpuRegisterCollection } from "./internal-registers/cpu-register-collection";
 import { memory } from "@/memory/memory";
-import * as arithmeticAndLogicalOperations from '@/cpu/operations/arithmetic-and-logical';
-import * as inputOutputOperations from '@/cpu/operations/input-output';
-import { getCallAndReturnOperations } from "@/cpu/operations/call-and-return/call-and-return-operations";
-import { getInterruptOperations } from "@/cpu/operations/interupts/interupt-operations";
-import { createJumpOperations } from "@/cpu/operations/jump/jump-operations";
-import { createRotateShiftOperations } from "@/cpu/operations/rotate-shift/rotate-shift-operations";
-import { createGeneralPurposeOperations } from "@/cpu/operations/general-purpose/general-purpose-operations";
+import { createCallAndReturnOperations } from "@/cpu/operations/create-call-and-return-operations";
+import { createInterruptOperations } from "@/cpu/operations/create-interupt-operations";
+import { createJumpOperations } from "@/cpu/operations/create-jump-operations";
+import { createRotateShiftOperations } from "@/cpu/operations/create-rotate-shift-operations";
+import { createGeneralPurposeOperations } from "@/cpu/operations/create-general-purpose-operations";
 import { Operation } from "@/cpu/operations/operation.model";
-import { getCBSubOperations } from "@/cpu/operations/cb-operations/cb-operations";
-import { TimerManager } from "@/cpu/timer-manager";
 import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 import { interruptEnableRegister } from "@/cpu/registers/interrupt-enable-register";
-import {Cartridge} from "@/cartridge/cartridge";
-import { cbOperation } from "@/cpu/operations/cb-operations/cb-operation";
-
+import { Cartridge } from "@/cartridge/cartridge";
+import { createCbSubOperations } from "@/cpu/operations/cb-operations/cb-operation";
+import { createLogicalOperations } from '@/cpu/operations/create-logical-operations';
+import { createArithmeticOperations } from '@/cpu/operations/create-arithmetic-operations';
+import { createInputOutputOperations } from '@/cpu/operations/create-input-output-operations';
+import { asUint16, getMostSignificantByte } from '@/helpers/binary-helpers';
+import { dividerRegister } from '@/cpu/registers/divider-register';
+import { timerControllerRegister } from '@/cpu/registers/timer-controller-register';
+import { timerCounterRegister } from '@/cpu/registers/timer-counter-register';
+import { timerModuloRegister } from '@/cpu/registers/timer-modulo-register';
 
 export class CPU {
-  static OperatingHertz = 4194304;
-  isInterruptMasterEnable = true;
-  operations: Operation[];
-  cbSubOperations: Operation[];
-  registers: CpuRegisterCollection;
-
-  private timerManager: TimerManager;
-  private isHalted = false;
-  private isStopped = false;
+  static OperatingHertz = 4_194_304;
 
   private static VBlankInterruptAddress = 0x0040;
   private static LCDStatusInterruptAddress = 0x0048;
@@ -33,11 +28,41 @@ export class CPU {
   private static SerialTransferCompletionInterruptAddress = 0x0058;
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
+  isInterruptMasterEnable = true;
+  registers: CpuRegisterCollection;
+
+  operationMap: Map<number, Operation> = new Map();
+  cbSubOperationMap: Map<number, Operation> = new Map();
+
+  // To keep the cpu file focused on operation and to organize the operations by type, separate methods have
+  // been created in the /operations folder and are attached here.
+  createInputOutputOperations = createInputOutputOperations;
+  createArithmeticOperations = createArithmeticOperations;
+  createLogicalOperations = createLogicalOperations;
+  createRotateShiftOperations = createRotateShiftOperations;
+  createJumpOperations = createJumpOperations;
+  createGeneralPurposeOperations = createGeneralPurposeOperations;
+  createCallAndReturnOperations = createCallAndReturnOperations;
+  createInterruptOperations = createInterruptOperations;
+  createCbSubOperations = createCbSubOperations;
+
+  private timerCycles = 0;
+  private frequencyCounter = 0;
+  private cycleMultiplier = 4;
+  private isHalted = false;
+  private isStopped = false;
+
   constructor() {
     this.registers = new CpuRegisterCollection();
-    this.operations = this.initializeOperations();
-    this.cbSubOperations = getCBSubOperations(this);
-    this.timerManager = new TimerManager();
+    this.createInputOutputOperations();
+    this.createArithmeticOperations();
+    this.createLogicalOperations();
+    this.createRotateShiftOperations();
+    this.createJumpOperations();
+    this.createGeneralPurposeOperations();
+    this.createCallAndReturnOperations();
+    this.createInterruptOperations();
+    this.createCbSubOperations();
     this.initialize();
   }
 
@@ -55,7 +80,7 @@ export class CPU {
     this.handleInterrupts();
 
     if (this.isHalted) {
-      this.timerManager.updateTimers(1);
+      this.updateTimers(1);
       return 1;
     }
 
@@ -63,7 +88,7 @@ export class CPU {
 
     operation.execute();
 
-    this.timerManager.updateTimers(operation.cycleTime);
+    this.updateTimers(operation.cycleTime);
 
     return operation.cycleTime;
   }
@@ -81,33 +106,29 @@ export class CPU {
   }
 
   pushToStack(word: number) {
-    this.registers.stackPointer.value--;
-    memory.writeByte(this.registers.stackPointer.value, word >> 8);
-    this.registers.stackPointer.value--;
-    memory.writeByte(this.registers.stackPointer.value, word & 0xff);
+    this.registers.stackPointer.value -= 2;
+    memory.writeWord(this.registers.stackPointer.value, word);
   }
 
   popFromStack() {
-    const lowByte = memory.readByte(this.registers.stackPointer.value);
-    this.registers.stackPointer.value++;
-    const highByte = memory.readByte(this.registers.stackPointer.value);
-    this.registers.stackPointer.value++;
+    const value = memory.readWord(this.registers.stackPointer.value);
+    this.registers.stackPointer.value += 2;
 
-    return (highByte << 8) | lowByte;
+    return value;
   }
 
   private getOperation() {
     const operationIndex = memory.readByte(this.registers.programCounter.value);
     this.registers.programCounter.value++;
-    const operation = this.operations[operationIndex];
+    const operation = this.operationMap.get(operationIndex);
 
-    if (operation.byteDefinition === 0xcb) {
-      const cbOperationIndex = memory.readByte(this.registers.programCounter.value);
-      this.registers.programCounter.value++;
-      return this.cbSubOperations[cbOperationIndex];
-    } else {
-      return operation
+    if (!operation) {
+      const opCode = operationIndex.toString(16);
+      const address = this.registers.programCounter.value.toString(16);
+      throw new Error(`Operation ${opCode} at location ${address} not found.`);
     }
+
+    return operation;
   }
 
   private handleInterrupts() {
@@ -153,42 +174,41 @@ export class CPU {
     this.isInterruptMasterEnable = false;
   }
 
-  private initializeOperations() {
-    const unorderedOperations = [
-      ...arithmeticAndLogicalOperations.createAddOperations(this),
-      ...arithmeticAndLogicalOperations.createSubtractOperations(this),
-      ...arithmeticAndLogicalOperations.createAndOperations(this),
-      ...arithmeticAndLogicalOperations.createOrOperations(this),
-      ...arithmeticAndLogicalOperations.createXorOperations(this),
-      ...arithmeticAndLogicalOperations.createCompareOperations(this),
-      ...arithmeticAndLogicalOperations.createIncrementOperations(this),
-      ...arithmeticAndLogicalOperations.createDecrementOperations(this),
+  updateTimers(cycles: number) {
+    this.frequencyCounter = asUint16(this.frequencyCounter + (cycles * this.cycleMultiplier));
+    dividerRegister.setValueFromCpuDivider(getMostSignificantByte(this.frequencyCounter));
 
-      ...inputOutputOperations.createMemoryContentsToRegisterOperations(this),
-      ...inputOutputOperations.createRegisterToMemoryOperations(this),
-      ...inputOutputOperations.createRegisterToRegisterOperations(this),
-      ...inputOutputOperations.createValueToMemoryInstructions(this),
-      ...inputOutputOperations.createValueToRegisterOperations(this),
-      ...inputOutputOperations.getSixteenBitTransferOperations(this),
-
-      ...createRotateShiftOperations(this),
-      ...createJumpOperations(this),
-      ...createGeneralPurposeOperations(this),
-      ...getCallAndReturnOperations(this),
-      ...getInterruptOperations(this),
-
-      cbOperation,
-    ];
-
-    const orderedOperations: Operation[] = [];
-
-    for (let i = 0; i < 256; i++) {
-      const operation = unorderedOperations.find(op => op.byteDefinition === i);
-      if (operation) {
-        orderedOperations[i] = operation;
-      }
+    if (!timerControllerRegister.isTimerOn) {
+      return;
     }
 
-    return orderedOperations;
+    this.timerCycles += cycles;
+
+    if (this.timerCycles >= timerControllerRegister.cyclesForTimerUpdate) {
+
+      if (timerCounterRegister.value + 1 > 0xff) {
+        interruptRequestRegister.triggerTimerInterruptRequest();
+        timerCounterRegister.value = timerModuloRegister.value;
+      }
+
+      timerCounterRegister.value++;
+      this.timerCycles = 0;
+    }
+  }
+
+  addOperation(operation: Operation) {
+    if (this.operationMap.has(operation.byteDefinition)) {
+      throw new Error(`Operation ${operation.byteDefinition.toString(2)} has already been defined`);
+    }
+
+    this.operationMap.set(operation.byteDefinition, operation);
+  }
+
+  addCbOperation(operation: Operation) {
+    if (this.cbSubOperationMap.has(operation.byteDefinition)) {
+      throw new Error(`Operation ${operation.byteDefinition.toString(2)} has already been defined`);
+    }
+
+    this.cbSubOperationMap.set(operation.byteDefinition, operation);
   }
 }

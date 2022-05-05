@@ -1,11 +1,9 @@
 import { CPU } from "@/cpu/cpu";
-import { Operation } from "@/cpu/operations/operation.model";
 import { getBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
 import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
-export function getBitSubOperations(cpu: CPU): Operation[] {
-  const subOperations: Operation[] = [];
+export function getBitSubOperations(cpu: CPU) {
   const { registers } = cpu;
   
   function getBitAndSetFlags(value: number, position: number) {
@@ -24,7 +22,7 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
 
   cpu.registers.baseRegisters.forEach(register => {
     for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
-      subOperations.push({
+      cpu.addCbOperation({
         byteDefinition: getBitBAByteDefinition(bitPosition, register.code),
         instruction: `BIT ${bitPosition}, ${register.name}`,
         cycleTime: 2,
@@ -45,7 +43,7 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
   }
 
   for (let bitPosition = 0; bitPosition < 8; bitPosition++) {
-    subOperations.push({
+    cpu.addCbOperation({
       byteDefinition: getBitHLByteDefinition(bitPosition),
       instruction: `BIT ${bitPosition}, (HL)`,
       cycleTime: 3,
@@ -56,6 +54,4 @@ export function getBitSubOperations(cpu: CPU): Operation[] {
       }
     })
   }
-
-  return subOperations;
 }

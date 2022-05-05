@@ -1,11 +1,9 @@
 import { CPU } from "@/cpu/cpu";
-import { Operation } from "@/cpu/operations/operation.model";
 import { memory } from "@/memory/memory";
 import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 import { setBit } from "@/helpers/binary-helpers";
 
-export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
-  const subOperations: Operation[] = [];
+export function getRotateShiftSubOperations(cpu: CPU) {
   const { registers } = cpu;
 
   // ****************
@@ -30,7 +28,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
 
   cpu.registers.baseRegisters
     .forEach(register => {
-      subOperations.push({
+      cpu.addCbOperation({
         byteDefinition: getSwapRByteDefinition(register.code),
         instruction: `SWAP ${register.name}`,
         cycleTime: 2,
@@ -41,7 +39,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
       })
     });
 
-  subOperations.push({
+  cpu.addCbOperation({
     byteDefinition: 0b00_110_110,
     instruction: 'SWAP (HL)',
     cycleTime: 4,
@@ -61,7 +59,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       byteDefinition: getRLCMByteDefinition(register.code),
       instruction: `RLC ${register.name}`,
       cycleTime: 2,
@@ -78,7 +76,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     byteDefinition: 0b00_000_110,
     instruction: 'RLC (HL)',
     cycleTime: 4,
@@ -106,7 +104,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       instruction: `RL ${register.name}`,
       byteDefinition: getRLMByteDefinition(register.code),
       cycleTime: 2,
@@ -125,7 +123,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     instruction: 'RL (HL)',
     byteDefinition: 0b00_010_110,
     cycleTime: 4,
@@ -152,7 +150,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       instruction: `RRC ${register.name}`,
       byteDefinition: getRRCMByteDefinition(register.code),
       cycleTime: 2,
@@ -170,7 +168,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     instruction: 'RRC (HL)',
     byteDefinition: 0b00_001_110,
     cycleTime: 4,
@@ -197,7 +195,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       instruction: `RR ${register.name}`,
       byteDefinition: getRRMByteDefinition(register.code),
       cycleTime: 2,
@@ -215,7 +213,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     instruction: 'RR (HL)',
     byteDefinition: 0b00_011_110,
     cycleTime: 4,
@@ -242,7 +240,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       instruction: `SLA ${register.name}`,
       byteDefinition: getSLAMByteDefinition(register.code),
       cycleTime: 2,
@@ -260,7 +258,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     instruction: 'SLA (HL)',
     byteDefinition: 0b00_100_110,
     cycleTime: 4,
@@ -287,7 +285,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       instruction: `SRA ${register.name}`,
       byteDefinition: getSRAMByteDefinition(register.code),
       cycleTime: 2,
@@ -307,7 +305,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     instruction: 'SRA (HL)',
     byteDefinition: 0b00_101_110,
     cycleTime: 4,
@@ -336,7 +334,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
   }
 
   registers.baseRegisters.forEach(register => {
-    subOperations.push({
+    cpu.addCbOperation({
       instruction: `SRL ${register.name}`,
       byteDefinition: getSRLMByteDefinition(register.code),
       cycleTime: 2,
@@ -354,7 +352,7 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
     });
   });
 
-  subOperations.push({
+  cpu.addCbOperation({
     instruction: 'SRL (HL)',
     byteDefinition: 0b00_111_110,
     cycleTime: 4,
@@ -371,6 +369,4 @@ export function getRotateShiftSubOperations(cpu: CPU): Operation[] {
       memory.writeByte(registers.HL.value, result);
     }
   });
-
-  return subOperations;
 }
