@@ -17,8 +17,6 @@ The source code for this UI is also in the `ui/` folder in the package github re
 * [API](#api)
 
 The simple example shown below has been implemented in a folder in the github repo named simple-example.
-If you look at the webpack config in that folder, you will see that the dev server has been configured
-with these settings.
 
 ## Installation
 
