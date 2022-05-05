@@ -16,6 +16,10 @@ The source code for this UI is also in the `ui/` folder in the package github re
 * [Default Controls](#default-controls)
 * [API](#api)
 
+The simple example shown below has been implemented in a folder in the github repo named simple-example.
+If you look at the webpack config in that folder, you will see that the dev server has been configured
+with these settings.
+
 ## Installation
 
 Install the package:
@@ -87,8 +91,21 @@ for file selection. For simplicity, we will add that to our event handler from a
 ```js
 // enable audio
 gameboy.apu.enableSound();
+```
+
+#### Note: https and same origin required for audio to work due to SharedArrayBuffer
+In order to provide near real-time buffered audio, this emulator uses a shared array buffer to
+write to an audio player on another thread. Since this allows direct memory access, certain security
+features are required. First, you must use https. In addition, you must have the following headers set
+on your server:
 
 ```
+'Cross-Origin-Opener-Policy': 'same-origin'
+'Cross-Origin-Embedder-Policy': 'require-corp'
+```
+
+You can see these being set in the webpack dev server in the simple example projects. You can still
+use the emulator without this, but audio will not work.
 
 ### Render to Canvas
 
@@ -105,8 +122,8 @@ This can be set up at any time, but for convenience we will set this callback in
 
 ```css
 canvas {
-  width: 100%;
-  image-rendering: pixelated;
+    width: 100%;
+    image-rendering: pixelated;
 }
 ```
 
@@ -135,14 +152,14 @@ async function onFileChange(event) {
   if (fileInput.files && fileInput.files[0]) {
     const rom = await fileToArrayBuffer(fileInput.files[0]);
     gameboy.loadGame(rom);
-    
+
     gameboy.apu.enableSound();
-    
+
     const context = document.querySelector('canvas').getContext('2d');
     gameboy.onFrameFinished(imageData => {
       context.putImageData(imageData, 0, 0);
     });
-    
+
     gameboy.run(); // Run the game
   }
 }
