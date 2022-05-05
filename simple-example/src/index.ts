@@ -2,6 +2,11 @@ import { Gameboy } from 'gameboy-emulator';
 
 const gameboy = new Gameboy();
 
+// Log out all operations assembly
+for (const operation of gameboy.cpu.operationMap.values()) {
+  console.log(operation.instruction);
+}
+
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
 

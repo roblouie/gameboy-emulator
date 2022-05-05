@@ -108,7 +108,7 @@ use the emulator without this, but audio will not work.
 ### Render to Canvas
 
 Finally you need to actually render the graphics somewhere. For flexibility the emulator just draws
-the graphics to an ImageData with the native GameBoy resolution of 160x144. The emulator provied a
+the graphics to an ImageData with the native GameBoy resolution of 160x144. The emulator provides a
 callback named `onFrameFinished` that will pass you the ImageData for rendering. If you want your
 canvas to be larger than 160x144 (and you probably do), the simplest way is to increase the size
 with css, making sure to set `image-rendering: pixelated;` to stop the browser from blurring the image.
@@ -120,8 +120,8 @@ This can be set up at any time, but for convenience we will set this callback in
 
 ```css
 canvas {
-  width: 100%;
-  image-rendering: pixelated;
+    width: 100%;
+    image-rendering: pixelated;
 }
 ```
 
@@ -150,14 +150,14 @@ async function onFileChange(event) {
   if (fileInput.files && fileInput.files[0]) {
     const rom = await fileToArrayBuffer(fileInput.files[0]);
     gameboy.loadGame(rom);
-    
+
     gameboy.apu.enableSound();
-    
+
     const context = document.querySelector('canvas').getContext('2d');
     gameboy.onFrameFinished(imageData => {
       context.putImageData(imageData, 0, 0);
     });
-    
+
     gameboy.run(); // Run the game
   }
 }
@@ -207,8 +207,8 @@ the first active controller found. Default key bindings are:
 * [Gameboy](#gameboy)
     * [cpu: CPU](#cpu-cpu)
         * [registers: CpuRegisterCollection](#registers-cpuregistercollection)
-        * [operations: Operation[]](#operations-operation)
-        * [cbSubOperations: Operation[]](#cbsuboperations-operation)
+        * [operationMap: Map<number, Operation>](#operations-operation)
+        * [cbSubOperationMap: Map<number, Operation>](#cbsuboperations-operation)
     * [gpu](#gpu)
         * [colors[]](#colors)
         * [screen: ImageData](#screen-imagedata)
@@ -288,7 +288,7 @@ gameboy.cpu.registers.stackPointer.value;
 gameboy.cpu.registers.programCounter.value;
 ```
 
-##### operations: Operation[]
+##### operationMap: Map<number, Operation>
 Collection of all base level operations (excludes cb operations, which are stored separately).
 
 The operation type is defined as:
@@ -304,10 +304,12 @@ interface Operation {
 
 So if you'd like to see the assembly for all base instructions you could do:
 ```js
-gameboy.cpu.operations.forEach(operation => console.log(operation.instruction));
+for (const operation of gameboy.cpu.operationMap.values()) {
+  console.log(operation.instruction);
+}
 ```
 
-##### cbSubOperations: Operation[]
+##### cbSubOperationMap: Map<number, Operation>
 The instruction at position `0xcb` uses the next byte to define a subset of operations.
 These operations are stored here, and are the same format as operations as described above.
 
