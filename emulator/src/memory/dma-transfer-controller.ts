@@ -5,7 +5,7 @@ import {
 import { memory } from "@/memory/memory";
 import { dmaTransferRegister } from "@/gpu/registers/dma-transfer-register";
 
-class DmaTransferController {
+export class DmaTransferController {
   private static AddressInterval = 0x100;
 
   transfer() {
@@ -18,6 +18,3 @@ class DmaTransferController {
     }
   }
 }
-
-// TODO: Consider exporting class and constructing this inside memroy.ts, as it probably belongs only on memory
-export const dmaTransferController = new DmaTransferController();

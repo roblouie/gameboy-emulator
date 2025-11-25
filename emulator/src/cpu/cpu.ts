@@ -31,8 +31,8 @@ export class CPU {
   isInterruptMasterEnable = true;
   registers: CpuRegisterCollection;
 
-  operationMap: Map<number, Operation> = new Map();
-  cbSubOperationMap: Map<number, Operation> = new Map();
+  operationMap: Array<Operation> = [];
+  cbSubOperationMap: Array<Operation> = [];
 
   // To keep the cpu file focused on operation and to organize the operations by type, separate methods have
   // been created in the /operations folder and are attached here.
@@ -120,7 +120,7 @@ export class CPU {
   private getOperation() {
     const operationIndex = memory.readByte(this.registers.programCounter.value);
     this.registers.programCounter.value++;
-    const operation = this.operationMap.get(operationIndex);
+    const operation = this.operationMap[operationIndex];
 
     if (!operation) {
       const opCode = operationIndex.toString(16);
@@ -197,18 +197,18 @@ export class CPU {
   }
 
   addOperation(operation: Operation) {
-    if (this.operationMap.has(operation.byteDefinition)) {
+    if (this.operationMap[operation.byteDefinition]) {
       throw new Error(`Operation ${operation.byteDefinition.toString(2)} has already been defined`);
     }
 
-    this.operationMap.set(operation.byteDefinition, operation);
+    this.operationMap[operation.byteDefinition] = operation;
   }
 
   addCbOperation(operation: Operation) {
-    if (this.cbSubOperationMap.has(operation.byteDefinition)) {
+    if (this.cbSubOperationMap[operation.byteDefinition]) {
       throw new Error(`Operation ${operation.byteDefinition.toString(2)} has already been defined`);
     }
 
-    this.cbSubOperationMap.set(operation.byteDefinition, operation);
+    this.cbSubOperationMap[operation.byteDefinition] = operation;
   }
 }

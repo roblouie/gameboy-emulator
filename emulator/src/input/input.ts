@@ -1,4 +1,4 @@
-import { setBit } from "@/helpers/binary-helpers";
+import {getBit, setBit} from "@/helpers/binary-helpers";
 
 export class Input {
   isPressingUp = false;
@@ -16,8 +16,8 @@ export class Input {
   private isPollingButtons = false;
 
   setInputToCheck(byte: number) {
-    this.isPollingButtons = ((byte >> 4) & 0b1) === 1;
-    this.isPollingDirections = ((byte >> 5) & 0b1) === 1;
+    this.isPollingButtons = getBit(byte, 4) === 1;
+    this.isPollingDirections = getBit(byte, 5) === 1;
   }
 
   reportInput(): number {

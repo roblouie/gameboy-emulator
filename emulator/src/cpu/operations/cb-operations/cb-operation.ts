@@ -15,7 +15,7 @@ export function createCbSubOperations(this: CPU) {
     execute() {
       const cbOperationIndex = memory.readByte(cpu.registers.programCounter.value);
       cpu.registers.programCounter.value++;
-      const subOperation = cpu.cbSubOperationMap.get(cbOperationIndex)!;
+      const subOperation = cpu.cbSubOperationMap[cbOperationIndex];
       subOperation.execute();
     }
   })

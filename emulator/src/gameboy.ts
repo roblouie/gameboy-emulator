@@ -80,14 +80,14 @@ export class Gameboy {
   }
 
   setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer) {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY  || CartridgeType.MBC3_RAM_BATTERY) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
       const cartridge = memory.cartridge as Mbc1Cartridge;
       cartridge.setRam(sramArrayBuffer);
     }
   }
 
   getCartridgeSaveRam() {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY  || CartridgeType.MBC3_RAM_BATTERY) {
+    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
       const cartridge = memory.cartridge as Mbc1Cartridge;
       return cartridge.dumpRam();
     }
@@ -98,9 +98,5 @@ export class Gameboy {
       const cartridge = memory.cartridge as Mbc1Cartridge;
       cartridge.onSramWrite = onSramWrite
     }
-  }
-
-  get cartridge() {
-    return memory.cartridge;
   }
 }

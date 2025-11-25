@@ -8,14 +8,6 @@ class ControllerDataRegister implements SingleByteMemoryRegister {
   get value() {
     return memory.readByte(this.offset);
   }
-
-  get isPollingDirections() {
-    return (memory.readByte(this.offset) >> 4) & 0b1;
-  }
-
-  get isPollingButtons() {
-    return (memory.readByte(this.offset) >> 5) & 0b1;
-  }
 }
 
 export const controllerDataRegister = new ControllerDataRegister();

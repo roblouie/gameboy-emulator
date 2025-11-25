@@ -1,11 +1,13 @@
 import { Gameboy } from '@/gameboy';
 
-const gameboy = new Gameboy();
 
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
 
 async function onFileChange() {
+  const gameboy = new Gameboy();
+
+
   if (fileInput.files && fileInput.files[0]) {
     // Convert the selected file into an array buffer
     const rom = await fileToArrayBuffer(fileInput.files[0]);

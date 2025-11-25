@@ -29,7 +29,7 @@ class TimerControllerRegister implements SingleByteMemoryRegister {
   }
 
   get isTimerOn() {
-    return ((this.value >> 2) & 0b1) === 1;
+    return ((this.value >> 2) & 0b1) === 1; // TODO: Refactor to getBit?
   }
 }
 

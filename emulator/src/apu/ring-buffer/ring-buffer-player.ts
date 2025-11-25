@@ -1,5 +1,5 @@
 import { RingBufferWriter } from "@/apu/ring-buffer/ring-buffer-writer";
-import ringBufferPlayerClass from './ring-buffer-player.node.js';
+import workletUrl from './ring-buffer-player.worklet.js?worker&url';
 
 // Encapsulates all the logic for the ring buffer on the main thread. ring-buffer-player-node.js is the worklet that
 // lives on a separate thread. Here samples and parameters can be written in a way that allows the ring buffer player
@@ -32,7 +32,7 @@ export class RingBufferPlayer {
     this.parameterByteArray = new Uint8Array(this.parameterRawStorage);
     this.parameterDataView = new DataView(this.parameterRawStorage);
 
-    audioContext.audioWorklet.addModule(this.getModuleFile())
+    audioContext.audioWorklet.addModule(workletUrl)
       .then(() => {
         const audioQueueSharedBuffer = RingBufferWriter.GetSharedArrayBufferForCapacity(audioContext.sampleRate / 20, Float32Array);
         this.audioRingBufferWriter = new RingBufferWriter(audioQueueSharedBuffer, Float32Array);
@@ -66,14 +66,5 @@ export class RingBufferPlayer {
       return false;
     }
     return this.parameterRingBufferWriter && this.parameterRingBufferWriter.push(this.parameterByteArray) === this.parameterRawStorage.byteLength;
-  }
-
-  // This method builds an object url out of the class in ring-buffer-player-node.js. While this could instead return
-  // the url to that file, that will break if exporting the emulator as an npm package since there will no longer be
-  // a url to the file after the node modules are bundled.
-  private getModuleFile() {
-    const moduleFileContents = ringBufferPlayerClass;
-    const blob = new Blob([moduleFileContents], {type: "application/javascript"});
-    return URL.createObjectURL(blob);
   }
 }

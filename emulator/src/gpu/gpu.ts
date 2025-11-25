@@ -142,13 +142,19 @@ export class GPU {
     }
   }
 
+  private getTileCharacterIndex(tileMapIndex: number, relativeOffset: number) {
+    const address = lcdControlRegister.backgroundTileMapStartAddress + tileMapIndex;
+    if (lcdControlRegister.backgroundCharacterData === 0) {
+      return memory.readSignedByte(address) + relativeOffset;
+    } else {
+      return memory.readByte(address) + relativeOffset;
+    }
+  }
+
   drawBackgroundLine() {
     const backgroundLineValues = [];
     const bytesPerCharacter = 2;
     const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
-
-    const { backgroundTileMapStartAddress, backgroundCharacterData } = lcdControlRegister;
-    const memoryReadMethod = backgroundCharacterData === 0 ? memory.readSignedByte : memory.readByte;
 
     const palette = backgroundPaletteRegister.backgroundPalette;
 
@@ -173,7 +179,7 @@ export class GPU {
         const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
         const relativeOffset = lcdControlRegister.backgroundCharacterData === 0 ? 128 : 0;
-        const tileCharIndex = memoryReadMethod(backgroundTileMapStartAddress + tileMapIndex) + relativeOffset;
+        const tileCharIndex = this.getTileCharacterIndex(tileMapIndex, relativeOffset);
         const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
         const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
