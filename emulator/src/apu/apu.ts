@@ -3,7 +3,8 @@ import { Sound1 } from "@/apu/sound-1";
 import { Sound2 } from "@/apu/sound-2";
 import { Sound4 } from "@/apu/sound-4";
 import { Sound3 } from "@/apu/sound-3";
-import { RingBufferPlayer } from "@/apu/ring-buffer/ring-buffer-player";
+import workletUrl from '@/apu/simple-audio-queue.worklet.js?worker&url';
+import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
 export class APU {
   private static FrameSequencerHertz = 512;
@@ -15,7 +16,6 @@ export class APU {
 
   private cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
   private sampleCycleCounter = 0;
-  private ringBufferPlayer: RingBufferPlayer;
 
   private sound1: Sound1;
   private sound2: Sound2;
@@ -24,19 +24,17 @@ export class APU {
 
   private _isAudioEnabled = false;
 
+  private workletNode: AudioWorkletNode;
+
   constructor() {
     this.audioContext.suspend();
 
-    try {
-      const test = SharedArrayBuffer;
-    } catch(error) {
-      console.log('%cAudio requires SharedArrayBuffer','font-family:sans-serif; font-size: 20px');
-      console.log('This emulator uses a SharedArrayBuffer for buffered audio on a separate thread. To use ' +
-        'shared array buffer you must use https and add the following headers to your server:');
-      console.log(`%c'Cross-Origin-Opener-Policy': 'same-origin', \n'Cross-Origin-Embedder-Policy': 'require-corp'`,'font-family:monospace;');
-    }
-
-    this.ringBufferPlayer = new RingBufferPlayer(this.audioContext, 1024);
+    this.audioContext.audioWorklet.addModule(workletUrl).then(() => {
+      this.workletNode = new AudioWorkletNode(this.audioContext, 'simple-audio-queue');
+      this.workletNode.connect(this.audioContext.destination);
+    }).catch(error => {
+      console.error('Unable to load audio Queue', error);
+    });
 
     this.sound1 = new Sound1();
     this.sound2 = new Sound2();
@@ -81,9 +79,24 @@ export class APU {
     }
   }
 
+  private tempBuffer = new Float32Array(1024);
+  private tempIndex = 0;
+
   private sampleChannels() {
+    if (!soundsOnRegister.isAllSoundOn) {
+      this.frameSequencerCycleCounter = 0;
+      return;
+    }
+
     const sample = (this.sound1.getSample() + this.sound2.getSample() + this.sound3.getSample() + this.sound4.getSample()) / 4;
-    this.ringBufferPlayer.writeSample(sample);
+    this.tempBuffer[this.tempIndex] = sample;
+    this.tempIndex++;
+
+    if (this.tempIndex >= this.tempBuffer.length) {
+      this.workletNode?.port?.postMessage(this.tempBuffer, [this.tempBuffer.buffer]);
+      this.tempBuffer = new Float32Array(1024);
+      this.tempIndex = 0;
+    }
   }
 
   //  Frame Sequencer

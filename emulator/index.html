@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Gameboy Example</title>
+    <style>
+        html {
+            background-color: black;
+        }
+    </style>
 </head>
 <body>
 <input type="file" class="file-input" style="display: block;"/>
 <canvas width="160" height="144" style="width: 320px; image-rendering: pixelated"></canvas>
+
+<button id="draw-vram">Draw to VRAM</button>
+<canvas id="vram" width="64" height="6400" style="display: block"></canvas>
 <script type="module" src="./src/example.ts" ></script>

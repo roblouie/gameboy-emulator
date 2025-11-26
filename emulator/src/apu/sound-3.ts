@@ -61,17 +61,13 @@ export class Sound3 {
   private shifts = [4, 0, 1, 2];
 
   getSample() {
+    // TODO: Implement sound3 isDacEnabled audio check
     const memoryAddress = Math.floor(this.waveTablePosition / 2);
     const waveData = memory.readByte(this.waveTableMemoryAddress + memoryAddress);
-    const isFirstNibble = this.waveTablePosition % 2 === 1; // High nibble holds first sample, low nibble second.
-    const sample = isFirstNibble ? getLowerNibble(waveData) : getUpperNibble(waveData);
+    const isHighNibble = (this.waveTablePosition & 1) === 0;
+    const sample = isHighNibble ? getUpperNibble(waveData) : getLowerNibble(waveData);
     const volumeAdjustedSample = sample >> this.shifts[sound3OutputLevelRegister.outputLevel];
-
-    if (soundsOnRegister.isSound3On && sound3OutputLevelRegister.outputLevel !== 0) {
-      return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
-    } else {
-      return 0;
-    }
+    return volumeAdjustedSample / 15;
   }
 
   private getFrequencyPeriod() {

@@ -6,7 +6,7 @@ import { dmaTransferRegister } from "@/gpu/registers/dma-transfer-register";
 import { controllerDataRegister } from "@/input/controller-data-register";
 
 export class Memory {
-  cartridge?: Cartridge;
+  cartridge: Cartridge = new Cartridge(new DataView(new ArrayBuffer(0)));
   dmaTransferController = new DmaTransferController();
 
   private memoryBuffer: ArrayBuffer;
@@ -29,7 +29,7 @@ export class Memory {
 
   readByte(address: number) {
     if (this.isAccessingCartridge(address)) {
-      return this.cartridge ? this.cartridge.readByte(address) : 0;
+      return this.cartridge.readByte(address);
     } else if (this.isReadingInput(address)) {
       return input.reportInput();
     } else {

@@ -113,14 +113,13 @@ export class Sound1 {
   }
 
   getSample() {
-    const sample = this.dutyCycles[sound1LengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
-
-    if (soundsOnRegister.isSound1On) {
-      const volumeAdjustedSample = sample * this.volume;
-      return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
-    } else {
+    if (!sound1EnvelopeControlRegister.isDacEnabled) {
       return 0;
     }
+
+    const sample = this.dutyCycles[sound1LengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
+    const volumeAdjustedSample = sample * this.volume;
+    return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
   }
 
   private getFrequencyPeriod() {

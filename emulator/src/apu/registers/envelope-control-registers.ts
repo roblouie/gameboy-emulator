@@ -1,5 +1,5 @@
 import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "../../memory/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/memory-register";
 
 
 export class EnvelopeControlRegister implements SingleByteMemoryRegister {
@@ -25,6 +25,10 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
   
   get lengthOfEnvelopeStep() {
     return this.value & 0b111;
+  }
+
+  get isDacEnabled() {
+    return (this.value & 0xf8) !== 0;
   }
 }
 

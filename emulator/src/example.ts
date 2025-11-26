@@ -1,11 +1,25 @@
 import { Gameboy } from '@/gameboy';
+import {memory} from "@/memory/memory";
+import {EnhancedImageData} from "@/helpers/enhanced-image-data";
+import {getBit} from "@/helpers/binary-helpers";
 
 
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
 
+const vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
+const vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
+const vramButton = document.querySelector('#draw-vram') as HTMLButtonElement;
+
+
+
 async function onFileChange() {
   const gameboy = new Gameboy();
+
+  vramButton.addEventListener('click', () => {
+    vramContext.putImageData(getCharacterImageData(gameboy), 0, 0);
+    vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
+  });
 
 
   if (fileInput.files && fileInput.files[0]) {
@@ -39,4 +53,36 @@ function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
 
     fileReader.readAsArrayBuffer(file);
   });
+}
+
+// Test Code
+function getCharacterImageData(gameboy: Gameboy): ImageData {
+  const CharacterDataStart = 0x8000;
+  const CharacterDataEnd = 0x97ff;
+  const characterData = gameboy.memory.memoryBytes.subarray(CharacterDataStart, CharacterDataEnd);
+  const enhancedImageData = new EnhancedImageData(8, 3072);
+
+  let imageDataX = 0;
+  let imageDataY = 0;
+
+  // two bytes build a 8 x 1 line
+  for (let byteIndex = 0; byteIndex < characterData.length; byteIndex+= 2) {
+    const lowerByte = characterData[byteIndex];
+    const higherByte = characterData[byteIndex + 1];
+
+    // start at the left most bit so we can draw to the image data from left to right
+    for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
+      const shadeLower = getBit(lowerByte, bitPosition);
+      const shadeHigher = getBit(higherByte, bitPosition);
+
+      const color = gameboy.gpu.colors[shadeLower + shadeHigher];
+      enhancedImageData.setPixel(imageDataX, imageDataY, color.red, color.green, color.blue);
+      imageDataX++;
+    }
+
+    imageDataY++
+    imageDataX = 0;
+  }
+
+  return enhancedImageData;
 }

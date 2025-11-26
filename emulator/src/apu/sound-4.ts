@@ -78,6 +78,7 @@ export class Sound4 {
   }
 
   getSample() {
+    // TODO: Fix this for dac enabled check
     const sample = ~(this.linearFeedbackShift) & 0b1;
 
     if (soundsOnRegister.isSound4On && this.volume > 0) {
