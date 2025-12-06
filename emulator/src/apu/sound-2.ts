@@ -4,7 +4,6 @@ import { sound2EnvelopeControlRegister} from "@/apu/registers/envelope-control-r
 import { sound2HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
 import { sound2LengthAndDutyCycleRegister } from "@/apu/registers/length-and-duty-cycle-registers";
 import { sound2LowOrderFrequencyRegister } from "@/apu/registers/low-order-frequency-registers";
-import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
 export class Sound2 {
   private dutyCycles = [
@@ -23,6 +22,8 @@ export class Sound2 {
   private enveloper = new Enveloper();
   private volume = 0;
 
+  private isActive = false;
+
   tick(cycles: number) {
     if (sound2HighOrderFrequencyRegister.isInitialize) {
       this.playSound();
@@ -38,7 +39,7 @@ export class Sound2 {
 
   playSound() {
     // Enable channel
-    soundsOnRegister.isSound2On = true;
+    this.isActive = true;
 
     // Initialize frequency
     this.frequencyPeriod = this.getFrequencyPeriod();
@@ -57,7 +58,7 @@ export class Sound2 {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        soundsOnRegister.isSound2On = false;
+        this.isActive = false;
       }
     }
   }
@@ -67,7 +68,7 @@ export class Sound2 {
   }
 
   getSample() {
-    if (!sound2EnvelopeControlRegister.isDacEnabled) {
+    if (!sound2EnvelopeControlRegister.isDacEnabled || !this.isActive) {
       return 0;
     }
 

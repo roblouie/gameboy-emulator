@@ -7,19 +7,19 @@ import {getBit} from "@/helpers/binary-helpers";
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
 
-const vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
-const vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
-const vramButton = document.querySelector('#draw-vram') as HTMLButtonElement;
+// const vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
+// const vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
+// const vramButton = document.querySelector('#draw-vram') as HTMLButtonElement;
 
 
 
 async function onFileChange() {
   const gameboy = new Gameboy();
 
-  vramButton.addEventListener('click', () => {
-    vramContext.putImageData(getCharacterImageData(gameboy), 0, 0);
-    vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
-  });
+  // vramButton.addEventListener('click', () => {
+  //   vramContext.putImageData(getCharacterImageData(gameboy), 0, 0);
+  //   vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
+  // });
 
 
   if (fileInput.files && fileInput.files[0]) {

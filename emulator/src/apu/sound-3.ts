@@ -2,9 +2,9 @@ import { memory } from "@/memory/memory";
 import { sound3HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
 import { sound3OutputLevelRegister } from "@/apu/registers/sound-3-output-level-register";
 import { sound3LowOrderFrequencyRegister } from "@/apu/registers/low-order-frequency-registers";
-import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 import { getLowerNibble, getUpperNibble } from "@/helpers/binary-helpers";
 import { sound3LengthRegister } from "@/apu/registers/sound-3-length-register";
+import {sound3DisableOutputRegister} from "@/apu/registers/sound-3-disable-output-register";
 
 
 export class Sound3 {
@@ -15,6 +15,8 @@ export class Sound3 {
 
   private readonly waveTableMemoryAddress = 0xff30;
   private waveTablePosition = 0;
+
+  private isActive = false;
 
   tick(cycles: number) {
     if (sound3HighOrderFrequencyRegister.isInitialize) {
@@ -35,7 +37,7 @@ export class Sound3 {
 
   playSound() {
     // Enable channel
-    soundsOnRegister.isSound3On = true;
+    this.isActive = true;
 
     // Wave table starts over on trigger
     this.waveTablePosition = 0;
@@ -53,7 +55,7 @@ export class Sound3 {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        soundsOnRegister.isSound3On = false;
+        this.isActive = false;
       }
     }
   }
@@ -61,7 +63,10 @@ export class Sound3 {
   private shifts = [4, 0, 1, 2];
 
   getSample() {
-    // TODO: Implement sound3 isDacEnabled audio check
+    if (!sound3DisableOutputRegister.isOutputEnabled || !this.isActive) {
+      return 0;
+    }
+
     const memoryAddress = Math.floor(this.waveTablePosition / 2);
     const waveData = memory.readByte(this.waveTableMemoryAddress + memoryAddress);
     const isHighNibble = (this.waveTablePosition & 1) === 0;

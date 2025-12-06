@@ -7,8 +7,8 @@ import {
 } from "@/apu/registers/length-and-duty-cycle-registers";
 import { sound1HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
 import { sound1LowOrderFrequencyRegister } from "@/apu/registers/low-order-frequency-registers";
-import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
+// Note: No sounds write out to the nr52 register currently. If a game checks audio enabled state, it currently won't be set
 export class Sound1 {
   private dutyCycles = [
     [0, 0, 0, 0, 0, 0, 0, 1], // 12.5 %
@@ -29,6 +29,8 @@ export class Sound1 {
   private shadowFrequency = 0;
   private sweepTimer = 0;
 
+  private isActive = false;
+
   tick(cycles: number) {
     if (sound1HighOrderFrequencyRegister.isInitialize) {
       this.playSound();
@@ -44,7 +46,7 @@ export class Sound1 {
 
   playSound() {
     // Enable channel
-    soundsOnRegister.isSound1On = true;
+    this.isActive = true;
 
     // Initialize frequency
     this.frequencyPeriod = this.getFrequencyPeriod();
@@ -63,7 +65,7 @@ export class Sound1 {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        soundsOnRegister.isSound1On = false;
+        this.isActive = false;
       }
     }
   }
@@ -106,20 +108,20 @@ export class Sound1 {
     const newFrequency = this.shadowFrequency + shiftFrequencyBy;
 
     if (newFrequency >= 2048) {
-      soundsOnRegister.isSound1On = false;
+      this.isActive = false;
     }
 
     return newFrequency
   }
 
   getSample() {
-    if (!sound1EnvelopeControlRegister.isDacEnabled) {
+    if (!sound1EnvelopeControlRegister.isDacEnabled || !this.isActive) {
       return 0;
     }
 
     const sample = this.dutyCycles[sound1LengthAndDutyCycleRegister.waveformDutyCycle][this.positionInDutyCycle];
     const volumeAdjustedSample = sample * this.volume;
-    return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
+    return volumeAdjustedSample / 15;
   }
 
   private getFrequencyPeriod() {

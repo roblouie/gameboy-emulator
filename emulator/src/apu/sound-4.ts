@@ -4,7 +4,6 @@ import { sound4PolynomialRegister } from "@/apu/registers/sound-4-polynomial-reg
 import { sound4EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
 import { sound4ContinuousSelectionRegister } from "@/apu/registers/sound-4-continuous-selection-register";
 import { sound4LengthRegister } from "@/apu/registers/sound-4-length-register";
-import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
 export class Sound4 {
   private frequencyTimer = 0;
@@ -15,6 +14,8 @@ export class Sound4 {
   private volume = 0;
 
   private linearFeedbackShift = 0;
+
+  private isActive = false;
 
   tick(cycles: number) {
     if (sound4ContinuousSelectionRegister.isInitialize) {
@@ -35,7 +36,7 @@ export class Sound4 {
 
   playSound() {
     // Enable channel
-    soundsOnRegister.isSound4On = true;
+    this.isActive = true;
 
     // Initialize frequency
     this.linearFeedbackShift = 0x7fff;
@@ -55,7 +56,7 @@ export class Sound4 {
       this.lengthTimer--;
 
       if (this.lengthTimer === 0) {
-        soundsOnRegister.isSound4On = false;
+        this.isActive = false;
       }
     }
   }
@@ -78,14 +79,12 @@ export class Sound4 {
   }
 
   getSample() {
-    // TODO: Fix this for dac enabled check
-    const sample = ~(this.linearFeedbackShift) & 0b1;
-
-    if (soundsOnRegister.isSound4On && this.volume > 0) {
-      const volumeAdjustedSample = sample * this.volume;
-      return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
-    } else {
+    if (!sound4EnvelopeControlRegister.isDacEnabled || !this.isActive) {
       return 0;
     }
+    const sample = ~(this.linearFeedbackShift) & 0b1;
+
+    const volumeAdjustedSample = sample * this.volume;
+    return volumeAdjustedSample / 15;
   }
 }

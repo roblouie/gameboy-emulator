@@ -1,10 +1,10 @@
 import { setBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "../../memory/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/memory-register";
 
 
 export class Sound3DisableOutputRegister implements SingleByteMemoryRegister {
-  offset = 0xff1b;
+  offset = 0xff1a;
   name = 'NR30';
 
   get value() {
