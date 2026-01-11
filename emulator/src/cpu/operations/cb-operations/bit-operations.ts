@@ -7,9 +7,9 @@ export function getBitSubOperations(cpu: CPU) {
   
   function getBitAndSetFlags(value: number, position: number) {
     const bit = getBit(value, position);
-    registers.flags.isResultZero = !bit;
-    registers.flags.isHalfCarry = true;
-    registers.flags.isSubtraction = false;
+    registers.F.isResultZero = !bit;
+    registers.F.isHalfCarry = true;
+    registers.F.isSubtraction = false;
   }
 
   // ****************

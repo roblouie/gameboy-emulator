@@ -439,10 +439,10 @@ export function createInputOutputOperations(this: CPU) {
       const distanceFromWrappingBit3 = 0xf - (registers.stackPointer.value & 0x000f);
       const distanceFromWrappingBit7 = 0xff - (registers.stackPointer.value & 0x00ff);
 
-      registers.flags.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
-      registers.flags.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
-      registers.flags.isResultZero = false;
-      registers.flags.isSubtraction = false;
+      registers.F.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
+      registers.F.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
+      registers.F.isResultZero = false;
+      registers.F.isSubtraction = false;
 
       registers.HL.value = registers.stackPointer.value + toAdd;
     }

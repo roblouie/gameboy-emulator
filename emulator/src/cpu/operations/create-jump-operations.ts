@@ -22,11 +22,11 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_000_010,
     get cycleTime() {
-      return !registers.flags.isResultZero ? 4 : 3;
+      return !registers.F.isResultZero ? 4 : 3;
     },
     byteLength: 3,
     execute() {
-      if (!registers.flags.isResultZero) {
+      if (!registers.F.isResultZero) {
         registers.programCounter.value = memory.readWord(registers.programCounter.value);
       } else {
         registers.programCounter.value += 2;
@@ -40,11 +40,11 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_001_010,
     get cycleTime() {
-      return registers.flags.isResultZero ? 4 : 3;
+      return registers.F.isResultZero ? 4 : 3;
     },
     byteLength: 3,
     execute() {
-      if (registers.flags.isResultZero) {
+      if (registers.F.isResultZero) {
         registers.programCounter.value = memory.readWord(registers.programCounter.value);
       } else {
         registers.programCounter.value += 2;
@@ -58,11 +58,11 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_010_010,
     get cycleTime() {
-      return !registers.flags.isCarry ? 4 : 3;
+      return !registers.F.isCarry ? 4 : 3;
     },
     byteLength: 3,
     execute() {
-      if (!registers.flags.isCarry) {
+      if (!registers.F.isCarry) {
         registers.programCounter.value = memory.readWord(registers.programCounter.value);
       } else {
         registers.programCounter.value += 2;
@@ -76,11 +76,11 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_011_010,
     get cycleTime() {
-      return registers.flags.isCarry ? 4 : 3;
+      return registers.F.isCarry ? 4 : 3;
     },
     byteLength: 3,
     execute() {
-      if (registers.flags.isCarry) {
+      if (registers.F.isCarry) {
         registers.programCounter.value = memory.readWord(registers.programCounter.value);
       } else {
         registers.programCounter.value += 2;
@@ -117,10 +117,10 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_100_000,
-    cycleTime: !registers.flags.isResultZero ? 3 : 2,
+    cycleTime: !registers.F.isResultZero ? 3 : 2,
     byteLength: 2,
     execute() {
-      if (!registers.flags.isResultZero) {
+      if (!registers.F.isResultZero) {
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
@@ -140,10 +140,10 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_101_000,
-    cycleTime: registers.flags.isResultZero ? 3 : 2,
+    cycleTime: registers.F.isResultZero ? 3 : 2,
     byteLength: 2,
     execute() {
-      if (registers.flags.isResultZero) {
+      if (registers.F.isResultZero) {
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
@@ -163,10 +163,10 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_110_000,
-    cycleTime: !registers.flags.isCarry ? 3 : 2,
+    cycleTime: !registers.F.isCarry ? 3 : 2,
     byteLength: 2,
     execute() {
-      if (!registers.flags.isCarry) {
+      if (!registers.F.isCarry) {
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
@@ -186,10 +186,10 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_111_000,
-    cycleTime: registers.flags.isCarry ? 3 : 2,
+    cycleTime: registers.F.isCarry ? 3 : 2,
     byteLength: 2,
     execute() {
-      if (registers.flags.isCarry) {
+      if (registers.F.isCarry) {
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;

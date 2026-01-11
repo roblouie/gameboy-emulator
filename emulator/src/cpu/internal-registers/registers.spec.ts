@@ -11,10 +11,10 @@ test('Setting register overflows properly', () => {
 });
 
 test.each([
-  registers.flags.isResultZero,
-  registers.flags.isSubtraction,
-  registers.flags.isHalfCarry,
-  registers.flags.isCarry,
+  registers.F.isResultZero,
+  registers.F.isSubtraction,
+  registers.F.isHalfCarry,
+  registers.F.isCarry,
 ])('flag helpers properly set and clear their respective bit', flag => {
   expect(flag).toBe(false);
 
@@ -26,10 +26,10 @@ test.each([
 });
 
 test.each([
-  registers.flags.Z,
-  registers.flags.N,
-  registers.flags.H,
-  registers.flags.CY,
+  registers.F.Z,
+  registers.F.N,
+  registers.F.H,
+  registers.F.CY,
 ])('flags properly set and clear their respective bit', flag => {
   expect(flag).toBe(0);
 

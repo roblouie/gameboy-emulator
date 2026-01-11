@@ -1,14 +1,14 @@
 export class CpuRegister {
   readonly name: string;
-  readonly offset: number;
   readonly code: number;
 
+  protected readonly offset: number;
   protected readonly dataView: DataView;
 
-  constructor(name: string, offset: number, data: ArrayBuffer, code: number) {
+  constructor(name: string, offset: number, dataView: DataView, code: number) {
     this.name = name;
     this.offset = offset;
-    this.dataView = new DataView(data);
+    this.dataView = dataView;
     this.code = code;
   }
 

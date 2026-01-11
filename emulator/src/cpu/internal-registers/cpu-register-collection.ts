@@ -46,7 +46,6 @@ import { CpuRegister, DoubleCpuRegister } from "@/cpu/internal-registers/cpu-reg
 import { CpuFlagRegister } from "@/cpu/internal-registers/cpu-flag-register";
 
 export class CpuRegisterCollection {
-  private registersBuffer: ArrayBuffer;
   private registersView: DataView;
 
   baseRegisters: CpuRegister[];
@@ -70,35 +69,29 @@ export class CpuRegisterCollection {
   stackPointer: CpuRegister;
 
   constructor() {
-    this.registersBuffer = new ArrayBuffer(12);
-    this.registersView = new DataView(this.registersBuffer);
-    this.F = new CpuFlagRegister('F', 0, this.registersBuffer, -1);
-    this.A = new CpuRegister('A', 1, this.registersBuffer, 0b111);
-    this.C = new CpuRegister('C', 2, this.registersBuffer, 0b001);
-    this.B = new CpuRegister('B', 3, this.registersBuffer, 0b000);
-    this.E = new CpuRegister('E', 4, this.registersBuffer, 0b011);
-    this.D = new CpuRegister('D', 5, this.registersBuffer, 0b010);
-    this.L = new CpuRegister('L', 6, this.registersBuffer, 0b101);
-    this.H = new CpuRegister('H', 7, this.registersBuffer, 0b100);
+    this.registersView = new DataView(new ArrayBuffer(12));
+    this.F = new CpuFlagRegister('F', 0, this.registersView, -1);
+    this.A = new CpuRegister('A', 1, this.registersView, 0b111);
+    this.C = new CpuRegister('C', 2, this.registersView, 0b001);
+    this.B = new CpuRegister('B', 3, this.registersView, 0b000);
+    this.E = new CpuRegister('E', 4, this.registersView, 0b011);
+    this.D = new CpuRegister('D', 5, this.registersView, 0b010);
+    this.L = new CpuRegister('L', 6, this.registersView, 0b101);
+    this.H = new CpuRegister('H', 7, this.registersView, 0b100);
 
-    this.AF = new DoubleCpuRegister('AF', 0, this.registersBuffer, 0b11);
-    this.BC = new DoubleCpuRegister('BC', 2, this.registersBuffer, 0b00);
-    this.DE = new DoubleCpuRegister('DE', 4, this.registersBuffer, 0b01);
-    this.HL = new DoubleCpuRegister('HL', 6, this.registersBuffer, 0b10);
+    this.AF = new DoubleCpuRegister('AF', 0, this.registersView, 0b11);
+    this.BC = new DoubleCpuRegister('BC', 2, this.registersView, 0b00);
+    this.DE = new DoubleCpuRegister('DE', 4, this.registersView, 0b01);
+    this.HL = new DoubleCpuRegister('HL', 6, this.registersView, 0b10);
 
-    this.programCounter = new DoubleCpuRegister('PC', 8, this.registersBuffer, -1);
-    this.stackPointer = new DoubleCpuRegister('SP', 10, this.registersBuffer, 0b11);
+    this.programCounter = new DoubleCpuRegister('PC', 8, this.registersView, -1);
+    this.stackPointer = new DoubleCpuRegister('SP', 10, this.registersView, 0b11);
 
     this.baseRegisters = [this.A, this.B, this.C, this.D, this.E, this.H, this.L];
     this.registerPairs = [this.AF, this.BC, this.DE, this.HL, this.stackPointer];
   }
 
-  get flags() {
-    return this.F;
-  }
-
   reset() {
-    this.registersBuffer = new ArrayBuffer(12);
-    this.registersView = new DataView(this.registersBuffer);
+    this.registersView = new DataView(new ArrayBuffer(12));
   }
 }

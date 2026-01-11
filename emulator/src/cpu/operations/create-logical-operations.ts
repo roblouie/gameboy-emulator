@@ -6,10 +6,10 @@ export function createLogicalOperations(this: CPU) {
 
   function andAndSetFlags(accumulatorVal: number, toAnd: number) {
     const newValue = (accumulatorVal & toAnd) & 0xff;
-    registers.flags.isCarry = false;
-    registers.flags.isHalfCarry = true;
-    registers.flags.isSubtraction = false;
-    registers.flags.isResultZero = newValue === 0;
+    registers.F.isCarry = false;
+    registers.F.isHalfCarry = true;
+    registers.F.isSubtraction = false;
+    registers.F.isResultZero = newValue === 0;
 
     return newValue;
   }
@@ -63,10 +63,10 @@ export function createLogicalOperations(this: CPU) {
 
   function compareAndSetFlags(accumulatorVal: number, toSubtract: number) {
     const newValue = (accumulatorVal - toSubtract) & 0xff;
-    registers.flags.isResultZero = newValue === 0;
-    registers.flags.isHalfCarry = (accumulatorVal & 0x0f) < (toSubtract & 0x0f);
-    registers.flags.isSubtraction = true;
-    registers.flags.isCarry = accumulatorVal < toSubtract;
+    registers.F.isResultZero = newValue === 0;
+    registers.F.isHalfCarry = (accumulatorVal & 0x0f) < (toSubtract & 0x0f);
+    registers.F.isSubtraction = true;
+    registers.F.isCarry = accumulatorVal < toSubtract;
   }
 
 // ****************
@@ -116,10 +116,10 @@ export function createLogicalOperations(this: CPU) {
 
   function orAndSetFlags(accumulatorVal: number, toOr: number) {
     const newValue = (accumulatorVal | toOr) & 0xff;
-    registers.flags.isCarry = false;
-    registers.flags.isHalfCarry = false;
-    registers.flags.isSubtraction = false;
-    registers.flags.isResultZero = newValue === 0;
+    registers.F.isCarry = false;
+    registers.F.isHalfCarry = false;
+    registers.F.isSubtraction = false;
+    registers.F.isResultZero = newValue === 0;
 
     return newValue;
   }
@@ -171,10 +171,10 @@ export function createLogicalOperations(this: CPU) {
 
   function xorAndSetFlags(accumulatorVal: number, toXor: number) {
     const newValue = (accumulatorVal ^ toXor) & 0xff;
-    registers.flags.isCarry = false;
-    registers.flags.isHalfCarry = false;
-    registers.flags.isSubtraction = false;
-    registers.flags.isResultZero = newValue === 0;
+    registers.F.isCarry = false;
+    registers.F.isHalfCarry = false;
+    registers.F.isSubtraction = false;
+    registers.F.isResultZero = newValue === 0;
 
     return newValue;
   }

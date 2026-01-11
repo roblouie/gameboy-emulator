@@ -6,10 +6,10 @@ export function createArithmeticOperations(this: CPU) {
 
   function addAndSetFlags(accumulatorVal: number, toAdd: number) {
     const newValue = (accumulatorVal + toAdd) & 0xff;
-    registers.flags.isResultZero = newValue === 0;
-    registers.flags.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
-    registers.flags.isSubtraction = false;
-    registers.flags.isCarry = newValue < accumulatorVal;
+    registers.F.isResultZero = newValue === 0;
+    registers.F.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
+    registers.F.isSubtraction = false;
+    registers.F.isCarry = newValue < accumulatorVal;
 
     return newValue;
   }
@@ -78,10 +78,10 @@ export function createArithmeticOperations(this: CPU) {
 
   function addCarryAndSetFlags(accumulatorVal: number, toAdd: number, carryFlagValue: number) {
     const newValue = (accumulatorVal + toAdd + carryFlagValue) & 0xff;
-    registers.flags.isResultZero = newValue === 0;
-    registers.flags.isHalfCarry = ((accumulatorVal & 0x0f) + (toAdd & 0x0f) + carryFlagValue) > 0xf;
-    registers.flags.isSubtraction = false;
-    registers.flags.isCarry = newValue < accumulatorVal + carryFlagValue;
+    registers.F.isResultZero = newValue === 0;
+    registers.F.isHalfCarry = ((accumulatorVal & 0x0f) + (toAdd & 0x0f) + carryFlagValue) > 0xf;
+    registers.F.isSubtraction = false;
+    registers.F.isCarry = newValue < accumulatorVal + carryFlagValue;
 
     return newValue;
   }
@@ -93,7 +93,7 @@ export function createArithmeticOperations(this: CPU) {
       cycleTime: 1,
       byteLength: 1,
       execute() {
-        registers.A.value = addCarryAndSetFlags(registers.A.value, register.value, registers.flags.CY & 0xff);
+        registers.A.value = addCarryAndSetFlags(registers.A.value, register.value, registers.F.CY & 0xff);
       }
     });
   });
@@ -108,7 +108,7 @@ export function createArithmeticOperations(this: CPU) {
     execute() {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
+      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.F.CY);
     }
   });
 
@@ -119,7 +119,7 @@ export function createArithmeticOperations(this: CPU) {
     instruction: 'ADC A, (HL)',
     execute() {
       const value = memory.readByte(registers.HL.value);
-      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
+      registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.F.CY);
     }
   });
 
@@ -129,9 +129,9 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
   function add16BitAndSetFlags(originalValue: number, toAdd: number) {
     const newValue = (originalValue + toAdd) & 0xffff;
-    registers.flags.isHalfCarry = (newValue & 0xfff) < (originalValue & 0xfff);
-    registers.flags.isSubtraction = false;
-    registers.flags.isCarry = newValue < originalValue;
+    registers.F.isHalfCarry = (newValue & 0xfff) < (originalValue & 0xfff);
+    registers.F.isSubtraction = false;
+    registers.F.isCarry = newValue < originalValue;
 
     return newValue;
   }
@@ -177,10 +177,10 @@ export function createArithmeticOperations(this: CPU) {
       const distanceFromWrappingBit3 = 0xf - (registers.stackPointer.value & 0x000f);
       const distanceFromWrappingBit7 = 0xff - (registers.stackPointer.value & 0x00ff);
 
-      registers.flags.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
-      registers.flags.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
-      registers.flags.isResultZero = false;
-      registers.flags.isSubtraction = false;
+      registers.F.isHalfCarry = (toAdd & 0x0f) > distanceFromWrappingBit3;
+      registers.F.isCarry = (toAdd & 0xff) > distanceFromWrappingBit7;
+      registers.F.isResultZero = false;
+      registers.F.isSubtraction = false;
 
       registers.stackPointer.value = registers.stackPointer.value + toAdd;
     }
@@ -189,9 +189,9 @@ export function createArithmeticOperations(this: CPU) {
 
   function decrementAndSetFlags(originalValue: number) {
     const newValue = (originalValue - 1) & 0xff;
-    registers.flags.isResultZero = newValue === 0;
-    registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
-    registers.flags.isSubtraction = true;
+    registers.F.isResultZero = newValue === 0;
+    registers.F.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
+    registers.F.isSubtraction = true;
 
     return newValue;
   }
@@ -257,9 +257,9 @@ export function createArithmeticOperations(this: CPU) {
 
   function incrementAndSetFlags(accumulatorVal: number) {
     const newValue = (accumulatorVal + 1) & 0xff;
-    registers.flags.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
-    registers.flags.isSubtraction = false;
-    registers.flags.isResultZero = newValue === 0;
+    registers.F.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
+    registers.F.isSubtraction = false;
+    registers.F.isResultZero = newValue === 0;
 
     return newValue;
   }
@@ -324,10 +324,10 @@ export function createArithmeticOperations(this: CPU) {
 
   function subtractAndSetFlags(originalValue: number, toSubtract: number) {
     const newValue = (originalValue - toSubtract) & 0xff;
-    registers.flags.isResultZero = newValue === 0;
-    registers.flags.isSubtraction = true;
-    registers.flags.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
-    registers.flags.isCarry = newValue > originalValue;
+    registers.F.isResultZero = newValue === 0;
+    registers.F.isSubtraction = true;
+    registers.F.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
+    registers.F.isCarry = newValue > originalValue;
 
     return newValue;
   }
@@ -385,10 +385,10 @@ export function createArithmeticOperations(this: CPU) {
 
   function subtractCarryAndSetFlags(accumulatorVal: number, toAdd: number, carryFlagValue: number) {
     const newValue = (accumulatorVal - toAdd - carryFlagValue) & 0xff;
-    registers.flags.isResultZero = newValue === 0;
-    registers.flags.isHalfCarry = ((accumulatorVal & 0x0f) - (toAdd & 0x0f) - carryFlagValue) < 0;
-    registers.flags.isSubtraction = true;
-    registers.flags.isCarry = newValue > accumulatorVal - carryFlagValue;
+    registers.F.isResultZero = newValue === 0;
+    registers.F.isHalfCarry = ((accumulatorVal & 0x0f) - (toAdd & 0x0f) - carryFlagValue) < 0;
+    registers.F.isSubtraction = true;
+    registers.F.isCarry = newValue > accumulatorVal - carryFlagValue;
 
     return newValue;
   }
@@ -400,7 +400,7 @@ export function createArithmeticOperations(this: CPU) {
       byteLength: 1,
       instruction: `SBC A, ${register.name}`,
       execute() {
-        registers.A.value = subtractCarryAndSetFlags(registers.A.value, register.value, registers.flags.CY);
+        registers.A.value = subtractCarryAndSetFlags(registers.A.value, register.value, registers.F.CY);
       }
     });
   });
@@ -415,7 +415,7 @@ export function createArithmeticOperations(this: CPU) {
     execute() {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
+      registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.F.CY);
     }
   });
 
@@ -426,7 +426,7 @@ export function createArithmeticOperations(this: CPU) {
     byteLength: 1,
     execute() {
       const value = memory.readByte(registers.HL.value);
-      registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.flags.CY);
+      registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.F.CY);
     }
   });
 }

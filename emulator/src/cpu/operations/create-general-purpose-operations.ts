@@ -37,8 +37,8 @@ export function createGeneralPurposeOperations(this: CPU) {
     byteLength: 1,
     execute() {
       registers.A.value = ~registers.A.value;
-      registers.flags.isHalfCarry = true;
-      registers.flags.isSubtraction = true;
+      registers.F.isHalfCarry = true;
+      registers.F.isSubtraction = true;
     }
   })
 
@@ -58,10 +58,10 @@ export function createGeneralPurposeOperations(this: CPU) {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      registers.flags.isSubtraction = false;
-      registers.flags.isHalfCarry = false;
+      registers.F.isSubtraction = false;
+      registers.F.isHalfCarry = false;
 
-      registers.flags.isCarry = !registers.flags.isCarry;
+      registers.F.isCarry = !registers.F.isCarry;
     }
   });
 
@@ -71,10 +71,10 @@ export function createGeneralPurposeOperations(this: CPU) {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      registers.flags.isSubtraction = false;
-      registers.flags.isHalfCarry = false;
+      registers.F.isSubtraction = false;
+      registers.F.isHalfCarry = false;
 
-      registers.flags.isCarry = true;
+      registers.F.isCarry = true;
     }
   });
 

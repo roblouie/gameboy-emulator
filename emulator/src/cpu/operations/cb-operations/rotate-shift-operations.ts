@@ -13,10 +13,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     const secondNibble = value >> 4;
     const result = (firstNibble << 4) + secondNibble;
 
-    registers.flags.isResultZero = result === 0;
-    registers.flags.isSubtraction = false;
-    registers.flags.isHalfCarry = false;
-    registers.flags.isCarry = false;
+    registers.F.isResultZero = result === 0;
+    registers.F.isSubtraction = false;
+    registers.F.isHalfCarry = false;
+    registers.F.isCarry = false;
 
     return result;
   }
@@ -67,10 +67,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         const bit7 = register.value >> 7;
         register.value = (register.value << 1) + bit7;
 
-        registers.flags.CY = bit7;
-        registers.flags.isHalfCarry = false;
-        registers.flags.isResultZero = register.value === 0;
-        registers.flags.isSubtraction = false;
+        registers.F.CY = bit7;
+        registers.F.isHalfCarry = false;
+        registers.F.isResultZero = register.value === 0;
+        registers.F.isSubtraction = false;
       }
     });
   });
@@ -87,10 +87,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       const result = rotated & 0xff;
       memory.writeByte(registers.HL.value, result);
 
-      registers.flags.CY = bit7;
-      registers.flags.isHalfCarry = false;
-      registers.flags.isResultZero = result === 0;
-      registers.flags.isSubtraction = false;
+      registers.F.CY = bit7;
+      registers.F.isHalfCarry = false;
+      registers.F.isResultZero = result === 0;
+      registers.F.isSubtraction = false;
     }
   });
 
@@ -110,12 +110,12 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       byteLength: 2,
       execute() {
         const bit7 = register.value >> 7;
-        const rotated = ((register.value << 1) & 0xff) + registers.flags.CY;
+        const rotated = ((register.value << 1) & 0xff) + registers.F.CY;
         const result = rotated & 0xff;
-        registers.flags.CY = bit7;
-        registers.flags.isResultZero = result === 0;
-        registers.flags.H = 0;
-        registers.flags.N = 0;
+        registers.F.CY = bit7;
+        registers.F.isResultZero = result === 0;
+        registers.F.H = 0;
+        registers.F.N = 0;
 
         register.value = result;
       }
@@ -130,12 +130,12 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     execute() {
       const value = memory.readByte(registers.HL.value);
       const bit7 = value >> 7;
-      const rotated = ((value << 1) & 0xff) + registers.flags.CY;
+      const rotated = ((value << 1) & 0xff) + registers.F.CY;
       const result = rotated & 0xff;
-      registers.flags.CY = bit7;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
-      registers.flags.isResultZero = result === 0;
+      registers.F.CY = bit7;
+      registers.F.H = 0;
+      registers.F.N = 0;
+      registers.F.isResultZero = result === 0;
 
       memory.writeByte(registers.HL.value, result);
     }
@@ -157,10 +157,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       execute() {
         const bit0 = register.value & 0b1;
         const result = ((register.value >> 1) & 0xff) + (bit0 << 7);
-        registers.flags.CY = bit0;
-        registers.flags.H = 0;
-        registers.flags.isResultZero = result === 0;
-        registers.flags.N = 0;
+        registers.F.CY = bit0;
+        registers.F.H = 0;
+        registers.F.isResultZero = result === 0;
+        registers.F.N = 0;
 
         register.value = result;
       }
@@ -176,10 +176,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       const value = memory.readByte(registers.HL.value);
       const bit0 = value & 0b1;
       const result = ((value >> 1) & 0xff) + (bit0 << 7);
-      registers.flags.CY = bit0;
-      registers.flags.H = 0;
-      registers.flags.isResultZero = result === 0;
-      registers.flags.N = 0;
+      registers.F.CY = bit0;
+      registers.F.H = 0;
+      registers.F.isResultZero = result === 0;
+      registers.F.N = 0;
 
       memory.writeByte(registers.HL.value, result);
     }
@@ -201,11 +201,11 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       byteLength: 2,
       execute() {
         const bit0 = register.value & 0b1;
-        const result = ((register.value >> 1) & 0xff) + (registers.flags.CY << 7);
-        registers.flags.isResultZero = result === 0;
-        registers.flags.CY = bit0;
-        registers.flags.H = 0;
-        registers.flags.N = 0;
+        const result = ((register.value >> 1) & 0xff) + (registers.F.CY << 7);
+        registers.F.isResultZero = result === 0;
+        registers.F.CY = bit0;
+        registers.F.H = 0;
+        registers.F.N = 0;
 
         register.value = result;
       }
@@ -220,11 +220,11 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     execute() {
       const value = memory.readByte(registers.HL.value);
       const bit0 = value & 0b1;
-      const result = ((value >> 1) & 0xff) + (registers.flags.CY << 7);
-      registers.flags.isResultZero = result === 0;
-      registers.flags.CY = bit0;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
+      const result = ((value >> 1) & 0xff) + (registers.F.CY << 7);
+      registers.F.isResultZero = result === 0;
+      registers.F.CY = bit0;
+      registers.F.H = 0;
+      registers.F.N = 0;
 
       memory.writeByte(registers.HL.value, result);
     }
@@ -247,10 +247,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       execute() {
         const bit7 = register.value >> 7;
         const result = (register.value << 1) & 0xff;
-        registers.flags.isResultZero = result === 0;
-        registers.flags.CY = bit7;
-        registers.flags.H = 0;
-        registers.flags.N = 0;
+        registers.F.isResultZero = result === 0;
+        registers.F.CY = bit7;
+        registers.F.H = 0;
+        registers.F.N = 0;
 
         register.value = result;
       }
@@ -266,10 +266,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       const value = memory.readByte(registers.HL.value);
       const bit7 = value >> 7;
       const result = (value << 1) & 0xff;
-      registers.flags.isResultZero = result === 0;
-      registers.flags.CY = bit7;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
+      registers.F.isResultZero = result === 0;
+      registers.F.CY = bit7;
+      registers.F.H = 0;
+      registers.F.N = 0;
 
       memory.writeByte(registers.HL.value, result);
     }
@@ -294,10 +294,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         const topBit = register.value >> 7;
         const shifted = (register.value >> 1) & 0xff;
         const result = setBit(shifted, 7, topBit);
-        registers.flags.isResultZero = result === 0;
-        registers.flags.CY = toCarry;
-        registers.flags.H = 0;
-        registers.flags.N = 0;
+        registers.F.isResultZero = result === 0;
+        registers.F.CY = toCarry;
+        registers.F.H = 0;
+        registers.F.N = 0;
 
         register.value = result;
       }
@@ -315,10 +315,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       const topBit = value >> 7;
       const shifted = (value >> 1) & 0xff;
       const result = setBit(shifted, 7, topBit);
-      registers.flags.isResultZero = result === 0;
-      registers.flags.CY = toCarry;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
+      registers.F.isResultZero = result === 0;
+      registers.F.CY = toCarry;
+      registers.F.H = 0;
+      registers.F.N = 0;
 
       memory.writeByte(registers.HL.value, result);
     }
@@ -341,10 +341,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       execute() {
         const toCarry = register.value & 0b1;
         const result = (register.value >> 1) & 0xff;
-        registers.flags.isResultZero = result === 0;
-        registers.flags.CY = toCarry;
-        registers.flags.H = 0;
-        registers.flags.N = 0;
+        registers.F.isResultZero = result === 0;
+        registers.F.CY = toCarry;
+        registers.F.H = 0;
+        registers.F.N = 0;
 
         register.value = result;
       }
@@ -360,10 +360,10 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       const value = memory.readByte(registers.HL.value);
       const toCarry = value & 0b1;
       const result = (value >> 1) & 0xff;
-      registers.flags.isResultZero = result === 0;
-      registers.flags.CY = toCarry;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
+      registers.F.isResultZero = result === 0;
+      registers.F.CY = toCarry;
+      registers.F.H = 0;
+      registers.F.N = 0;
 
       memory.writeByte(registers.HL.value, result);
     }

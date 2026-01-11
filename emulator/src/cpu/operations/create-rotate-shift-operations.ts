@@ -10,10 +10,10 @@ export function createRotateShiftOperations(this: CPU) {
     byteLength: 1,
     execute() {
       const bit7 = registers.A.value >> 7;
-      registers.flags.CY = bit7;
-      registers.flags.H = 0;
-      registers.flags.Z = 0;
-      registers.flags.N = 0;
+      registers.F.CY = bit7;
+      registers.F.H = 0;
+      registers.F.Z = 0;
+      registers.F.N = 0;
 
       registers.A.value = (registers.A.value << 1) + bit7;
     }
@@ -26,11 +26,11 @@ export function createRotateShiftOperations(this: CPU) {
     byteLength: 1,
     execute() {
       const bit7 = registers.A.value >> 7;
-      const result = (registers.A.value << 1) + registers.flags.CY;
-      registers.flags.CY = bit7;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
-      registers.flags.Z = 0;
+      const result = (registers.A.value << 1) + registers.F.CY;
+      registers.F.CY = bit7;
+      registers.F.H = 0;
+      registers.F.N = 0;
+      registers.F.Z = 0;
 
       registers.A.value = result;
     }
@@ -43,10 +43,10 @@ export function createRotateShiftOperations(this: CPU) {
     byteLength: 1,
     execute() {
       const bit0 = registers.A.value & 0b1;
-      registers.flags.CY = bit0;
-      registers.flags.H = 0;
-      registers.flags.Z = 0;
-      registers.flags.N = 0;
+      registers.F.CY = bit0;
+      registers.F.H = 0;
+      registers.F.Z = 0;
+      registers.F.N = 0;
 
       registers.A.value = (registers.A.value >> 1) + (bit0 << 7);
     }
@@ -59,11 +59,11 @@ export function createRotateShiftOperations(this: CPU) {
     byteLength: 1,
     execute() {
       const bit0 = registers.A.value & 0b1;
-      const result = (registers.A.value >> 1) + (registers.flags.CY << 7);
-      registers.flags.CY = bit0;
-      registers.flags.H = 0;
-      registers.flags.N = 0;
-      registers.flags.Z = 0;
+      const result = (registers.A.value >> 1) + (registers.F.CY << 7);
+      registers.F.CY = bit0;
+      registers.F.H = 0;
+      registers.F.N = 0;
+      registers.F.Z = 0;
 
       registers.A.value = result;
     }
