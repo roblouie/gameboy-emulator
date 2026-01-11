@@ -1,9 +1,9 @@
 export class CpuRegister {
-  name: string;
-  offset: number;
-  code: number;
+  readonly name: string;
+  readonly offset: number;
+  readonly code: number;
 
-  protected dataView: DataView;
+  protected readonly dataView: DataView;
 
   constructor(name: string, offset: number, data: ArrayBuffer, code: number) {
     this.name = name;
@@ -28,15 +28,5 @@ export class DoubleCpuRegister extends CpuRegister {
 
   override set value(newValue: number) {
     this.dataView.setUint16(this.offset, newValue, true);
-  }
-}
-
-export namespace CpuRegister {
-  export enum PairCode {
-    BC,
-    DE,
-    HL,
-    AF,
-    SP = 3,
   }
 }

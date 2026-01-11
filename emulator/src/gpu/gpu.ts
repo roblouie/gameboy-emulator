@@ -340,7 +340,7 @@ export class GPU {
         const screenX = spriteX + xPixelInTile;
 
         const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
-        const isWindowSolid = windowLineValues[screenX] !== undefined && windowLineValues[screenX] !== 0;
+        const isWindowSolid = windowLineValues[screenX] !== 0;
 
         const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
 

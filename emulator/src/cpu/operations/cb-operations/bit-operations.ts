@@ -1,7 +1,6 @@
 import { CPU } from "@/cpu/cpu";
 import { getBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
-import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export function getBitSubOperations(cpu: CPU) {
   const { registers } = cpu;

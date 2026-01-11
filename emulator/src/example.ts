@@ -1,5 +1,4 @@
 import { Gameboy } from '@/gameboy';
-import {memory} from "@/memory/memory";
 import {EnhancedImageData} from "@/helpers/enhanced-image-data";
 import {getBit} from "@/helpers/binary-helpers";
 

@@ -1,5 +1,5 @@
 import { memory } from '@/memory/memory';
-import { SingleByteMemoryRegister } from "../../memory/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/memory-register";
 
 export class LengthAndDutyCycleRegister implements SingleByteMemoryRegister {
   offset: number;

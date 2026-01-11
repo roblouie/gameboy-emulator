@@ -1,5 +1,4 @@
 import { CartridgeType } from "./cartridge-type.enum";
-import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
 
 export class Cartridge {
   static EntryPointOffset = 0x100;

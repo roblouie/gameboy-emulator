@@ -1,6 +1,5 @@
 import { CPU } from "@/cpu/cpu";
 import { memory } from "@/memory/memory";
-import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 import { setBit } from "@/helpers/binary-helpers";
 
 export function getRotateShiftSubOperations(cpu: CPU) {

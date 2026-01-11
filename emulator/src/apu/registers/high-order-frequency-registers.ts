@@ -1,6 +1,6 @@
 import { setBit } from "@/helpers/binary-helpers";
 import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "../../memory/memory-register";
+import { SingleByteMemoryRegister } from "@/memory/memory-register";
 
 export class HighOrderFrequencyRegister implements SingleByteMemoryRegister {
   offset: number;

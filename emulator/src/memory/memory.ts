@@ -1,16 +1,14 @@
 import { Cartridge } from "@/cartridge/cartridge";
 import { DmaTransferController } from "@/memory/dma-transfer-controller";
 import { input } from "@/input/input";
-import { dividerRegister } from "@/cpu/registers/divider-register";
 import { dmaTransferRegister } from "@/gpu/registers/dma-transfer-register";
 import { controllerDataRegister } from "@/input/controller-data-register";
-import {getBit} from "@/helpers/binary-helpers";
 
 export class Memory {
   cartridge: Cartridge = new Cartridge(new DataView(new ArrayBuffer(0)));
   dmaTransferController = new DmaTransferController();
 
-  private memoryBuffer: ArrayBuffer;
+  private readonly memoryBuffer: ArrayBuffer;
   private memoryView: DataView;
   memoryBytes: Uint8Array;
 

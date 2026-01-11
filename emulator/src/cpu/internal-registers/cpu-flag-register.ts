@@ -1,14 +1,6 @@
 import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export class CpuFlagRegister extends CpuRegister {
-  override set value(newValue: number) {
-    super.value = newValue & 0xF0;
-  }
-
-  override get value() {
-    return super.value;
-  }
-  
   get Z() {
     return (this.value >> 7);
   }

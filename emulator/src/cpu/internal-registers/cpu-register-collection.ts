@@ -42,9 +42,8 @@ N is subtraction flag, should be set following the execution of any subtraction 
 H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 2 wraps to 0x11, and flag should be set
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
-import {CpuRegister, DoubleCpuRegister} from "@/cpu/internal-registers/cpu-register";
+import { CpuRegister, DoubleCpuRegister } from "@/cpu/internal-registers/cpu-register";
 import { CpuFlagRegister } from "@/cpu/internal-registers/cpu-flag-register";
-import { CpuFlagRegisterPair } from "@/cpu/internal-registers/cpu-flag-register-pair";
 
 export class CpuRegisterCollection {
   private registersBuffer: ArrayBuffer;
@@ -82,13 +81,13 @@ export class CpuRegisterCollection {
     this.L = new CpuRegister('L', 6, this.registersBuffer, 0b101);
     this.H = new CpuRegister('H', 7, this.registersBuffer, 0b100);
 
-    this.AF = new DoubleCpuRegister('AF', 0, this.registersBuffer, CpuRegister.PairCode.AF);
-    this.BC = new DoubleCpuRegister('BC', 2, this.registersBuffer, CpuRegister.PairCode.BC);
-    this.DE = new DoubleCpuRegister('DE', 4, this.registersBuffer, CpuRegister.PairCode.DE);
-    this.HL = new DoubleCpuRegister('HL', 6, this.registersBuffer, CpuRegister.PairCode.HL);
+    this.AF = new DoubleCpuRegister('AF', 0, this.registersBuffer, 0b11);
+    this.BC = new DoubleCpuRegister('BC', 2, this.registersBuffer, 0b00);
+    this.DE = new DoubleCpuRegister('DE', 4, this.registersBuffer, 0b01);
+    this.HL = new DoubleCpuRegister('HL', 6, this.registersBuffer, 0b10);
 
     this.programCounter = new DoubleCpuRegister('PC', 8, this.registersBuffer, -1);
-    this.stackPointer = new DoubleCpuRegister('SP', 10, this.registersBuffer, CpuRegister.PairCode.SP);
+    this.stackPointer = new DoubleCpuRegister('SP', 10, this.registersBuffer, 0b11);
 
     this.baseRegisters = [this.A, this.B, this.C, this.D, this.E, this.H, this.L];
     this.registerPairs = [this.AF, this.BC, this.DE, this.HL, this.stackPointer];

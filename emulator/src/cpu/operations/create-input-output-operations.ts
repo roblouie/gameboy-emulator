@@ -1,6 +1,5 @@
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
-import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export function createInputOutputOperations(this: CPU) {
   const { registers } = this;
@@ -328,7 +327,7 @@ export function createInputOutputOperations(this: CPU) {
 // ****************
 // * Load dd, nn
 // ****************
-  function getLoadDDNNByteDefinition(rpCode: CpuRegister.PairCode) {
+  function getLoadDDNNByteDefinition(rpCode: number) {
     return (rpCode << 4) + 1;
   }
 
@@ -367,7 +366,7 @@ export function createInputOutputOperations(this: CPU) {
 // ****************
 // * PUSH qq
 // ****************
-  function getPushQQByteDefinition(rpCode: CpuRegister.PairCode) {
+  function getPushQQByteDefinition(rpCode: number) {
     return (0b11 << 6) + (rpCode << 4) + 0b101;
   }
 

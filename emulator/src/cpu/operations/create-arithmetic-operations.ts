@@ -1,6 +1,5 @@
 import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
-import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 
 export function createArithmeticOperations(this: CPU) {
   const {registers} = this;
@@ -137,7 +136,7 @@ export function createArithmeticOperations(this: CPU) {
     return newValue;
   }
 
-  function getAddHLSSByteDefinition(rpCode: CpuRegister.PairCode) {
+  function getAddHLSSByteDefinition(rpCode: number) {
     return (rpCode << 4) + 0b1001;
   }
 
@@ -237,7 +236,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * DEC ss
 // ****************
-  function getDecSSByteDefinition(rpCode: CpuRegister.PairCode) {
+  function getDecSSByteDefinition(rpCode: number) {
     return (rpCode << 4) + 0b1011;
   }
 
@@ -304,7 +303,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * INC ss
 // ****************
-  function getIncSSByteDefinition(rpCode: CpuRegister.PairCode) {
+  function getIncSSByteDefinition(rpCode: number) {
     return (rpCode << 4) + 0b0011;
   }
 
