@@ -40,7 +40,7 @@ export class Memory {
 
   readSignedByte(address: number) {
     if (this.isAccessingCartridge(address)) {
-      return this.cartridge ? this.cartridge.readSignedByte(address) : 0;
+      return this.cartridge.readSignedByte(address);
     } else {
       return this.memoryView.getInt8(address);
     }
@@ -48,7 +48,7 @@ export class Memory {
 
   readWord(address: number) {
     if (this.isAccessingCartridge(address)) {
-      return this.cartridge ? this.cartridge.readWord(address) : 0;
+      return this.cartridge.readWord(address);
     } else {
       return this.memoryView.getUint16(address, true);
     }
@@ -56,17 +56,13 @@ export class Memory {
 
   writeByte(address: number, value: number) {
     if (this.isAccessingCartridge(address)) {
-      this.cartridge?.writeByte(address, value);
+      this.cartridge.writeByte(address, value);
       return;
     }
 
     if (this.isReadingInput(address)) {
       input.setInputToCheck(value);
       return;
-    }
-
-    if (address === dividerRegister.offset) {
-      this.memoryView.setUint8(dividerRegister.offset, 0);
     }
 
     this.memoryView.setUint8(address, value);
@@ -77,7 +73,7 @@ export class Memory {
 
   writeWord(address: number, value: number) {
     if (this.isAccessingCartridge(address)) {
-      this.cartridge?.writeWord(address, value);
+      this.cartridge.writeWord(address, value);
     } else {
       this.memoryView.setUint16(address, value, true);
     }

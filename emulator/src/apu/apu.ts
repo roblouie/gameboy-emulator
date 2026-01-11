@@ -79,7 +79,7 @@ export class APU {
     }
   }
 
-  private tempBuffer = new Float32Array(1024);
+  private tempBuffer = new Float32Array(512);
   private tempIndex = 0;
 
   private sampleChannels() {
@@ -94,7 +94,7 @@ export class APU {
 
     if (this.tempIndex >= this.tempBuffer.length) {
       this.workletNode?.port?.postMessage(this.tempBuffer, [this.tempBuffer.buffer]);
-      this.tempBuffer = new Float32Array(1024);
+      this.tempBuffer = new Float32Array(512);
       this.tempIndex = 0;
     }
   }

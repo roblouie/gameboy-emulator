@@ -42,7 +42,7 @@ N is subtraction flag, should be set following the execution of any subtraction 
 H is half carry flag, set when borrowing to or carrying from bit 3, i.e. 0x15 + 2 wraps to 0x11, and flag should be set
 CY is carry flag, set when borrowing to or carrying from bit 7, i.e. 255 + 2 wraps to 1, and flag should be set
  */
-import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
+import {CpuRegister, DoubleCpuRegister} from "@/cpu/internal-registers/cpu-register";
 import { CpuFlagRegister } from "@/cpu/internal-registers/cpu-flag-register";
 import { CpuFlagRegisterPair } from "@/cpu/internal-registers/cpu-flag-register-pair";
 
@@ -74,21 +74,21 @@ export class CpuRegisterCollection {
     this.registersBuffer = new ArrayBuffer(12);
     this.registersView = new DataView(this.registersBuffer);
     this.F = new CpuFlagRegister('F', 0, this.registersBuffer, -1);
-    this.A = new CpuRegister('A', 1, this.registersBuffer, CpuRegister.Code.A);
-    this.C = new CpuRegister('C', 2, this.registersBuffer, CpuRegister.Code.C);
-    this.B = new CpuRegister('B', 3, this.registersBuffer, CpuRegister.Code.B);
-    this.E = new CpuRegister('E', 4, this.registersBuffer, CpuRegister.Code.E);
-    this.D = new CpuRegister('D', 5, this.registersBuffer, CpuRegister.Code.D);
-    this.L = new CpuRegister('L', 6, this.registersBuffer, CpuRegister.Code.L);
-    this.H = new CpuRegister('H', 7, this.registersBuffer, CpuRegister.Code.H);
+    this.A = new CpuRegister('A', 1, this.registersBuffer, 0b111);
+    this.C = new CpuRegister('C', 2, this.registersBuffer, 0b001);
+    this.B = new CpuRegister('B', 3, this.registersBuffer, 0b000);
+    this.E = new CpuRegister('E', 4, this.registersBuffer, 0b011);
+    this.D = new CpuRegister('D', 5, this.registersBuffer, 0b010);
+    this.L = new CpuRegister('L', 6, this.registersBuffer, 0b101);
+    this.H = new CpuRegister('H', 7, this.registersBuffer, 0b100);
 
-    this.AF = new CpuFlagRegisterPair('AF', 0, this.registersBuffer, CpuRegister.PairCode.AF, 2);
-    this.BC = new CpuRegister('BC', 2, this.registersBuffer, CpuRegister.PairCode.BC, 2);
-    this.DE = new CpuRegister('DE', 4, this.registersBuffer, CpuRegister.PairCode.DE, 2);
-    this.HL = new CpuRegister('HL', 6, this.registersBuffer, CpuRegister.PairCode.HL, 2);
+    this.AF = new DoubleCpuRegister('AF', 0, this.registersBuffer, CpuRegister.PairCode.AF);
+    this.BC = new DoubleCpuRegister('BC', 2, this.registersBuffer, CpuRegister.PairCode.BC);
+    this.DE = new DoubleCpuRegister('DE', 4, this.registersBuffer, CpuRegister.PairCode.DE);
+    this.HL = new DoubleCpuRegister('HL', 6, this.registersBuffer, CpuRegister.PairCode.HL);
 
-    this.programCounter = new CpuRegister('PC', 8, this.registersBuffer, -1, 2);
-    this.stackPointer = new CpuRegister('SP', 10, this.registersBuffer, CpuRegister.PairCode.SP, 2);
+    this.programCounter = new DoubleCpuRegister('PC', 8, this.registersBuffer, -1);
+    this.stackPointer = new DoubleCpuRegister('SP', 10, this.registersBuffer, CpuRegister.PairCode.SP);
 
     this.baseRegisters = [this.A, this.B, this.C, this.D, this.E, this.H, this.L];
     this.registerPairs = [this.AF, this.BC, this.DE, this.HL, this.stackPointer];

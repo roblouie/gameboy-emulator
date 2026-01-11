@@ -16,7 +16,7 @@ export function getBitSubOperations(cpu: CPU) {
   // ****************
   // * Bit b, A
   // ****************
-  function getBitBAByteDefinition(bitPosition: number, registerCode: CpuRegister.Code) {
+  function getBitBAByteDefinition(bitPosition: number, registerCode: number) {
     return (0b01 << 6) + (bitPosition << 3) + registerCode;
   }
 

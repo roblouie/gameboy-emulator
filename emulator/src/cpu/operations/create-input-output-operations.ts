@@ -5,7 +5,7 @@ import { CpuRegister } from "@/cpu/internal-registers/cpu-register";
 export function createInputOutputOperations(this: CPU) {
   const { registers } = this;
 
-  function getLoadRHLByteDefinition(rCode: CpuRegister.Code) {
+  function getLoadRHLByteDefinition(rCode: number) {
     return (1 << 6) + (rCode << 3) + 0b110;
   }
 
@@ -124,7 +124,7 @@ export function createInputOutputOperations(this: CPU) {
   });
 
 
-  function getLoadHLRByteDefinition(code: CpuRegister.Code) {
+  function getLoadHLRByteDefinition(code: number) {
     return (0b1110 << 3) + code;
   }
 
@@ -252,7 +252,7 @@ export function createInputOutputOperations(this: CPU) {
   // ****************
   // * Load R, R1
   // ****************
-  function getLoadRR1ByteDefinition(rCode: CpuRegister.Code, rCode2: CpuRegister.Code) {
+  function getLoadRR1ByteDefinition(rCode: number, rCode2: number) {
     return (1 << 6) + (rCode << 3) + rCode2;
   }
 
@@ -289,7 +289,7 @@ export function createInputOutputOperations(this: CPU) {
 // ****************
 // * Load R, N
 // ****************
-  function getLoadRNByteDefinition(rCode: CpuRegister.Code) {
+  function getLoadRNByteDefinition(rCode: number) {
     return (rCode << 3) + 0b110;
   }
 
@@ -389,12 +389,12 @@ export function createInputOutputOperations(this: CPU) {
 // ****************
 // * POP qq
 // ****************
-  function getPopQQByteDefinition(rpCode: CpuRegister.PairCode) {
+  function getPopQQByteDefinition(rpCode: number) {
     return (0b11 << 6) + (rpCode << 4) + 0b001;
   }
 
   registers.registerPairs
-    .filter(registerPair => registerPair.name !== 'SP')
+    .filter(registerPair => registerPair.name !== 'SP' && registerPair.name !== 'AF')
     .forEach(registerPair => {
       this.addOperation({
         instruction: `POP ${registerPair.name}`,
@@ -406,6 +406,16 @@ export function createInputOutputOperations(this: CPU) {
         }
       });
     });
+
+  this.addOperation({
+    instruction: 'POP AF',
+    byteDefinition: getPopQQByteDefinition(registers.AF.code),
+    byteLength: 1,
+    cycleTime: 3,
+    execute: () => {
+      registers.AF.value = this.popFromStack() & 0xFFF0;
+    }
+  })
 
 
 // ****************

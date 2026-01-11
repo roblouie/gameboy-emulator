@@ -303,9 +303,10 @@ interface Operation {
 ```
 
 So if you'd like to see the assembly for all base instructions you could do:
+
 ```js
-for (const operation of gameboy.cpu.operationMap.values()) {
-  console.log(operation.instruction);
+for (const operation of gameboy.cpu.operations.values()) {
+    console.log(operation.instruction);
 }
 ```
 

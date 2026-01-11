@@ -18,7 +18,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * Add A, r
 // ****************
-  function getAddARByteDefinition(rCode: CpuRegister.Code) {
+  function getAddARByteDefinition(rCode: number) {
     return 0b10000000 + rCode;
   }
 
@@ -73,7 +73,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * Add carry A, s
 // ****************
-  function getAddCarryARByteDefinition(rCode: CpuRegister.Code) {
+  function getAddCarryARByteDefinition(rCode: number) {
     return 0b10001000 + rCode;
   }
 
@@ -200,7 +200,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * Dec r
 // ****************
-  function getDecRByteDefinition(rCode: CpuRegister.Code) {
+  function getDecRByteDefinition(rCode: number) {
     return (rCode << 3) + 0b101;
   }
 
@@ -268,7 +268,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * INC r
 // ****************
-  function getIncRByteDefinition(rCode: CpuRegister.Code) {
+  function getIncRByteDefinition(rCode: number) {
     return (rCode << 3) + 0b100;
   }
 
@@ -336,7 +336,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
 // * Subtract s
 // ****************
-  function getSubARByteDefinition(rCode: CpuRegister.Code) {
+  function getSubARByteDefinition(rCode: number) {
     return 0b10_010_000 + rCode;
   }
 
@@ -380,7 +380,7 @@ export function createArithmeticOperations(this: CPU) {
 // ***********************
 // * Subtract Carry A, s
 // ***********************
-  function getASubtractCarryARByteDefinition(rCode: CpuRegister.Code) {
+  function getASubtractCarryARByteDefinition(rCode: number) {
     return 0b10_011_000 + rCode;
   }
 

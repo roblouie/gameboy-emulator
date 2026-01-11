@@ -9,7 +9,7 @@ export function getSetSubOperations(cpu: CPU) {
   // ****************R
   // * Set b, A
   // ****************
-  function getSetBAByteDefinition(bitPosition: number, registerCode: CpuRegister.Code) {
+  function getSetBAByteDefinition(bitPosition: number, registerCode: number) {
     return (0b11 << 6) + (bitPosition << 3) + registerCode;
   }
 

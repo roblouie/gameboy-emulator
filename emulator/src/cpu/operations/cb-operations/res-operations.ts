@@ -9,7 +9,7 @@ export function getResSubOperations(cpu: CPU) {
   // ****************
   // * Res b, A
   // ****************
-  function getResBAByteDefinition(bitPosition: number, registerCode: CpuRegister.Code) {
+  function getResBAByteDefinition(bitPosition: number, registerCode: number) {
     return (0b10 << 6) + (bitPosition << 3) + registerCode;
   }
 

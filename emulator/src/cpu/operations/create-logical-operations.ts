@@ -18,7 +18,7 @@ export function createLogicalOperations(this: CPU) {
 // ****************
 // * And s
 // ****************
-  function getAndARByteDefinition(rCode: CpuRegister.Code) {
+  function getAndARByteDefinition(rCode: number) {
     return 0b10_100_000 + rCode;
   }
 
@@ -73,7 +73,7 @@ export function createLogicalOperations(this: CPU) {
 // ****************
 // * Compare s
 // ****************
-  function getCpARByteDefinition(rCode: CpuRegister.Code) {
+  function getCpARByteDefinition(rCode: number) {
     return 0b10_111_000 + rCode;
   }
 
@@ -128,7 +128,7 @@ export function createLogicalOperations(this: CPU) {
 // ****************
 // * Or s
 // ****************
-  function getOrARByteDefinition(rCode: CpuRegister.Code) {
+  function getOrARByteDefinition(rCode: number) {
     return 0b10_110_000 + rCode;
   }
 
@@ -183,7 +183,7 @@ export function createLogicalOperations(this: CPU) {
 // ****************
 // * Xor s
 // ****************
-  function getXorARByteDefinition(rCode: CpuRegister.Code) {
+  function getXorARByteDefinition(rCode: number) {
     return 0b10_101_000 + rCode;
   }
 

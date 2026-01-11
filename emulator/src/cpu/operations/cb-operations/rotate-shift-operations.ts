@@ -22,7 +22,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     return result;
   }
 
-  function getSwapRByteDefinition(registerCode: CpuRegister.Code) {
+  function getSwapRByteDefinition(registerCode: number) {
     return 0b00_110_000 + registerCode;
   }
 
@@ -54,7 +54,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * RLC m
   // ****************
-  function getRLCMByteDefinition(registerCode: CpuRegister.Code) {
+  function getRLCMByteDefinition(registerCode: number) {
     return 0b00_000_000 + registerCode;
   }
 
@@ -99,7 +99,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * RL m
   // ****************
-  function getRLMByteDefinition(registerCode: CpuRegister.Code) {
+  function getRLMByteDefinition(registerCode: number) {
     return 0b00_010_000 + registerCode;
   }
 
@@ -145,7 +145,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * RRC m
   // ****************
-  function getRRCMByteDefinition(registerCode: CpuRegister.Code) {
+  function getRRCMByteDefinition(registerCode: number) {
     return 0b00_001_000 + registerCode;
   }
 
@@ -190,7 +190,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * RR m
   // ****************
-  function getRRMByteDefinition(registerCode: CpuRegister.Code) {
+  function getRRMByteDefinition(registerCode: number) {
     return 0b00_011_000 + registerCode;
   }
 
@@ -235,7 +235,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * SLA m
   // ****************
-  function getSLAMByteDefinition(registerCode: CpuRegister.Code) {
+  function getSLAMByteDefinition(registerCode: number) {
     return 0b00_100_000 + registerCode;
   }
 
@@ -280,7 +280,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * SRA m
   // ****************
-  function getSRAMByteDefinition(registerCode: CpuRegister.Code) {
+  function getSRAMByteDefinition(registerCode: number) {
     return 0b00_101_000 + registerCode;
   }
 
@@ -329,7 +329,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   // ****************
   // * SRL m
   // ****************
-  function getSRLMByteDefinition(registerCode: CpuRegister.Code) {
+  function getSRLMByteDefinition(registerCode: number) {
     return 0b00_111_000 + registerCode;
   }
 

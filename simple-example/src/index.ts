@@ -2,16 +2,8 @@ import { Gameboy } from 'gameboy-emulator';
 
 const gameboy = new Gameboy();
 
-// Log out all operations assembly
-for (const operation of gameboy.cpu.operationMap.values()) {
-  console.log(operation.instruction);
-}
-
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
-fileInput.addEventListener('change', onFileChange);
-
-async function onFileChange() {
-  if (fileInput.files && fileInput.files[0]) {
+fileInput.addEventListener('change', async () => {
     // Convert the selected file into an array buffer
     const rom = await fileToArrayBuffer(fileInput.files[0]);
 
@@ -26,14 +18,13 @@ async function onFileChange() {
     });
 
     gameboy.run(); // Run the game
-  }
-}
+})
 
 function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
   const fileReader = new FileReader();
 
   return new Promise((resolve, reject) => {
-    fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
+    fileReader.onload = () => resolve(fileReader.result);
 
     fileReader.onerror = () => {
       fileReader.abort();
