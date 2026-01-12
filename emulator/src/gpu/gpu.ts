@@ -161,8 +161,6 @@ export class GPU {
     const scrolledY = asUint8(lineYRegister.value + scrollYRegister.value);
 
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
-      // If background off, write color 0 to background, should probably be
-      // refactored to avoid if/else with drawing
       if (!lcdControlRegister.isBackgroundDisplayOn) {
         const paletteColor = palette[0];
         const color = this.colors[paletteColor];

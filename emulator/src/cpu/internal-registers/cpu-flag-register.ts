@@ -8,7 +8,7 @@ export class CpuFlagRegister extends CpuRegister {
     if (newValue === 1) {
       this.value |= 0b10000000;
     } else {
-      this.value &= ~0b10000000;
+      this.value &= 0b01111111;
     }
   }
   get isResultZero() {
@@ -24,9 +24,9 @@ export class CpuFlagRegister extends CpuRegister {
   }
   set N(newValue: number) {
     if (newValue === 1) {
-      this.value |= 0b1000000;
+      this.value |= 0b01000000;
     } else {
-      this.value &= ~0b1000000;
+      this.value &= 0b10111111;
     }
   }
   get isSubtraction() {
@@ -42,9 +42,9 @@ export class CpuFlagRegister extends CpuRegister {
   }
   set H(newValue: number) {
     if (newValue === 1) {
-      this.value |= 0b100000;
+      this.value |= 0b00100000;
     } else {
-      this.value &= ~0b100000;
+      this.value &= 0b11011111;
     }
   }
   get isHalfCarry() {
@@ -60,9 +60,9 @@ export class CpuFlagRegister extends CpuRegister {
   }
   set CY(newValue: number) {
     if (newValue === 1) {
-      this.value |= 0b10000;
+      this.value |= 0b00010000;
     } else {
-      this.value &= ~0b10000;
+      this.value &= 0b11101111;
     }
   }
   get isCarry() {
