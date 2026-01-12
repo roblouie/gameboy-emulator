@@ -9,24 +9,24 @@ export function createGeneralPurposeOperations(this: CPU) {
     cycleTime: 1,
     byteLength: 1,
     execute() {
-      const { A, flags } = registers;
-      const onesPlaceCorrector = flags.isSubtraction ? -0x06 : 0x06;
-      const tensPlaceCorrector = flags.isSubtraction ? -0x60 : 0x60;
+      const { A, F } = registers;
+      const onesPlaceCorrector = F.isSubtraction ? -0x06 : 0x06;
+      const tensPlaceCorrector = F.isSubtraction ? -0x60 : 0x60;
 
-      const isAdditionBcdHalfCarry = !flags.isSubtraction && (A.value & 0x0f) > 9;
-      const isAdditionBcdCarry = !flags.isSubtraction && A.value > 0x99;
+      const isAdditionBcdHalfCarry = !F.isSubtraction && (A.value & 0x0f) > 9;
+      const isAdditionBcdCarry = !F.isSubtraction && A.value > 0x99;
 
-      if (flags.isHalfCarry || isAdditionBcdHalfCarry) {
+      if (F.isHalfCarry || isAdditionBcdHalfCarry) {
         A.value += onesPlaceCorrector;
       }
 
-      if (flags.isCarry || isAdditionBcdCarry) {
+      if (F.isCarry || isAdditionBcdCarry) {
         A.value += tensPlaceCorrector;
-        flags.isCarry = true;
+        F.isCarry = true;
       }
 
-      flags.isResultZero = A.value === 0;
-      flags.isHalfCarry = false;
+      F.isResultZero = A.value === 0;
+      F.isHalfCarry = false;
     }
   });
 
