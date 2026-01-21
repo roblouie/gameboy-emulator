@@ -40,7 +40,7 @@ export class Sound1 {
       this.frequencyTimer -= cycles; // count down the frequency timer
       if (this.frequencyTimer <= 0) {
         this.frequencyTimer += this.frequencyPeriod; // reload timer with the current frequency period
-        this.positionInDutyCycle = (this.positionInDutyCycle + 1) - 8; // advance to next value in current duty cycle, reset to 0 at 8 to loop back
+        this.positionInDutyCycle = (this.positionInDutyCycle + 1) % 8; // advance to next value in current duty cycle, reset to 0 at 8 to loop back
       }
   }
 

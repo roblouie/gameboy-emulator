@@ -48,35 +48,38 @@ export class GPU {
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
-    while (true) {
-      switch (lcdStatusRegister.mode) {
-        case LcdStatusMode.SearchingOAM:
-          if (this.cycleCounter < GPU.CyclesPerScanlineOam) return;
-
+    switch (lcdStatusRegister.mode) {
+      case LcdStatusMode.SearchingOAM:
+        if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
           this.cycleCounter -= GPU.CyclesPerScanlineOam;
           lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
-          continue;
+        }
+        break;
 
-        case LcdStatusMode.TransferringDataToLCD:
-          if (this.cycleCounter < GPU.CyclesPerScanlineVram) return;
+      case LcdStatusMode.TransferringDataToLCD:
+        if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
           this.cycleCounter -= GPU.CyclesPerScanlineVram;
 
           if (lcdStatusRegister.isHBlankInterruptSelected) {
             interruptRequestRegister.triggerLcdStatusInterruptRequest();
           }
 
+          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
+          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          }
+
           lcdStatusRegister.mode = LcdStatusMode.InHBlank;
+        }
+        break;
 
-          continue;
-
-        case LcdStatusMode.InHBlank:
-          if (this.cycleCounter < GPU.CyclesPerHBlank) return;
+      case LcdStatusMode.InHBlank:
+        if (this.cycleCounter >= GPU.CyclesPerHBlank) {
           this.drawScanline();
 
           this.cycleCounter -= GPU.CyclesPerHBlank;
 
           lineYRegister.value++;
-          this.updateLyCoincidence();
 
           if (lineYRegister.value === GPU.ScreenHeight) {
             lcdStatusRegister.mode = LcdStatusMode.InVBlank;
@@ -84,23 +87,32 @@ export class GPU {
           } else {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
           }
-          continue;
+        }
+        break;
 
-        case LcdStatusMode.InVBlank:
-          if (this.cycleCounter < GPU.CyclesPerScanline) return;
+      case LcdStatusMode.InVBlank:
+        if (this.cycleCounter >= GPU.CyclesPerScanline) {
+
+          // Line Y compare can still fire while in vblank, as the line still increases, at the very least
+          // it definitely fires at 144 on transition to vblank so lines 0-144 at the very least must be checked.
+          // Putting it here as well as on transfer to vblank to account for that. Should be cleaned up with own
+          // function maybe?
+          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
+          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
+            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          }
 
           lineYRegister.value++;
-          this.updateLyCoincidence();
 
           this.cycleCounter -= GPU.CyclesPerScanline;
 
           if (lineYRegister.value === GPU.HeightIncludingOffscreen) {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
             lineYRegister.value = 0;
-            this.updateLyCoincidence();
             this.windowLinesDrawn = 0;
           }
-      }
+        }
+        break;
     }
   }
 
@@ -273,10 +285,6 @@ export class GPU {
       let scanlineIntersectsYAt = lineYRegister.value - spriteY;
       const lastLineOfSprite = lcdControlRegister.objectHeight - 1;
 
-      if (oamRegister.isFlippedVertical) {
-        scanlineIntersectsYAt = lastLineOfSprite - scanlineIntersectsYAt;
-      }
-
       return scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lastLineOfSprite;
     });
 
@@ -310,21 +318,28 @@ export class GPU {
       const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
       for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
+        const screenX = spriteX + xPixelInTile;
+        const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
+        const isWindowSolid = windowLineValues[screenX] !== undefined && windowLineValues[screenX] !== 0;
+        const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
+
+        // if the pixel is behind the background, we can stop here
+        if (isPixelBehindBackground) {
+          continue;
+        }
+
         const paletteIndex = this.getPixelInTileLine(xPixelInTile, lowerByte, higherByte, oamRegister.isFlippedHorizontal);
+
+        // palette 0 is transparent, so we can stop here
+        if (paletteIndex === 0) {
+          continue;
+        }
 
         const palette = objectPaletteRegisters[paletteNumber].palette;
         const paletteColor = palette[paletteIndex];
         const color = this.colors[paletteColor];
-        const screenX = spriteX + xPixelInTile;
 
-        const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
-        const isWindowSolid = windowLineValues[screenX] !== undefined && windowLineValues[screenX] !== 0;
-
-        const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
-
-        if (paletteIndex !== 0 && !isPixelBehindBackground) {
-          this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color.red, color.green, color.blue);
-        }
+        this.screen.setPixel(spriteX + xPixelInTile, lineYRegister.value, color.red, color.green, color.blue);
       }
     });
   }
@@ -354,18 +369,5 @@ export class GPU {
     const shadeHigher = getBit(higherByte, xPixelInTile) << 1;
 
     return shadeLower + shadeHigher;
-  }
-
-  private updateLyCoincidence() {
-    const match = lineYRegister.value === lineYCompareRegister.value;
-    const prev = lcdStatusRegister.isLineYCompareMatching;
-
-    lcdStatusRegister.isLineYCompareMatching = match;
-
-    // STAT coincidence interrupt triggers on rising edge in many emulator models
-    // (More accurate models are trickier, but this is a good baseline.)
-    if (!prev && match && lcdStatusRegister.isLineYMatchingInterruptSelected) {
-      interruptRequestRegister.triggerLcdStatusInterruptRequest();
-    }
   }
 }
