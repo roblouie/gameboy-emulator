@@ -87,9 +87,9 @@ export class CPU {
 
     operation.execute();
 
-    this.updateTimers(operation.cycleTime * 4);
+    this.updateTimers(operation.cycleTime);
 
-    return operation.cycleTime * 4;
+    return operation.cycleTime;
   }
 
   reset() {
@@ -183,15 +183,17 @@ export class CPU {
 
     this.timerCycles += cycles;
 
-    if (this.timerCycles >= timerControllerRegister.cyclesForTimerUpdate) {
+    const threshold = timerControllerRegister.cyclesForTimerUpdate;
 
-      if (timerCounterRegister.value + 1 > 0xff) {
-        interruptRequestRegister.triggerTimerInterruptRequest();
+    while (this.timerCycles >= threshold) {
+      this.timerCycles -= threshold;
+
+      if (timerCounterRegister.value === 0xff) {
         timerCounterRegister.value = timerModuloRegister.value;
+        interruptRequestRegister.triggerTimerInterruptRequest();
+      } else {
+        timerCounterRegister.value++;
       }
-
-      timerCounterRegister.value++;
-      this.timerCycles = 0;
     }
   }
 

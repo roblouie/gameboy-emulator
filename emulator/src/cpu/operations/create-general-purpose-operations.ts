@@ -6,7 +6,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'DAA',
     byteDefinition: 0x27,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       const { A, F } = registers;
@@ -33,7 +33,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'CPL',
     byteDefinition: 0b00_101_111,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       registers.A.value = ~registers.A.value;
@@ -45,7 +45,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'NOP',
     byteDefinition: 0b0,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
 
@@ -55,7 +55,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'CCF',
     byteDefinition: 0x3f,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       registers.F.isSubtraction = false;
@@ -68,7 +68,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'SCF',
     byteDefinition: 0x37,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       registers.F.isSubtraction = false;
@@ -81,7 +81,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'HALT',
     byteDefinition: 0x76,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute: () => {
       this.halt();
@@ -91,7 +91,7 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'STOP',
     byteDefinition: 0x10,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute: () => {
       this.stop();

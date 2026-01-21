@@ -24,7 +24,7 @@ export function createArithmeticOperations(this: CPU) {
   this.registers.baseRegisters.forEach(register => {
     this.addOperation({
       byteDefinition: getAddARByteDefinition(register.code),
-      cycleTime: 1,
+      cycleTime: 4,
       byteLength: 1,
       get instruction() {
         return `ADD A, ${register.name}`;
@@ -41,7 +41,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
   this.addOperation({
     byteDefinition: 0b11_000_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 2,
     get instruction() {
       return `ADD A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
@@ -59,7 +59,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
   this.addOperation({
     byteDefinition: 0b10_000_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 1,
     instruction: 'ADD A, (HL)',
     execute() {
@@ -90,7 +90,7 @@ export function createArithmeticOperations(this: CPU) {
     this.addOperation({
       byteDefinition: getAddCarryARByteDefinition(register.code),
       instruction: `ADC A, ${register.name}`,
-      cycleTime: 1,
+      cycleTime: 4,
       byteLength: 1,
       execute() {
         registers.A.value = addCarryAndSetFlags(registers.A.value, register.value, registers.F.CY & 0xff);
@@ -100,7 +100,7 @@ export function createArithmeticOperations(this: CPU) {
 
   this.addOperation({
     byteDefinition: 0b11_001_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 2,
     get instruction() {
       return `ADC A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
@@ -114,7 +114,7 @@ export function createArithmeticOperations(this: CPU) {
 
   this.addOperation({
     byteDefinition: 0b10_001_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 1,
     instruction: 'ADC A, (HL)',
     execute() {
@@ -146,7 +146,7 @@ export function createArithmeticOperations(this: CPU) {
       this.addOperation({
         instruction: `ADD HL, ${registerPair.name}`,
         byteDefinition: getAddHLSSByteDefinition(registerPair.code),
-        cycleTime: 2,
+        cycleTime: 8,
         byteLength: 1,
         execute() {
           registers.HL.value = add16BitAndSetFlags(registers.HL.value, registerPair.value);
@@ -160,7 +160,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
   this.addOperation({
     byteDefinition: 0b11_101_000,
-    cycleTime: 4,
+    cycleTime: 16,
     byteLength: 2,
     get instruction() {
       const value = memory.readSignedByte(registers.programCounter.value);
@@ -207,7 +207,7 @@ export function createArithmeticOperations(this: CPU) {
     this.addOperation({
       instruction: `DEC ${register.name}`,
       byteDefinition: getDecRByteDefinition(register.code),
-      cycleTime: 1,
+      cycleTime: 4,
       byteLength: 1,
       execute() {
         register.value = decrementAndSetFlags(register.value);
@@ -223,7 +223,7 @@ export function createArithmeticOperations(this: CPU) {
   this.addOperation({
     instruction: 'DEC (HL)',
     byteDefinition: 0b00_110_101,
-    cycleTime: 3,
+    cycleTime: 12,
     byteLength: 1,
     execute() {
       const value = memory.readByte(registers.HL.value);
@@ -246,7 +246,7 @@ export function createArithmeticOperations(this: CPU) {
       this.addOperation({
         instruction: `DEC ${registerPair.name}`,
         byteDefinition: getDecSSByteDefinition(registerPair.code),
-        cycleTime: 2,
+        cycleTime: 8,
         byteLength: 1,
         execute() {
           registerPair.value--;
@@ -274,7 +274,7 @@ export function createArithmeticOperations(this: CPU) {
   this.registers.baseRegisters.forEach(register => {
     this.addOperation({
       byteDefinition: getIncRByteDefinition(register.code),
-      cycleTime: 1,
+      cycleTime: 4,
       byteLength: 1,
       instruction: `INC ${register.name}`,
       execute() {
@@ -289,7 +289,7 @@ export function createArithmeticOperations(this: CPU) {
 // ****************
   this.addOperation({
     byteDefinition: 0b00_110_100,
-    cycleTime: 3,
+    cycleTime: 12,
     byteLength: 1,
     instruction: 'INC (HL)',
     execute() {
@@ -312,7 +312,7 @@ export function createArithmeticOperations(this: CPU) {
     .forEach(registerPair => {
       this.addOperation({
         byteDefinition: getIncSSByteDefinition(registerPair.code),
-        cycleTime: 2,
+        cycleTime: 8,
         byteLength: 1,
         instruction: `INC ${registerPair.name}`,
         execute() {
@@ -342,7 +342,7 @@ export function createArithmeticOperations(this: CPU) {
   this.registers.baseRegisters.forEach(register => {
     this.addOperation({
       byteDefinition: getSubARByteDefinition(register.code),
-      cycleTime: 1,
+      cycleTime: 4,
       byteLength: 1,
       instruction: `SUB ${register.name}`,
       execute() {
@@ -353,7 +353,7 @@ export function createArithmeticOperations(this: CPU) {
 
   this.addOperation({
     byteDefinition: 0b11_010_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 2,
     get instruction() {
       return `SUB 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
@@ -367,7 +367,7 @@ export function createArithmeticOperations(this: CPU) {
 
   this.addOperation({
     byteDefinition: 0b10_010_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 1,
     instruction: 'SUB (HL)',
     execute() {
@@ -396,7 +396,7 @@ export function createArithmeticOperations(this: CPU) {
   this.registers.baseRegisters.forEach(register => {
     this.addOperation({
       byteDefinition: getASubtractCarryARByteDefinition(register.code),
-      cycleTime: 1,
+      cycleTime: 4,
       byteLength: 1,
       instruction: `SBC A, ${register.name}`,
       execute() {
@@ -410,7 +410,7 @@ export function createArithmeticOperations(this: CPU) {
       return `SBC 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_011_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 2,
     execute() {
       const value = memory.readByte(registers.programCounter.value);
@@ -422,7 +422,7 @@ export function createArithmeticOperations(this: CPU) {
   this.addOperation({
     instruction: 'SBC A, (HL)',
     byteDefinition: 0b10_011_110,
-    cycleTime: 2,
+    cycleTime: 8,
     byteLength: 1,
     execute() {
       const value = memory.readByte(registers.HL.value);
