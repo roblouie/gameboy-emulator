@@ -5,11 +5,11 @@ export function createArithmeticOperations(this: CPU) {
   const {registers} = this;
 
   function addAndSetFlags(accumulatorVal: number, toAdd: number) {
-    const newValue = (accumulatorVal + toAdd) & 0xff;
-    registers.F.isResultZero = newValue === 0;
-    registers.F.isHalfCarry = (newValue & 0x0f) < (accumulatorVal & 0x0f);
+    const newValue = (accumulatorVal + toAdd);
+    registers.F.isResultZero = (newValue & 0xff) === 0;
+    registers.F.isHalfCarry = ((accumulatorVal & 0x0f) + (toAdd & 0x0f)) > 0x0f;
     registers.F.isSubtraction = false;
-    registers.F.isCarry = newValue < accumulatorVal;
+    registers.F.isCarry = newValue > 0xff;
 
     return newValue;
   }
@@ -190,7 +190,7 @@ export function createArithmeticOperations(this: CPU) {
   function decrementAndSetFlags(originalValue: number) {
     const newValue = (originalValue - 1) & 0xff;
     registers.F.isResultZero = newValue === 0;
-    registers.F.isHalfCarry = (newValue & 0x0f) > (originalValue & 0x0f);
+    registers.F.isHalfCarry = (originalValue & 0x0f) === 0;
     registers.F.isSubtraction = true;
 
     return newValue;

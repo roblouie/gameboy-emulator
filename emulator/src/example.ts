@@ -59,10 +59,11 @@ function getCharacterImageData(gameboy: Gameboy): ImageData {
   const CharacterDataStart = 0x8000;
   const CharacterDataEnd = 0x97ff;
   const characterData = gameboy.memory.memoryBytes.subarray(CharacterDataStart, CharacterDataEnd);
-  const enhancedImageData = new EnhancedImageData(8, 3072);
+  const enhancedImageData = new EnhancedImageData(256, 3072);
 
   let imageDataX = 0;
   let imageDataY = 0;
+  let pixelIndex = 0;
 
   // two bytes build a 8 x 1 line
   for (let byteIndex = 0; byteIndex < characterData.length; byteIndex+= 2) {
@@ -72,11 +73,15 @@ function getCharacterImageData(gameboy: Gameboy): ImageData {
     // start at the left most bit so we can draw to the image data from left to right
     for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
       const shadeLower = getBit(lowerByte, bitPosition);
-      const shadeHigher = getBit(higherByte, bitPosition);
+      const shadeHigher = getBit(higherByte, bitPosition) << 1;
 
-      const color = gameboy.gpu.colors[shadeLower + shadeHigher];
-      enhancedImageData.setPixel(imageDataX, imageDataY, color.red, color.green, color.blue);
-      imageDataX++;
+      const color = gameboy.gpu.colors[shadeHigher + shadeLower];
+      // enhancedImageData.setPixel(imageDataX, imageDataY, color.red, color.green, color.blue);
+      enhancedImageData.data[pixelIndex] = color.red;
+      enhancedImageData.data[pixelIndex + 1] = color.green;
+      enhancedImageData.data[pixelIndex + 2] = color.blue;
+      enhancedImageData.data[pixelIndex + 3] = 0xff;
+      pixelIndex += 4;
     }
 
     imageDataY++

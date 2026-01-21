@@ -48,7 +48,6 @@ export class CPU {
 
   private timerCycles = 0;
   private frequencyCounter = 0;
-  private cycleMultiplier = 4;
   private isHalted = false;
   private isStopped = false;
 
@@ -88,9 +87,9 @@ export class CPU {
 
     operation.execute();
 
-    this.updateTimers(operation.cycleTime);
+    this.updateTimers(operation.cycleTime * 4);
 
-    return operation.cycleTime;
+    return operation.cycleTime * 4;
   }
 
   reset() {
@@ -175,7 +174,7 @@ export class CPU {
   }
 
   updateTimers(cycles: number) {
-    this.frequencyCounter = asUint16(this.frequencyCounter + (cycles * this.cycleMultiplier));
+    this.frequencyCounter = asUint16(this.frequencyCounter + cycles);
     dividerRegister.setValueFromCpuDivider(getMostSignificantByte(this.frequencyCounter));
 
     if (!timerControllerRegister.isTimerOn) {

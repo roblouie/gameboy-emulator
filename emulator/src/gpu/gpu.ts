@@ -48,38 +48,35 @@ export class GPU {
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
-    switch (lcdStatusRegister.mode) {
-      case LcdStatusMode.SearchingOAM:
-        if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
-          this.cycleCounter %= GPU.CyclesPerScanlineOam;
-          lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
-        }
-        break;
+    while (true) {
+      switch (lcdStatusRegister.mode) {
+        case LcdStatusMode.SearchingOAM:
+          if (this.cycleCounter < GPU.CyclesPerScanlineOam) return;
 
-      case LcdStatusMode.TransferringDataToLCD:
-        if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
-          this.cycleCounter %= GPU.CyclesPerScanlineVram;
+          this.cycleCounter -= GPU.CyclesPerScanlineOam;
+          lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
+          continue;
+
+        case LcdStatusMode.TransferringDataToLCD:
+          if (this.cycleCounter < GPU.CyclesPerScanlineVram) return;
+          this.cycleCounter -= GPU.CyclesPerScanlineVram;
 
           if (lcdStatusRegister.isHBlankInterruptSelected) {
             interruptRequestRegister.triggerLcdStatusInterruptRequest();
           }
 
-          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
-          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
-            interruptRequestRegister.triggerLcdStatusInterruptRequest();
-          }
-
           lcdStatusRegister.mode = LcdStatusMode.InHBlank;
-        }
-        break;
 
-      case LcdStatusMode.InHBlank:
-        if (this.cycleCounter >= GPU.CyclesPerHBlank) {
+          continue;
+
+        case LcdStatusMode.InHBlank:
+          if (this.cycleCounter < GPU.CyclesPerHBlank) return;
           this.drawScanline();
 
-          this.cycleCounter %= GPU.CyclesPerHBlank;
+          this.cycleCounter -= GPU.CyclesPerHBlank;
 
           lineYRegister.value++;
+          this.updateLyCoincidence();
 
           if (lineYRegister.value === GPU.ScreenHeight) {
             lcdStatusRegister.mode = LcdStatusMode.InVBlank;
@@ -87,32 +84,23 @@ export class GPU {
           } else {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
           }
-        }
-        break;
+          continue;
 
-      case LcdStatusMode.InVBlank:
-        if (this.cycleCounter >= GPU.CyclesPerScanline) {
-
-          // Line Y compare can still fire while in vblank, as the line still increases, at the very least
-          // it definitely fires at 144 on transition to vblank so lines 0-144 at the very least must be checked.
-          // Putting it here as well as on transfer to vblank to account for that. Should be cleaned up with own
-          // function maybe?
-          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
-          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
-            interruptRequestRegister.triggerLcdStatusInterruptRequest();
-          }
+        case LcdStatusMode.InVBlank:
+          if (this.cycleCounter < GPU.CyclesPerScanline) return;
 
           lineYRegister.value++;
+          this.updateLyCoincidence();
 
-          this.cycleCounter %= GPU.CyclesPerScanline;
+          this.cycleCounter -= GPU.CyclesPerScanline;
 
           if (lineYRegister.value === GPU.HeightIncludingOffscreen) {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
             lineYRegister.value = 0;
+            this.updateLyCoincidence();
             this.windowLinesDrawn = 0;
           }
-        }
-        break;
+      }
     }
   }
 
@@ -142,12 +130,12 @@ export class GPU {
     }
   }
 
-  private getTileCharacterIndex(tileMapIndex: number, relativeOffset: number) {
+  private getTileCharacterIndex(tileMapIndex: number) {
     const address = lcdControlRegister.backgroundTileMapStartAddress + tileMapIndex;
     if (lcdControlRegister.backgroundCharacterData === 0) {
-      return memory.readSignedByte(address) + relativeOffset;
+      return memory.readSignedByte(address) + 128;
     } else {
-      return memory.readByte(address) + relativeOffset;
+      return memory.readByte(address);
     }
   }
 
@@ -159,39 +147,32 @@ export class GPU {
     const palette = backgroundPaletteRegister.backgroundPalette;
 
     const scrolledY = asUint8(lineYRegister.value + scrollYRegister.value);
+    const scrollXRegisterValue = scrollXRegister.value;
 
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
-      if (!lcdControlRegister.isBackgroundDisplayOn) {
-        const paletteColor = palette[0];
-        const color = this.colors[paletteColor];
-        backgroundLineValues.push(0);
-        this.screen.setPixel(screenX, lineYRegister.value, color.red, color.green, color.blue);
-      } else {
-        const scrolledX = asUint8(screenX + scrollXRegister.value);
-        const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
-        const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
+      const scrolledX = asUint8(screenX + scrollXRegisterValue);
+      const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
+      const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
 
-        const xPosInTile = scrolledX - tilePixelPosition.x;
-        const yPosInTile = scrolledY - tilePixelPosition.y;
+      const xPosInTile = scrolledX - tilePixelPosition.x;
+      const yPosInTile = scrolledY - tilePixelPosition.y;
 
-        const bytePositionInTile = yPosInTile * bytesPerCharacter;
+      const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
-        const relativeOffset = lcdControlRegister.backgroundCharacterData === 0 ? 128 : 0;
-        const tileCharIndex = this.getTileCharacterIndex(tileMapIndex, relativeOffset);
-        const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
+      const tileCharIndex = this.getTileCharacterIndex(tileMapIndex);
+      const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
-        const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
-        const lowerByte = memory.readByte(currentTileLineBytePosition);
-        const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+      const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
+      const lowerByte = memory.readByte(currentTileLineBytePosition);
+      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
 
-        const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
-        backgroundLineValues.push(paletteIndex);
+      const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
+      backgroundLineValues.push(paletteIndex);
 
-        const paletteColor = palette[paletteIndex];
-        const color = this.colors[paletteColor];
+      const paletteColor = palette[paletteIndex];
+      const color = this.colors[paletteColor];
 
-        this.screen.setPixel(screenX, lineYRegister.value, color.red, color.green, color.blue);
-      }
+      this.screen.setPixel(screenX, lineYRegister.value, color.red, color.green, color.blue);
     }
 
     return backgroundLineValues;
@@ -301,9 +282,8 @@ export class GPU {
 
     const prioritizedSprites = intersectingSprites
       .slice(0, maxObjectsPerLine)
-      .reverse()
       .sort((oamRegisterA, oamRegisterB) => {
-        return oamRegisterB.xPosition - oamRegisterA.xPosition;
+        return (oamRegisterB.xPosition - oamRegisterA.xPosition) || (oamRegisterB.index - oamRegisterA.index);
       })
 
     prioritizedSprites.forEach(oamRegister => {
@@ -350,13 +330,9 @@ export class GPU {
   }
 
   private getTileIndexFromPixelLocation(x: number, y: number) {
-    const tileSize = 8;
-    const backgroundNumberOfTilesPerSide = 32;
-
-    const tileX = Math.floor(x / tileSize);
-    const tileY = Math.floor(y / tileSize);
-
-    return (tileY * backgroundNumberOfTilesPerSide) + tileX;
+    const tileX = x >> 3;       // x / 8
+    const tileY = y >> 3;       // y / 8
+    return (tileY << 5) | tileX; // tileY * 32 + tileX
   }
 
   private getUpperLeftPixelLocationOfTile(tile: number) {
@@ -378,5 +354,18 @@ export class GPU {
     const shadeHigher = getBit(higherByte, xPixelInTile) << 1;
 
     return shadeLower + shadeHigher;
+  }
+
+  private updateLyCoincidence() {
+    const match = lineYRegister.value === lineYCompareRegister.value;
+    const prev = lcdStatusRegister.isLineYCompareMatching;
+
+    lcdStatusRegister.isLineYCompareMatching = match;
+
+    // STAT coincidence interrupt triggers on rising edge in many emulator models
+    // (More accurate models are trickier, but this is a good baseline.)
+    if (!prev && match && lcdStatusRegister.isLineYMatchingInterruptSelected) {
+      interruptRequestRegister.triggerLcdStatusInterruptRequest();
+    }
   }
 }
