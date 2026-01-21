@@ -16,8 +16,8 @@ import { createInputOutputOperations } from '@/cpu/operations/create-input-outpu
 import { asUint16, getMostSignificantByte } from '@/helpers/binary-helpers';
 import { dividerRegister } from '@/cpu/registers/divider-register';
 import { timerControllerRegister } from '@/cpu/registers/timer-controller-register';
-import { timerCounterRegister } from '@/cpu/registers/timer-counter-register';
-import { timerModuloRegister } from '@/cpu/registers/timer-modulo-register';
+import { timaRegister } from '@/cpu/registers/tima-register';
+import { tmaRegister } from '@/cpu/registers/tma-register';
 
 export class CPU {
   static OperatingHertz = 4_194_304;
@@ -79,8 +79,8 @@ export class CPU {
     this.handleInterrupts();
 
     if (this.isHalted) {
-      this.updateTimers(1);
-      return 1;
+      this.updateTimers(4);
+      return 4;
     }
 
     const operation = this.getOperation();
@@ -188,11 +188,11 @@ export class CPU {
     while (this.timerCycles >= threshold) {
       this.timerCycles -= threshold;
 
-      if (timerCounterRegister.value === 0xff) {
-        timerCounterRegister.value = timerModuloRegister.value;
+      if (timaRegister.value === 0xff) {
+        timaRegister.value = tmaRegister.value;
         interruptRequestRegister.triggerTimerInterruptRequest();
       } else {
-        timerCounterRegister.value++;
+        timaRegister.value++;
       }
     }
   }

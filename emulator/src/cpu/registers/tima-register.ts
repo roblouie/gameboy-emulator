@@ -1,9 +1,9 @@
 import { SingleByteMemoryRegister } from "@/memory/memory-register";
 import { memory } from "@/memory/memory";
 
-export class TimerModuloRegister implements SingleByteMemoryRegister {
-  offset = 0xff06;
-  name = 'TMA';
+export class TimerCounterRegister implements SingleByteMemoryRegister {
+  offset = 0xff05;
+  name = 'TIMA';
 
   get value() {
     return memory.readByte(this.offset);
@@ -14,4 +14,4 @@ export class TimerModuloRegister implements SingleByteMemoryRegister {
   }
 }
 
-export const timerModuloRegister = new TimerModuloRegister();
+export const timaRegister = new TimerCounterRegister();
