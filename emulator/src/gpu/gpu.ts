@@ -12,7 +12,10 @@ import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
 import { backgroundPaletteRegister } from "@/gpu/registers/background-palette-register";
 import { scrollYRegister } from "@/gpu/registers/scroll-y-register";
 import { scrollXRegister } from "@/gpu/registers/scroll-x-register";
-import { objectAttributeMemoryRegisters } from "@/gpu/registers/object-attribute-memory-registers";
+import {
+  ObjectAttributeMemoryRegister,
+  objectAttributeMemoryRegisters
+} from "@/gpu/registers/object-attribute-memory-registers";
 import { objectPaletteRegisters } from "@/gpu/registers/object-palette-registers";
 import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
 
@@ -51,6 +54,7 @@ export class GPU {
     switch (lcdStatusRegister.mode) {
       case LcdStatusMode.SearchingOAM:
         if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
+          this.populatePrioritizedSprites()
           this.cycleCounter -= GPU.CyclesPerScanlineOam;
           lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
         }
@@ -142,13 +146,12 @@ export class GPU {
     }
   }
 
-  private getTileCharacterIndex(tileMapIndex: number) {
-    const address = lcdControlRegister.backgroundTileMapStartAddress + tileMapIndex;
-    if (lcdControlRegister.backgroundCharacterData === 0) {
+  private getTileCharacterIndex(address: number, isBackgroundCharacterData: boolean) {
+    if (isBackgroundCharacterData) {
       return memory.readSignedByte(address) + 128;
-    } else {
-      return memory.readByte(address);
     }
+
+    memory.readByte(address);
   }
 
   drawBackgroundLine() {
@@ -159,19 +162,23 @@ export class GPU {
     const palette = backgroundPaletteRegister.backgroundPalette;
 
     const scrolledY = asUint8(lineYRegister.value + scrollYRegister.value);
+    const tileRowY = scrolledY >> 3;
+    const yPosInTile = scrolledY & 7;
+    const bytePositionInTile = yPosInTile * bytesPerCharacter;
+
     const scrollXRegisterValue = scrollXRegister.value;
+
+    const startingBackgroundAddress = lcdControlRegister.backgroundTileMapStartAddress;
+    const isBackgroundCharacterData = lcdControlRegister.backgroundCharacterData === 0;
 
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
       const scrolledX = asUint8(screenX + scrollXRegisterValue);
-      const tileMapIndex = this.getTileIndexFromPixelLocation(scrolledX, scrolledY);
-      const tilePixelPosition = this.getUpperLeftPixelLocationOfTile(tileMapIndex);
+      const tileColX = scrolledX >> 3;
+      const xPosInTile = scrolledX & 7;
+      const tileMapIndex = tileRowY * 32 + tileColX;
 
-      const xPosInTile = scrolledX - tilePixelPosition.x;
-      const yPosInTile = scrolledY - tilePixelPosition.y;
-
-      const bytePositionInTile = yPosInTile * bytesPerCharacter;
-
-      const tileCharIndex = this.getTileCharacterIndex(tileMapIndex);
+      const address = startingBackgroundAddress + tileMapIndex;
+      const tileCharIndex = this.getTileCharacterIndex(address, isBackgroundCharacterData);
       const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
       const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
@@ -263,14 +270,10 @@ export class GPU {
     return windowLineValues;
   }
 
+  prioritizedSprites: ObjectAttributeMemoryRegister[] = [];
 
-  drawSpriteLine(backgroundLineValues: number[], windowLineValues: number[]) {
-    const spriteOffsetX = -8;
+  populatePrioritizedSprites() {
     const spriteOffsetY = -16;
-    const characterDataStart = 0x8000;
-    const bytesPerLine = 2;
-    const linesPerTileIndex = 8;
-    const bytesPerTile = bytesPerLine * linesPerTileIndex;
     const maxObjectsPerLine = 10;
 
     const intersectingSprites = objectAttributeMemoryRegisters.filter(oamRegister => {
@@ -288,13 +291,22 @@ export class GPU {
       return scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lastLineOfSprite;
     });
 
-    const prioritizedSprites = intersectingSprites
-      .slice(0, maxObjectsPerLine)
-      .sort((oamRegisterA, oamRegisterB) => {
-        return (oamRegisterB.xPosition - oamRegisterA.xPosition) || (oamRegisterB.index - oamRegisterA.index);
-      })
+    this.prioritizedSprites = intersectingSprites
+        .slice(0, maxObjectsPerLine)
+        .sort((oamRegisterA, oamRegisterB) => {
+          return (oamRegisterB.xPosition - oamRegisterA.xPosition) || (oamRegisterB.index - oamRegisterA.index);
+        })
+  }
 
-    prioritizedSprites.forEach(oamRegister => {
+  drawSpriteLine(backgroundLineValues: number[], windowLineValues: number[]) {
+    const spriteOffsetX = -8;
+    const spriteOffsetY = -16;
+    const characterDataStart = 0x8000;
+    const bytesPerLine = 2;
+    const linesPerTileIndex = 8;
+    const bytesPerTile = bytesPerLine * linesPerTileIndex;
+
+    this.prioritizedSprites.forEach(oamRegister => {
       const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
 
       const spriteX = xPosition + spriteOffsetX;
@@ -319,6 +331,11 @@ export class GPU {
 
       for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
         const screenX = spriteX + xPixelInTile;
+
+        if (screenX < 0 || screenX >= 160) {
+          continue; // we're offscreen, don't need to draw this pixel
+        }
+
         const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
         const isWindowSolid = windowLineValues[screenX] !== undefined && windowLineValues[screenX] !== 0;
         const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
