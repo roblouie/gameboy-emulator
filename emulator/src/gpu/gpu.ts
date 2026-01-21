@@ -171,19 +171,26 @@ export class GPU {
     const startingBackgroundAddress = lcdControlRegister.backgroundTileMapStartAddress;
     const isBackgroundCharacterData = lcdControlRegister.backgroundCharacterData === 0;
 
+    let lastTileMapIndex = -1;
+    let lowerByte = 0;
+    let higherByte = 0;
+
     for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
       const scrolledX = asUint8(screenX + scrollXRegisterValue);
       const tileColX = scrolledX >> 3;
       const xPosInTile = scrolledX & 7;
       const tileMapIndex = tileRowY * 32 + tileColX;
 
-      const address = startingBackgroundAddress + tileMapIndex;
-      const tileCharIndex = this.getTileCharacterIndex(address, isBackgroundCharacterData);
-      const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
+      if (tileMapIndex !== lastTileMapIndex) {
+        lastTileMapIndex = tileMapIndex;
+        const address = startingBackgroundAddress + tileMapIndex;
+        const tileCharIndex = this.getTileCharacterIndex(address, isBackgroundCharacterData);
+        const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
-      const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
-      const lowerByte = memory.readByte(currentTileLineBytePosition);
-      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+        const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
+        lowerByte = memory.readByte(currentTileLineBytePosition);
+        higherByte = memory.readByte(currentTileLineBytePosition + 1);
+      }
 
       const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
       backgroundLineValues.push(paletteIndex);
@@ -213,10 +220,10 @@ export class GPU {
     const palette = backgroundPaletteRegister.backgroundPalette;
 
     if (lcdControlRegister.backgroundCharacterData === 0) {
-      const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
+      const originalData = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x400);
       windowTileMap = new Int8Array(originalData);
     } else {
-      windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x1000);
+      windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x400);
     }
 
     // The window can be drawn starting at any Y position on the screen, however the first line of the window
