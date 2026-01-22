@@ -122,12 +122,6 @@ export class GPU {
     }
   }
 
-  // The gpu logic now passes the acid test, however it achieves background/window vs sprite priority
-  // by returning all pixel values per line out of drawBackgroundLine and drawWindowLine and sending them into
-  // drawSpriteLine. While this does work, it feels a bit clunky. A possible better solution is to update
-  // drawSpriteLine to go per pixel from left to right and draw out the intersecting sprites. While this is initially
-  // less performant than currently just drawing only the sprites that intersect the y line, it would allow all
-  // three methods to use generator functions to return each pixel. Might be worth the tradeoff overall.
   drawScanline() {
     if (!lcdControlRegister.isLCDControllerOperating) {
       return;
