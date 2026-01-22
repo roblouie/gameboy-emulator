@@ -117,7 +117,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_100_000,
-    cycleTime: !registers.F.isResultZero ? 12 : 8,
+    get cycleTime() { return !registers.F.isResultZero ? 12 : 8 },
     byteLength: 2,
     execute() {
       if (!registers.F.isResultZero) {
@@ -140,7 +140,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_101_000,
-    cycleTime: registers.F.isResultZero ? 12 : 8,
+    get cycleTime() { return registers.F.isResultZero ? 12 : 8 },
     byteLength: 2,
     execute() {
       if (registers.F.isResultZero) {
@@ -163,7 +163,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_110_000,
-    cycleTime: !registers.F.isCarry ? 12 : 8,
+    get cycleTime() { return !registers.F.isCarry ? 12 : 8 },
     byteLength: 2,
     execute() {
       if (!registers.F.isCarry) {
@@ -186,7 +186,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_111_000,
-    cycleTime: registers.F.isCarry ? 12 : 8,
+    get cycleTime() { return registers.F.isCarry ? 12 : 8 },
     byteLength: 2,
     execute() {
       if (registers.F.isCarry) {
