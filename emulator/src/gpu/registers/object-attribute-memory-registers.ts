@@ -8,10 +8,12 @@ export class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
 
   offset: number;
   name: string;
+  index: number;
 
   constructor(index: number) {
     this.offset = index + ObjectAttributeMemoryRegister.StartOffset;
     this.name = 'OBJ' + index;
+    this.index = index;
   }
 
   getValueAt(index: number) {

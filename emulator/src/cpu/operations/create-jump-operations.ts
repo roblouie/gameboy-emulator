@@ -9,7 +9,7 @@ export function createJumpOperations(this: CPU) {
       return `JP 0x${memory.readWord(registers.programCounter.value).toString(16)}`
     },
     byteDefinition: 0b11_000_011,
-    cycleTime: 4,
+    cycleTime: 16,
     byteLength: 3,
     execute() {
       registers.programCounter.value = memory.readWord(registers.programCounter.value);
@@ -22,7 +22,7 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_000_010,
     get cycleTime() {
-      return !registers.F.isResultZero ? 4 : 3;
+      return !registers.F.isResultZero ? 16 : 12;
     },
     byteLength: 3,
     execute() {
@@ -40,7 +40,7 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_001_010,
     get cycleTime() {
-      return registers.F.isResultZero ? 4 : 3;
+      return registers.F.isResultZero ? 16 : 12;
     },
     byteLength: 3,
     execute() {
@@ -58,7 +58,7 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_010_010,
     get cycleTime() {
-      return !registers.F.isCarry ? 4 : 3;
+      return !registers.F.isCarry ? 16 : 12;
     },
     byteLength: 3,
     execute() {
@@ -76,7 +76,7 @@ export function createJumpOperations(this: CPU) {
     },
     byteDefinition: 0b11_011_010,
     get cycleTime() {
-      return registers.F.isCarry ? 4 : 3;
+      return registers.F.isCarry ? 16 : 12;
     },
     byteLength: 3,
     execute() {
@@ -98,7 +98,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_011_000,
-    cycleTime: 3,
+    cycleTime: 12,
     byteLength: 2,
     execute() {
       const jumpDistance = memory.readSignedByte(registers.programCounter.value);
@@ -117,7 +117,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_100_000,
-    cycleTime: !registers.F.isResultZero ? 3 : 2,
+    cycleTime: !registers.F.isResultZero ? 12 : 8,
     byteLength: 2,
     execute() {
       if (!registers.F.isResultZero) {
@@ -140,7 +140,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_101_000,
-    cycleTime: registers.F.isResultZero ? 3 : 2,
+    cycleTime: registers.F.isResultZero ? 12 : 8,
     byteLength: 2,
     execute() {
       if (registers.F.isResultZero) {
@@ -163,7 +163,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_110_000,
-    cycleTime: !registers.F.isCarry ? 3 : 2,
+    cycleTime: !registers.F.isCarry ? 12 : 8,
     byteLength: 2,
     execute() {
       if (!registers.F.isCarry) {
@@ -186,7 +186,7 @@ export function createJumpOperations(this: CPU) {
       }
     },
     byteDefinition: 0b00_111_000,
-    cycleTime: registers.F.isCarry ? 3 : 2,
+    cycleTime: registers.F.isCarry ? 12 : 8,
     byteLength: 2,
     execute() {
       if (registers.F.isCarry) {
@@ -202,7 +202,7 @@ export function createJumpOperations(this: CPU) {
   this.addOperation({
     instruction: ' JP (HL)',
     byteDefinition: 0b11_101_001,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       registers.programCounter.value = registers.HL.value;

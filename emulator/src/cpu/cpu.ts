@@ -16,8 +16,8 @@ import { createInputOutputOperations } from '@/cpu/operations/create-input-outpu
 import { asUint16, getMostSignificantByte } from '@/helpers/binary-helpers';
 import { dividerRegister } from '@/cpu/registers/divider-register';
 import { timerControllerRegister } from '@/cpu/registers/timer-controller-register';
-import { timerCounterRegister } from '@/cpu/registers/timer-counter-register';
-import { timerModuloRegister } from '@/cpu/registers/timer-modulo-register';
+import { timaRegister } from '@/cpu/registers/tima-register';
+import { tmaRegister } from '@/cpu/registers/tma-register';
 
 export class CPU {
   static OperatingHertz = 4_194_304;
@@ -48,7 +48,6 @@ export class CPU {
 
   private timerCycles = 0;
   private frequencyCounter = 0;
-  private cycleMultiplier = 4;
   private isHalted = false;
   private isStopped = false;
 
@@ -80,8 +79,8 @@ export class CPU {
     this.handleInterrupts();
 
     if (this.isHalted) {
-      this.updateTimers(1);
-      return 1;
+      this.updateTimers(4);
+      return 4;
     }
 
     const operation = this.getOperation();
@@ -175,7 +174,7 @@ export class CPU {
   }
 
   updateTimers(cycles: number) {
-    this.frequencyCounter = asUint16(this.frequencyCounter + (cycles * this.cycleMultiplier));
+    this.frequencyCounter = asUint16(this.frequencyCounter + cycles);
     dividerRegister.setValueFromCpuDivider(getMostSignificantByte(this.frequencyCounter));
 
     if (!timerControllerRegister.isTimerOn) {
@@ -184,15 +183,17 @@ export class CPU {
 
     this.timerCycles += cycles;
 
-    if (this.timerCycles >= timerControllerRegister.cyclesForTimerUpdate) {
+    const threshold = timerControllerRegister.cyclesForTimerUpdate;
 
-      if (timerCounterRegister.value + 1 > 0xff) {
+    while (this.timerCycles >= threshold) {
+      this.timerCycles -= threshold;
+
+      if (timaRegister.value === 0xff) {
+        timaRegister.value = tmaRegister.value;
         interruptRequestRegister.triggerTimerInterruptRequest();
-        timerCounterRegister.value = timerModuloRegister.value;
+      } else {
+        timaRegister.value++;
       }
-
-      timerCounterRegister.value++;
-      this.timerCycles = 0;
     }
   }
 

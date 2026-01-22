@@ -30,7 +30,10 @@ export class ControllerManager {
   start = Xbox360ControllerButtons.Start;
 
   b = Xbox360ControllerButtons.X;
+  bAlt = Xbox360ControllerButtons.Y;
+
   a = Xbox360ControllerButtons.A;
+  aAlt = Xbox360ControllerButtons.B;
 
   queryButtons() {
     const gamepad = navigator.getGamepads()[this.controller];
@@ -47,8 +50,8 @@ export class ControllerManager {
     input.isPressingSelect = gamepad.buttons[this.select].pressed;
     input.isPressingStart = gamepad.buttons[this.start].pressed;
 
-    input.isPressingB = gamepad.buttons[this.b].pressed;
-    input.isPressingA = gamepad.buttons[this.a].pressed;
+    input.isPressingB = gamepad.buttons[this.b].pressed || gamepad.buttons[this.bAlt].pressed;
+    input.isPressingA = gamepad.buttons[this.a].pressed || gamepad.buttons[this.aAlt].pressed;
   }
 }
 

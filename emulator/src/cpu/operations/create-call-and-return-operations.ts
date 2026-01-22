@@ -22,7 +22,7 @@ export function createCallAndReturnOperations(this: CPU) {
     },
     byteDefinition: 0b11_001_101,
     byteLength: 3,
-    cycleTime: 6,
+    cycleTime: 24,
     execute() {
       const callToAddress = memory.readWord(registers.programCounter.value);
       registers.programCounter.value += 2;
@@ -50,7 +50,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getCallConditionByteDefinition(FlagCondition.NZ),
     byteLength: 3,
     get cycleTime() {
-      return !registers.F.isResultZero ? 6 : 3;
+      return !registers.F.isResultZero ? 24 : 12;
     },
     execute() {
       if (!registers.F.isResultZero) {
@@ -73,7 +73,7 @@ export function createCallAndReturnOperations(this: CPU) {
       return `CALL Z, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.Z),
-    byteLength: 3,
+    byteLength: 12,
     get cycleTime() {
       return registers.F.isResultZero ? 6 : 3;
     },
@@ -100,7 +100,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getCallConditionByteDefinition(FlagCondition.NC),
     byteLength: 3,
     get cycleTime() {
-      return !registers.F.isCarry ? 6 : 3;
+      return !registers.F.isCarry ? 24 : 12;
     },
     execute() {
       if (!registers.F.isCarry) {
@@ -125,7 +125,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getCallConditionByteDefinition(FlagCondition.C),
     byteLength: 3,
     get cycleTime() {
-      return registers.F.isCarry ? 6 : 3;
+      return registers.F.isCarry ? 24 : 12;
     },
     execute() {
       if (registers.F.isCarry) {
@@ -150,7 +150,7 @@ export function createCallAndReturnOperations(this: CPU) {
     instruction: 'RET',
     byteDefinition: 0b11_001_001,
     byteLength: 1,
-    cycleTime: 4,
+    cycleTime: 16,
     execute() {
       registers.programCounter.value = cpu.popFromStack();
     }
@@ -160,7 +160,7 @@ export function createCallAndReturnOperations(this: CPU) {
     instruction: 'RETI',
     byteDefinition: 0b11_011_001,
     byteLength: 1,
-    cycleTime: 4,
+    cycleTime: 16,
     execute() {
       registers.programCounter.value = cpu.popFromStack();
       cpu.isInterruptMasterEnable = true;
@@ -180,7 +180,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getRetConditionByteDefinition(FlagCondition.NZ),
     byteLength: 1,
     get cycleTime() {
-      return !registers.F.isResultZero ? 5 : 2;
+      return !registers.F.isResultZero ? 20 : 8;
     },
     execute() {
       if (!registers.F.isResultZero) {
@@ -194,7 +194,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getRetConditionByteDefinition(FlagCondition.Z),
     byteLength: 1,
     get cycleTime() {
-      return registers.F.isResultZero ? 5 : 2;
+      return registers.F.isResultZero ? 20 : 8;
     },
     execute() {
       if (registers.F.isResultZero) {
@@ -208,7 +208,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getRetConditionByteDefinition(FlagCondition.NC),
     byteLength: 1,
     get cycleTime() {
-      return !registers.F.isCarry ? 5 : 2;
+      return !registers.F.isCarry ? 20 : 8;
     },
     execute() {
       if (!registers.F.isCarry) {
@@ -222,7 +222,7 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getRetConditionByteDefinition(FlagCondition.C),
     byteLength: 1,
     get cycleTime() {
-      return registers.F.isCarry ? 5 : 2;
+      return registers.F.isCarry ? 20 : 8;
     },
     execute() {
       if (registers.F.isCarry) {
@@ -255,7 +255,7 @@ export function createCallAndReturnOperations(this: CPU) {
       byteDefinition: getRstConditionByteDefinition(operand),
       instruction: `RST ${operand}`,
       byteLength: 1,
-      cycleTime: 4,
+      cycleTime: 16,
       execute() {
         cpu.pushToStack(registers.programCounter.value);
         registers.programCounter.value = operandToAddress[operand];

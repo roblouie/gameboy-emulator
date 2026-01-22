@@ -17,7 +17,7 @@ export function getSetSubOperations(cpu: CPU) {
       cpu.addCbOperation({
         byteDefinition: getSetBAByteDefinition(bitPosition, register.code),
         instruction: `SET ${bitPosition}, ${register.name}`,
-        cycleTime: 2,
+        cycleTime: 8,
         byteLength: 2,
         execute() {
           register.value = setBit(register.value, bitPosition, 1);
@@ -38,7 +38,7 @@ export function getSetSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       byteDefinition: getSetHLByteDefinition(bitPosition),
       instruction: `SET ${bitPosition}, (HL)`,
-      cycleTime: 3,
+      cycleTime: 12,
       byteLength: 2,
       execute() {
         const value = memory.readByte(registers.HL.value);

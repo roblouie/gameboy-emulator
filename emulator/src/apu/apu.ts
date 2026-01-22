@@ -10,7 +10,7 @@ export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
-  private audioContext = new AudioContext({ sampleRate: 44100 });
+  private audioContext = new AudioContext({ sampleRate: 44100, latencyHint: "interactive" });
 
   private frameSequencerCycleCounter = 0;
 
@@ -79,7 +79,7 @@ export class APU {
     }
   }
 
-  private tempBuffer = new Float32Array(512);
+  private tempBuffer = new Float32Array(256);
   private tempIndex = 0;
 
   private sampleChannels() {
@@ -94,7 +94,7 @@ export class APU {
 
     if (this.tempIndex >= this.tempBuffer.length) {
       this.workletNode?.port?.postMessage(this.tempBuffer, [this.tempBuffer.buffer]);
-      this.tempBuffer = new Float32Array(512);
+      this.tempBuffer = new Float32Array(256);
       this.tempIndex = 0;
     }
   }

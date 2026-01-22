@@ -59,7 +59,7 @@ export class Gameboy {
         this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
       }
 
-      this.cycles = this.cycles % GPU.CyclesPerFrame;
+      this.cycles = this.cycles - GPU.CyclesPerFrame;
     }
 
     requestAnimationFrame(diff => this.runFrame(diff));

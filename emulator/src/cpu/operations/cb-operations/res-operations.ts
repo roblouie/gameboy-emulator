@@ -17,7 +17,7 @@ export function getResSubOperations(cpu: CPU) {
       cpu.addCbOperation({
         byteDefinition: getResBAByteDefinition(bitPosition, register.code),
         instruction: `RES ${bitPosition}, ${register.name}`,
-        cycleTime: 2,
+        cycleTime: 8,
         byteLength: 2,
         execute() {
           register.value = clearBit(register.value, bitPosition);
@@ -39,7 +39,7 @@ export function getResSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       byteDefinition: getResHLByteDefinition(bitPosition),
       instruction: `RES ${bitPosition}, (HL)`,
-      cycleTime: 3,
+      cycleTime: 12,
       byteLength: 2,
       execute() {
         const value = memory.readByte(registers.HL.value);

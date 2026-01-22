@@ -6,7 +6,7 @@ export function createRotateShiftOperations(this: CPU) {
   this.addOperation({
     instruction: 'RLCA',
     byteDefinition: 0b00_000_111,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       const bit7 = registers.A.value >> 7;
@@ -22,7 +22,7 @@ export function createRotateShiftOperations(this: CPU) {
   this.addOperation({
     instruction: 'RLA',
     byteDefinition: 0b00_010_111,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       const bit7 = registers.A.value >> 7;
@@ -39,7 +39,7 @@ export function createRotateShiftOperations(this: CPU) {
   this.addOperation({
     instruction: 'RRCA',
     byteDefinition: 0b00_001_111,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       const bit0 = registers.A.value & 0b1;
@@ -55,7 +55,7 @@ export function createRotateShiftOperations(this: CPU) {
   this.addOperation({
     instruction: 'RRA',
     byteDefinition: 0b00_011_111,
-    cycleTime: 1,
+    cycleTime: 4,
     byteLength: 1,
     execute() {
       const bit0 = registers.A.value & 0b1;
