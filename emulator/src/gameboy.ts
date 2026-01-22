@@ -18,15 +18,9 @@ export class Gameboy {
   memory = memory;
 
   private frameFinishedCallback?: Function;
-  fps = 0;
   input = input;
   controllerManager = controllerManager;
   keyboardManager = keyboardManager;
-
-  private maxFps = 60;
-  private interval = 1000 / this.maxFps;
-
-  private cycles = 0;
 
   private previousTime = 0;
 
@@ -38,31 +32,33 @@ export class Gameboy {
     requestAnimationFrame(diff => this.runFrame(diff));
   }
 
+  private cycleRemainder = 0;
+
   private runFrame(currentTime: number) {
-    const delta = currentTime - this.previousTime
+    if (!this.previousTime) this.previousTime = currentTime;
 
-    if (delta >= this.interval || !this.previousTime) {
-      this.fps = 1000 / (currentTime - this.previousTime);
+    const deltaMs = currentTime - this.previousTime;
+    this.previousTime = currentTime;
 
-      this.previousTime = currentTime - (delta % this.interval);
+    const cyclesToRunFloat = this.cycleRemainder + (deltaMs * CPU.OperatingHertz) / 1000;
+    const cyclesToRun = cyclesToRunFloat | 0;
+    this.cycleRemainder = cyclesToRunFloat - cyclesToRun;
 
-      while (this.cycles <= GPU.CyclesPerFrame) {
-        const cycleForTick = this.cpu.tick();
-        this.gpu.tick(cycleForTick);
-        this.apu.tick(cycleForTick);
-        this.cycles += cycleForTick;
-      }
-
-      controllerManager.queryButtons();
-
-      if (this.frameFinishedCallback) {
-        this.frameFinishedCallback(this.gpu.screen, this.fps, this.cpu.registers);
-      }
-
-      this.cycles = this.cycles - GPU.CyclesPerFrame;
+    let ran = 0;
+    while (ran < cyclesToRun) {
+      const cycles = this.cpu.tick();
+      this.gpu.tick(cycles);
+      this.apu.tick(cycles);
+      ran += cycles;
     }
 
-    requestAnimationFrame(diff => this.runFrame(diff));
+    controllerManager.queryButtons();
+
+    if (this.frameFinishedCallback) {
+      this.frameFinishedCallback(this.gpu.displayImageData);
+    }
+
+    requestAnimationFrame(t => this.runFrame(t));
   }
 
   onFrameFinished(callback: Function) {

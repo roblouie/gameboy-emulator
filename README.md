@@ -91,20 +91,6 @@ for file selection. For simplicity, we will add that to our event handler from a
 gameboy.apu.enableSound();
 ```
 
-#### Note: https and same origin required for audio to work due to SharedArrayBuffer
-In order to provide near real-time buffered audio, this emulator uses a shared array buffer to
-write to an audio player on another thread. Since this allows direct memory access, certain security
-features are required. First, you must use https. In addition, you must have the following headers set
-on your server:
-
-```
-'Cross-Origin-Opener-Policy': 'same-origin'
-'Cross-Origin-Embedder-Policy': 'require-corp'
-```
-
-You can see these being set in the webpack dev server in the simple example projects. You can still
-use the emulator without this, but audio will not work.
-
 ### Render to Canvas
 
 Finally you need to actually render the graphics somewhere. For flexibility the emulator just draws

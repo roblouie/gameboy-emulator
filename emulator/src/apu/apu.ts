@@ -10,7 +10,7 @@ export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
-  private audioContext = new AudioContext({ sampleRate: 44100, latencyHint: "interactive" });
+  private audioContext = new AudioContext({ latencyHint: "interactive" });
 
   private frameSequencerCycleCounter = 0;
 
@@ -79,22 +79,29 @@ export class APU {
     }
   }
 
-  private tempBuffer = new Float32Array(256);
+  private tempBuffer = new Float32Array(1024);
   private tempIndex = 0;
 
+  private getSample(isSoundOn: boolean) {
+    if (isSoundOn) {
+      return (this.sound1.getSample() + this.sound2.getSample() + this.sound3.getSample() + this.sound4.getSample()) / 4;
+    } else {
+      return 0;
+    }
+  }
+
   private sampleChannels() {
-    if (!soundsOnRegister.isAllSoundOn) {
+    const isSoundOn = soundsOnRegister.isAllSoundOn;
+    if (!isSoundOn) {
       this.frameSequencerCycleCounter = 0;
-      return;
     }
 
-    const sample = (this.sound1.getSample() + this.sound2.getSample() + this.sound3.getSample() + this.sound4.getSample()) / 4;
-    this.tempBuffer[this.tempIndex] = sample;
+    this.tempBuffer[this.tempIndex] = this.getSample(isSoundOn);
     this.tempIndex++;
 
     if (this.tempIndex >= this.tempBuffer.length) {
       this.workletNode?.port?.postMessage(this.tempBuffer, [this.tempBuffer.buffer]);
-      this.tempBuffer = new Float32Array(256);
+      this.tempBuffer = new Float32Array(1024);
       this.tempIndex = 0;
     }
   }
