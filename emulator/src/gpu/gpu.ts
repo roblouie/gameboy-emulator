@@ -28,27 +28,20 @@ export class GPU {
   private static CyclesPerScanlineOam = 80;
   private static CyclesPerScanlineVram = 172;
   private static CyclesPerScanline = GPU.CyclesPerHBlank + GPU.CyclesPerScanlineOam + GPU.CyclesPerScanlineVram;
-  private static CyclesPerVBlank = 4560;
-  private static ScanlinesPerFrame = 144;
-  static CyclesPerFrame = (GPU.CyclesPerScanline * GPU.ScanlinesPerFrame) + GPU.CyclesPerVBlank;
 
-  screen: EnhancedImageData;
+  private drawImageData = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
+  displayImageData = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
   private cycleCounter = 0;
 
   private windowLinesDrawn = 0;
   private prioritizedSprites: ObjectAttributeMemoryRegister[] = [];
-
 
   colors = [
     { red: 255, green: 255, blue: 255 },
     { red: 192, green: 192, blue: 192 },
     { red: 96, green: 96, blue: 96 },
     { red: 0, green: 0, blue: 0 },
-  ]
-
-  constructor() {
-    this.screen = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
-  }
+  ];
 
   tick(cycles: number) {
     this.cycleCounter += cycles;
@@ -90,6 +83,9 @@ export class GPU {
           if (lineYRegister.value === GPU.ScreenHeight) {
             lcdStatusRegister.mode = LcdStatusMode.InVBlank;
             interruptRequestRegister.triggerVBlankInterruptRequest();
+            const tmp = this.displayImageData;
+            this.displayImageData = this.drawImageData;
+            this.drawImageData = tmp;
           } else {
             lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
           }
@@ -188,7 +184,7 @@ export class GPU {
       const paletteColor = palette[paletteIndex];
       const color = this.colors[paletteColor];
 
-      this.screen.setPixel(screenX, lineY, color.red, color.green, color.blue);
+      this.drawImageData.setPixel(screenX, lineY, color.red, color.green, color.blue);
     }
 
     return backgroundLineValues;
@@ -251,7 +247,7 @@ export class GPU {
 
       const paletteColor = palette[paletteIndex];
       const color = this.colors[paletteColor];
-      this.screen.setPixel(screenX, lineY, color.red, color.green, color.blue);
+      this.drawImageData.setPixel(screenX, lineY, color.red, color.green, color.blue);
     }
 
     this.windowLinesDrawn++;
@@ -343,7 +339,7 @@ export class GPU {
         const paletteColor = palette[paletteIndex];
         const color = this.colors[paletteColor];
 
-        this.screen.setPixel(spriteX + xPixelInTile, lineY, color.red, color.green, color.blue);
+        this.drawImageData.setPixel(spriteX + xPixelInTile, lineY, color.red, color.green, color.blue);
       }
     });
   }
