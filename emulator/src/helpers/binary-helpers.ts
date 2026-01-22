@@ -24,8 +24,7 @@ export function asUint16(value: number) {
 }
 
 export function convertUint8ToInt8(value: number) {
-  const confirmedUint8 = asUint8(value);
-  return (confirmedUint8 << 24) >> 24;
+  return (value << 24) >> 24;
 }
 
 export function getLeastSignificantByte(word: number) {
