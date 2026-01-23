@@ -167,23 +167,23 @@ export class Memory {
         case 0xff11: this.apu.sound1.nr11LengthAndDutyCycle.value = value; return;
         case 0xff12: this.apu.sound1.nr12EnvelopeControl.value = value; return;
         case 0xff13: this.apu.sound1.nr13LowOrderFrequency.value = value; return;
-        case 0xff14: this.apu.sound1.nr14HighOrderFrequency.value = value; return;
+        case 0xff14: this.apu.sound1.writeNr14(value); return;
 
         case 0xff16: this.apu.sound2.nr21LengthAndDutyCycle.value = value; return;
         case 0xff17: this.apu.sound2.nr22EnvelopeControl.value = value; return;
         case 0xff18: this.apu.sound2.nr23LowOrderFrequency.value = value; return;
-        case 0xff19: this.apu.sound2.nr24HighOrderFrequency.value = value; return;
+        case 0xff19: this.apu.sound2.writeNr24(value); return;
 
         case 0xff1a: this.apu.sound3.nr30SoundOff.value = value; return;
         case 0xff1b: this.apu.sound3.nr31Length.value = value; return;
         case 0xff1c: this.apu.sound3.nr32OutputLevel.value = value; return;
         case 0xff1d: this.apu.sound3.nr33LowOrderFrequency.value = value; return;
-        case 0xff1e: this.apu.sound3.nr34HighOrderFrequency.value = value; return;
+        case 0xff1e: this.apu.sound3.writeNr34(value); return;
 
         case 0xff20: this.apu.sound4.nr41Length.value = value; return;
         case 0xff21: this.apu.sound4.nr42EnvelopeControl.value = value; return;
         case 0xff22: this.apu.sound4.nr43Polynomial.value = value; return;
-        case 0xff23: this.apu.sound4.nr44ContinuousSelection.value = value; return;
+        case 0xff23: this.apu.sound4.writeNr44(value); return;
 
         case 0xff26: this.apu.nr52SoundEndFlag.value = value; return;
 

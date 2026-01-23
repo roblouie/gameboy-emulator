@@ -20,6 +20,14 @@ export class Sound3 {
 
   private isActive = false;
 
+  writeNr34(value: number) {
+    this.nr34HighOrderFrequency.value = value;
+
+    if ((value & 0x80) !== 0) {
+      this.playSound();
+    }
+  }
+
   tick(cycles: number) {
     if (this.nr34HighOrderFrequency.isInitialize) {
       this.playSound();

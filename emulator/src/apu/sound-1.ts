@@ -33,22 +33,31 @@ export class Sound1 {
 
   private isActive = false;
 
-  tick(cycles: number) {
-    if (this.nr14HighOrderFrequency.isInitialize) {
-      this.playSound();
-      this.nr14HighOrderFrequency.isInitialize = false;
-    }
+  writeNr14(value) {
+    this.nr14HighOrderFrequency.value = value;
 
-      this.frequencyTimer -= cycles; // count down the frequency timer
-      if (this.frequencyTimer <= 0) {
-        this.frequencyTimer += this.frequencyPeriod; // reload timer with the current frequency period
-        this.positionInDutyCycle = (this.positionInDutyCycle + 1) % 8; // advance to next value in current duty cycle, reset to 0 at 8 to loop back
-      }
+    if ((value & 0x80) !== 0) {
+      this.playSound();
+    }
+  }
+
+  tick(cycles: number) {
+    this.frequencyTimer -= cycles; // count down the frequency timer
+    if (this.frequencyTimer <= 0) {
+      this.frequencyTimer += this.frequencyPeriod; // reload timer with the current frequency period
+      this.positionInDutyCycle = (this.positionInDutyCycle + 1) % 8; // advance to next value in current duty cycle, reset to 0 at 8 to loop back
+    }
   }
 
   playSound() {
     // Enable channel
     this.isActive = true;
+
+    this.resetSweepTimer();
+
+    this.shadowFrequency = this.nr13LowOrderFrequency.value | (this.nr14HighOrderFrequency.highOrderFrequencyData << 8);
+
+    this.isSweepEnabled = this.nr10SweepControl.sweepTime !== 0 && this.nr10SweepControl.sweepAmount !== 0;
 
     // Initialize frequency
     this.frequencyPeriod = this.getFrequencyPeriod();
@@ -84,7 +93,7 @@ export class Sound1 {
     if (this.sweepTimer === 0) {
       this.resetSweepTimer();
 
-      if (this.isSweepEnabled && this.nr10SweepControl.sweepTime > 0) {
+      if (this.isSweepEnabled) {
         const newFrequency = this.calculateNewSweepFrequency();
 
         if (newFrequency < 2048 && this.nr10SweepControl.sweepAmount > 0) {

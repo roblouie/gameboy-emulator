@@ -1,9 +1,7 @@
 import { Enveloper } from "@/apu/enveloper";
 import {EnvelopeControlRegister} from "@/apu/registers/envelope-control-registers";
-import {
-  HighOrderFrequencyRegister,
-} from "@/apu/registers/high-order-frequency-registers";
-import {SimpleByteRegister} from "@/helpers/simple-byte-register";
+import { HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
+import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 
 export class Sound2 {
   private dutyCycles = [
@@ -29,17 +27,20 @@ export class Sound2 {
 
   private isActive = false;
 
-  tick(cycles: number) {
-    if (this.nr24HighOrderFrequency.isInitialize) {
-      this.playSound();
-      this.nr24HighOrderFrequency.isInitialize = false;
-    }
+  writeNr24(value) {
+    this.nr24HighOrderFrequency.value = value;
 
-      this.frequencyTimer -= cycles; // count down the frequency timer
-      if (this.frequencyTimer <= 0) {
-        this.frequencyTimer += this.frequencyPeriod; // reload timer with the current frequency period
-        this.positionInDutyCycle = (this.positionInDutyCycle + 1) % 8; // advance to next value in current duty cycle, reset to 0 at 8 to loop back
-      }
+    if ((value & 0x80) !== 0) {
+      this.playSound();
+    }
+  }
+
+  tick(cycles: number) {
+    this.frequencyTimer -= cycles; // count down the frequency timer
+    if (this.frequencyTimer <= 0) {
+      this.frequencyTimer += this.frequencyPeriod; // reload timer with the current frequency period
+      this.positionInDutyCycle = (this.positionInDutyCycle + 1) % 8; // advance to next value in current duty cycle, reset to 0 at 8 to loop back
+    }
   }
 
   playSound() {

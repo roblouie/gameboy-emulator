@@ -22,12 +22,15 @@ export class Sound4 {
 
   private isActive = false;
 
-  tick(cycles: number) {
-    if (this.nr44ContinuousSelection.isInitialize) {
-      this.playSound();
-      this.nr44ContinuousSelection.isInitialize = false;
-    }
+  writeNr44(value: number) {
+    this.nr44ContinuousSelection.value = value;
 
+    if ((value & 0x80) !== 0) {
+      this.playSound();
+    }
+  }
+
+  tick(cycles: number) {
     this.frequencyTimer -= cycles; // count down the frequency timer
     if (this.frequencyTimer <= 0) {
       this.frequencyTimer = this.getFrequencyPeriod(); // reload timer with the current frequency period
