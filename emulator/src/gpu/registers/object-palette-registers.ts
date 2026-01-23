@@ -1,7 +1,8 @@
 import { SingleByteMemoryRegister } from "@/memory/memory-register";
 import { memory } from "@/memory/memory";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 
-export class ObjectPaletteRegister implements SingleByteMemoryRegister {
+export class ObjectPaletteRegister implements SimpleByteRegister {
   static StartOffset = 0xff48;
 
   offset: number;

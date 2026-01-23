@@ -1,23 +1,22 @@
 import { CpuRegisterCollection } from "./internal-registers/cpu-register-collection";
-import { memory } from "@/memory/memory";
+import {Memory} from "@/memory/memory";
 import { createCallAndReturnOperations } from "@/cpu/operations/create-call-and-return-operations";
 import { createInterruptOperations } from "@/cpu/operations/create-interupt-operations";
 import { createJumpOperations } from "@/cpu/operations/create-jump-operations";
 import { createRotateShiftOperations } from "@/cpu/operations/create-rotate-shift-operations";
 import { createGeneralPurposeOperations } from "@/cpu/operations/create-general-purpose-operations";
 import { Operation } from "@/cpu/operations/operation.model";
-import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
-import { interruptEnableRegister } from "@/cpu/registers/interrupt-enable-register";
 import { Cartridge } from "@/cartridge/cartridge";
 import { createCbSubOperations } from "@/cpu/operations/cb-operations/cb-operation";
 import { createLogicalOperations } from '@/cpu/operations/create-logical-operations';
 import { createArithmeticOperations } from '@/cpu/operations/create-arithmetic-operations';
 import { createInputOutputOperations } from '@/cpu/operations/create-input-output-operations';
 import { asUint16, getMostSignificantByte } from '@/helpers/binary-helpers';
-import { dividerRegister } from '@/cpu/registers/divider-register';
-import { timerControllerRegister } from '@/cpu/registers/timer-controller-register';
-import { timaRegister } from '@/cpu/registers/tima-register';
-import { tmaRegister } from '@/cpu/registers/tma-register';
+// import { dividerRegister } from '@/cpu/registers/divider-register';
+// import { timerControllerRegister } from '@/cpu/registers/timer-controller-register';
+// import { timaRegister } from '@/cpu/registers/tima-register';
+// import { tmaRegister } from '@/cpu/registers/tma-register';
+import {InterruptController} from "@/cpu/registers/interrupt-request-register";
 
 export class CPU {
   static OperatingHertz = 4_194_304;
@@ -51,7 +50,12 @@ export class CPU {
   private isHalted = false;
   private isStopped = false;
 
-  constructor() {
+  memory: Memory;
+  interruptController: InterruptController;
+
+  constructor(bus: Memory, interruptController: InterruptController) {
+    this.memory = bus;
+    this.interruptController = interruptController;
     this.registers = new CpuRegisterCollection();
     this.createInputOutputOperations();
     this.createArithmeticOperations();
@@ -106,18 +110,18 @@ export class CPU {
 
   pushToStack(word: number) {
     this.registers.stackPointer.value -= 2;
-    memory.writeWord(this.registers.stackPointer.value, word);
+    this.memory.writeWord(this.registers.stackPointer.value, word);
   }
 
   popFromStack() {
-    const value = memory.readWord(this.registers.stackPointer.value);
+    const value = this.memory.readWord(this.registers.stackPointer.value);
     this.registers.stackPointer.value += 2;
 
     return value;
   }
 
   private getOperation() {
-    const operationIndex = memory.readByte(this.registers.programCounter.value);
+    const operationIndex = this.memory.readByte(this.registers.programCounter.value);
     this.registers.programCounter.value++;
     const operation = this.operations[operationIndex];
 
@@ -130,8 +134,12 @@ export class CPU {
     return operation;
   }
 
+  private getInterruptEnableRegisterValue() {
+    return this.memory.readByte(0xffff);
+  }
+
   private handleInterrupts() {
-    const firedInterrupts = interruptRequestRegister.value & interruptEnableRegister.value;
+    const firedInterrupts = this.interruptController.value & this.getInterruptEnableRegisterValue();
 
     if (firedInterrupts > 0) {
       this.isHalted = false;
@@ -143,30 +151,30 @@ export class CPU {
 
     this.pushToStack(this.registers.programCounter.value);
 
-    const interruptFlags = interruptRequestRegister.getInterruptFlags(firedInterrupts);
+    const interruptFlags = this.interruptController.getInterruptFlags(firedInterrupts);
 
     if (interruptFlags.isVerticalBlanking) {
-      interruptRequestRegister.clearVBlankInterruptRequest();
+      this.interruptController.clearVBlankInterruptRequest();
       this.registers.programCounter.value = CPU.VBlankInterruptAddress;
     }
 
     else if (interruptFlags.isLCDStatus) {
-      interruptRequestRegister.clearLcdStatusInterruptRequest();
+      this.interruptController.clearLcdStatusInterruptRequest();
       this.registers.programCounter.value = CPU.LCDStatusInterruptAddress;
     }
 
     else if (interruptFlags.isTimerOverflow) {
-      interruptRequestRegister.clearTimerOverflowInterruptRequest();
+      this.interruptController.clearTimerOverflowInterruptRequest();
       this.registers.programCounter.value = CPU.TimerOverflowInterruptAddress;
     }
 
     else if (interruptFlags.isSerialTransferCompletion) {
-      interruptRequestRegister.clearSerialTransferInterruptRequest();
+      this.interruptController.clearSerialTransferInterruptRequest();
       this.registers.programCounter.value = CPU.SerialTransferCompletionInterruptAddress;
     }
 
     else if (interruptFlags.isP10P13NegativeEdge) {
-      interruptRequestRegister.clearP10P13NegativeEdgeInterruptRequest();
+      this.interruptController.clearP10P13NegativeEdgeInterruptRequest();
       this.registers.programCounter.value = CPU.P10P13InputSignalLowInterruptAddress;
     }
 
@@ -174,27 +182,27 @@ export class CPU {
   }
 
   updateTimers(cycles: number) {
-    this.frequencyCounter = asUint16(this.frequencyCounter + cycles);
-    dividerRegister.setValueFromCpuDivider(getMostSignificantByte(this.frequencyCounter));
-
-    if (!timerControllerRegister.isTimerOn) {
-      return;
-    }
-
-    this.timerCycles += cycles;
-
-    const threshold = timerControllerRegister.cyclesForTimerUpdate;
-
-    while (this.timerCycles >= threshold) {
-      this.timerCycles -= threshold;
-
-      if (timaRegister.value === 0xff) {
-        timaRegister.value = tmaRegister.value;
-        interruptRequestRegister.triggerTimerInterruptRequest();
-      } else {
-        timaRegister.value++;
-      }
-    }
+    // this.frequencyCounter = asUint16(this.frequencyCounter + cycles);
+    // dividerRegister.setValueFromCpuDivider(getMostSignificantByte(this.frequencyCounter));
+    //
+    // if (!timerControllerRegister.isTimerOn) {
+    //   return;
+    // }
+    //
+    // this.timerCycles += cycles;
+    //
+    // const threshold = timerControllerRegister.cyclesForTimerUpdate;
+    //
+    // while (this.timerCycles >= threshold) {
+    //   this.timerCycles -= threshold;
+    //
+    //   if (timaRegister.value === 0xff) {
+    //     timaRegister.value = tmaRegister.value;
+    //     this.interruptController.triggerTimerInterruptRequest();
+    //   } else {
+    //     timaRegister.value++;
+    //   }
+    // }
   }
 
   addOperation(operation: Operation) {

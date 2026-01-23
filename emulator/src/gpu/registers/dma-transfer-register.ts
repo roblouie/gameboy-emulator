@@ -1,7 +1,7 @@
 import { SingleByteMemoryRegister } from "@/memory/memory-register";
 import { memory } from "@/memory/memory";
 
-class DmaTransferRegister implements SingleByteMemoryRegister {
+export class DmaTransferRegister implements SingleByteMemoryRegister {
   offset = 0xff46;
   name = 'DMA';
 

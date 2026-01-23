@@ -1,5 +1,4 @@
 import { MultiByteMemoryRegister } from "@/memory/memory-register";
-import { memory } from "@/memory/memory";
 
 export class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
   static StartOffset = 0xfe00;
@@ -7,13 +6,15 @@ export class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
   static BytesPerRegister = 4;
 
   offset: number;
+  dataView: DataView;
   name: string;
   index: number;
 
-  constructor(index: number) {
+  constructor(index: number, dataView: DataView) {
     this.offset = index + ObjectAttributeMemoryRegister.StartOffset;
     this.name = 'OBJ' + index;
     this.index = index;
+    this.dataView = dataView;
   }
 
   getValueAt(index: number) {
@@ -21,7 +22,7 @@ export class ObjectAttributeMemoryRegister implements MultiByteMemoryRegister {
       throw new Error(`${this.name} Index out of bounds`);
     }
 
-    return memory.readByte(this.offset + index);
+    return this.dataView.getUint8(this.offset + index);
   }
 
   get yPosition() {
@@ -61,7 +62,7 @@ function createObjectAttributeMemoryRegisters() {
   const memorySize = ObjectAttributeMemoryRegister.EndOffset - ObjectAttributeMemoryRegister.StartOffset;
 
   for (let i = 0; i <= memorySize; i += ObjectAttributeMemoryRegister.BytesPerRegister) {
-    objectAttributeMemoryRegisters.push(new ObjectAttributeMemoryRegister(i));
+    objectAttributeMemoryRegisters.push(new ObjectAttributeMemoryRegister(i, new DataView(new ArrayBuffer(4)))); // TODO: Move to gpu and create properly with one data view
   }
 
   return objectAttributeMemoryRegisters;

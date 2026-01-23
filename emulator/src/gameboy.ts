@@ -1,6 +1,6 @@
 import { GPU } from "@/gpu/gpu";
 import { CPU } from "@/cpu/cpu";
-import { memory } from "@/memory/memory";
+import { Memory } from "@/memory/memory";
 import { input } from "@/input/input";
 import { APU } from "@/apu/apu";
 import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
@@ -9,13 +9,16 @@ import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
 import { CartridgeLoader } from "@/cartridge/cartridge-loader";
 import { keyboardManager } from "@/input/keyboard-manager";
+import {InterruptController} from "@/cpu/registers/interrupt-request-register";
 
 export class Gameboy {
-  cpu = new CPU();
-  gpu = new GPU();
-  apu = new APU();
+  interruptController = new InterruptController();
 
-  memory = memory;
+  gpu = new GPU(this.interruptController);
+  // apu = new APU();
+
+  bus = new Memory(this.gpu, null, this.interruptController);
+  cpu = new CPU(this.bus, this.interruptController);
 
   private frameFinishedCallback?: Function;
   input = input;
@@ -26,7 +29,7 @@ export class Gameboy {
 
   run() {
     this.cpu.initialize();
-    memory.reset();
+    this.bus.reset();
     lcdControlRegister.value = 0x83; // initial value from official guide
 
     requestAnimationFrame(diff => this.runFrame(diff));
@@ -48,7 +51,7 @@ export class Gameboy {
     while (ran < cyclesToRun) {
       const cycles = this.cpu.tick();
       this.gpu.tick(cycles);
-      this.apu.tick(cycles);
+      // this.apu.tick(cycles);
       ran += cycles;
     }
 
@@ -67,7 +70,7 @@ export class Gameboy {
 
   loadGame(arrayBuffer: ArrayBuffer) {
     const cartridge = CartridgeLoader.FromArrayBuffer(arrayBuffer);
-    memory.insertCartridge(cartridge);
+    this.bus.insertCartridge(cartridge);
     console.log('title: ' + cartridge.title);
     console.log('version: ' + cartridge.versionNumber);
     console.log('type: ' + cartridge.typeName);
@@ -76,22 +79,22 @@ export class Gameboy {
   }
 
   setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer) {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
-      const cartridge = memory.cartridge as Mbc1Cartridge;
+    if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
+      const cartridge = this.bus.cartridge as Mbc1Cartridge;
       cartridge.setRam(sramArrayBuffer);
     }
   }
 
   getCartridgeSaveRam() {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
-      const cartridge = memory.cartridge as Mbc1Cartridge;
+    if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
+      const cartridge = this.bus.cartridge as Mbc1Cartridge;
       return cartridge.dumpRam();
     }
   }
 
   setOnWriteToCartridgeRam(onSramWrite: Function) {
-    if (memory.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
-      const cartridge = memory.cartridge as Mbc1Cartridge;
+    if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
+      const cartridge = this.bus.cartridge as Mbc1Cartridge;
       cartridge.onSramWrite = onSramWrite
     }
   }

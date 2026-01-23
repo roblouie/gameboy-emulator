@@ -1,9 +1,8 @@
 import { CPU } from "@/cpu/cpu";
 import { setBit } from "@/helpers/binary-helpers";
-import { memory } from "@/memory/memory";
 
 export function getSetSubOperations(cpu: CPU) {
-  const { registers } = cpu;
+  const { registers, memory } = cpu;
 
   // ****************R
   // * Set b, A

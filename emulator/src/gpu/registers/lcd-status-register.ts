@@ -1,20 +1,8 @@
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
-import { memory } from "@/memory/memory";
 import { getBit, setBit } from "@/helpers/binary-helpers";
 import { LcdStatusMode } from "@/gpu/registers/lcd-status-mode.enum";
+import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 
-class LcdStatusRegister implements SingleByteMemoryRegister {
-  offset = 0xff41;
-  name = 'STAT';
-
-  get value() {
-    return memory.readByte(this.offset);
-  }
-
-  set value(byte: number) {
-    memory.writeByte(this.offset, byte);
-  }
-
+export class LcdStatusRegister extends SimpleByteRegister {
   get mode(): LcdStatusMode {
     return this.value & 0b11;
   }
@@ -42,5 +30,3 @@ class LcdStatusRegister implements SingleByteMemoryRegister {
     return getBit(this.value, 6);
   }
 }
-
-export const lcdStatusRegister = new LcdStatusRegister();

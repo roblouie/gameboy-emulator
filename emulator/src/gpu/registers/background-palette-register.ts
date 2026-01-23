@@ -1,7 +1,7 @@
 import { SingleByteMemoryRegister } from "@/memory/memory-register";
 import { memory } from "@/memory/memory";
 
-class BackgroundPaletteRegister implements SingleByteMemoryRegister {
+export class BackgroundPaletteRegister implements SingleByteMemoryRegister {
   offset = 0xff47;
   name = 'BGP';
 

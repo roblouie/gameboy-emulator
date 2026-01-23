@@ -1,6 +1,5 @@
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
-import { memory } from "@/memory/memory";
 import { clearBit, setBit } from "@/helpers/binary-helpers";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 
 interface InterruptFlags {
   isVerticalBlanking: boolean;
@@ -10,16 +9,9 @@ interface InterruptFlags {
   isP10P13NegativeEdge: boolean;
 }
 
-class InterruptRequestRegister implements SingleByteMemoryRegister {
-  offset = 0xff0f;
-  name = 'IF';
-
-  get value() {
-    return memory.readByte(this.offset);
-  }
-
-  set value(byte: number) {
-    memory.writeByte(this.offset, byte);
+export class InterruptController extends SimpleByteRegister {
+  constructor() {
+    super(0xff0f);
   }
 
   triggerVBlankInterruptRequest() {
@@ -64,5 +56,3 @@ class InterruptRequestRegister implements SingleByteMemoryRegister {
     }
   }
 }
-
-export const interruptRequestRegister = new InterruptRequestRegister();

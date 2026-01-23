@@ -1,9 +1,8 @@
 import { CPU } from "@/cpu/cpu";
 import { getBit } from "@/helpers/binary-helpers";
-import { memory } from "@/memory/memory";
 
 export function getBitSubOperations(cpu: CPU) {
-  const { registers } = cpu;
+  const { registers, memory } = cpu;
   
   function getBitAndSetFlags(value: number, position: number) {
     const bit = getBit(value, position);

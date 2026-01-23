@@ -1,9 +1,8 @@
 import { CPU } from "@/cpu/cpu";
-import { memory } from "@/memory/memory";
 import { setBit } from "@/helpers/binary-helpers";
 
 export function getRotateShiftSubOperations(cpu: CPU) {
-  const { registers } = cpu;
+  const { registers, memory } = cpu;
 
   // ****************
   // * Swap m
