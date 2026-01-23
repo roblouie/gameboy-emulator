@@ -4,7 +4,7 @@ import {asUint8, clearBit, convertUint8ToInt8, getBit} from "@/helpers/binary-he
 import { LcdStatusMode } from "@/gpu/lcd-status-mode.enum";
 import {LcdStatusRegister} from "@/gpu/lcd-status-register";
 import {LcdControlRegister} from "@/gpu/lcd-control-register";
-import { InterruptController } from "@/cpu/registers/interrupt-request-register";
+import { InterruptController } from "@/cpu/interrupt-request-register";
 import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 import {Sprite} from "@/gpu/sprite";
 

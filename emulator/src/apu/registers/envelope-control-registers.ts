@@ -1,20 +1,6 @@
-import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 
-
-export class EnvelopeControlRegister implements SingleByteMemoryRegister {
-  offset: number;
-  name: string;
-  
-  constructor(offset: number, name: string) {
-    this.offset = offset;
-    this.name = name
-  }
-
-  get value() {
-    return memory.readByte(this.offset);
-  }
-
+export class EnvelopeControlRegister extends SimpleByteRegister {
   get initialVolume() {
     return this.value >> 4;
   }
@@ -31,7 +17,3 @@ export class EnvelopeControlRegister implements SingleByteMemoryRegister {
     return (this.value & 0xf8) !== 0;
   }
 }
-
-export const sound1EnvelopeControlRegister = new EnvelopeControlRegister(0xff12, 'NR12');
-export const sound2EnvelopeControlRegister = new EnvelopeControlRegister(0xff17, 'NR22');
-export const sound4EnvelopeControlRegister = new EnvelopeControlRegister(0xff21, 'NR42');

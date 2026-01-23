@@ -12,11 +12,11 @@ import { createLogicalOperations } from '@/cpu/operations/create-logical-operati
 import { createArithmeticOperations } from '@/cpu/operations/create-arithmetic-operations';
 import { createInputOutputOperations } from '@/cpu/operations/create-input-output-operations';
 import { asUint16, getMostSignificantByte } from '@/helpers/binary-helpers';
-// import { dividerRegister } from '@/cpu/registers/divider-register';
-// import { timerControllerRegister } from '@/cpu/registers/timer-controller-register';
-// import { timaRegister } from '@/cpu/registers/tima-register';
-// import { tmaRegister } from '@/cpu/registers/tma-register';
-import {InterruptController} from "@/cpu/registers/interrupt-request-register";
+// import { dividerRegister } from '@/cpu/timers/divider-register';
+// import { timerControllerRegister } from '@/cpu/timers/timer-controller-register';
+// import { timaRegister } from '@/cpu/timers/tima-register';
+// import { tmaRegister } from '@/cpu/timers/tma-register';
+import {InterruptController} from "@/cpu/interrupt-request-register";
 
 export class CPU {
   static OperatingHertz = 4_194_304;

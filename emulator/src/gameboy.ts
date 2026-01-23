@@ -8,15 +8,15 @@ import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
 import { CartridgeLoader } from "@/cartridge/cartridge-loader";
 import { keyboardManager } from "@/input/keyboard-manager";
-import {InterruptController} from "@/cpu/registers/interrupt-request-register";
+import {InterruptController} from "@/cpu/interrupt-request-register";
 
 export class Gameboy {
   interruptController = new InterruptController();
 
   gpu = new GPU(this.interruptController);
-  // apu = new APU();
+  apu = new APU();
 
-  bus = new Memory(this.gpu, null, this.interruptController);
+  bus = new Memory(this.gpu, this.apu, this.interruptController);
   cpu = new CPU(this.bus, this.interruptController);
 
   private frameFinishedCallback?: Function;
@@ -49,7 +49,7 @@ export class Gameboy {
     while (ran < cyclesToRun) {
       const cycles = this.cpu.tick();
       this.gpu.tick(cycles);
-      // this.apu.tick(cycles);
+      this.apu.tick(cycles);
       ran += cycles;
     }
 

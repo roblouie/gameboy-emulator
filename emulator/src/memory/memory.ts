@@ -2,7 +2,7 @@ import { Cartridge } from "@/cartridge/cartridge";
 import { input } from "@/input/input";
 import { GPU } from "@/gpu/gpu";
 import { APU } from "@/apu/apu";
-import {InterruptController} from "@/cpu/registers/interrupt-request-register";
+import {InterruptController} from "@/cpu/interrupt-request-register";
 
 
 export class Memory {
@@ -43,10 +43,42 @@ export class Memory {
       return this.gpu.oam[address - 0xfe00];
     }
 
+    if (this.isAccessingWaveRam(address)) {
+      return this.apu.sound3.waveformRam[address - 0xff30];
+    }
+
     if (this.isAccessingExternalRegisters(address)) {
       switch (address) {
+        // Input
         case 0xff00: return input.reportInput();
 
+        // APU
+        case 0xff10: return this.apu.sound1.nr10SweepControl.value;
+        case 0xff11: return this.apu.sound1.nr11LengthAndDutyCycle.value;
+        case 0xff12: return this.apu.sound1.nr12EnvelopeControl.value;
+        case 0xff13: return this.apu.sound1.nr13LowOrderFrequency.value;
+        case 0xff14: return this.apu.sound1.nr14HighOrderFrequency.value;
+
+        case 0xff16: return this.apu.sound2.nr21LengthAndDutyCycle.value;
+        case 0xff17: return this.apu.sound2.nr22EnvelopeControl.value;
+        case 0xff18: return this.apu.sound2.nr23LowOrderFrequency.value;
+        case 0xff19: return this.apu.sound2.nr24HighOrderFrequency.value;
+
+        case 0xff1a: return this.apu.sound3.nr30SoundOff.value;
+        case 0xff1b: return this.apu.sound3.nr31Length.value;
+        case 0xff1c: return this.apu.sound3.nr32OutputLevel.value;
+        case 0xff1d: return this.apu.sound3.nr33LowOrderFrequency.value;
+        case 0xff1e: return this.apu.sound3.nr34HighOrderFrequency.value;
+
+        case 0xff20: return this.apu.sound4.nr41Length.value;
+        case 0xff21: return this.apu.sound4.nr42EnvelopeControl.value;
+        case 0xff22: return this.apu.sound4.nr43Polynomial.value;
+        case 0xff23: return this.apu.sound4.nr44ContinuousSelection.value;
+
+        case 0xff26: return this.apu.nr52SoundEndFlag.value;
+
+
+        // GPU
         case 0xff40: return this.gpu.lcdControl.value;
         case 0xff41: return this.gpu.lcdStatus.value;
         case 0xff42: return this.gpu.scrollY.value;
@@ -60,6 +92,7 @@ export class Memory {
         case 0xff4a: return this.gpu.windowY.value;
         case 0xff4b: return this.gpu.windowX.value;
 
+        // Interrupt
         case 0xff0f: return this.interruptController.value;
 
         default: return 0xff;
@@ -104,24 +137,57 @@ export class Memory {
       return;
     }
 
+    if (this.isAccessingWaveRam(address)) {
+      this.apu.sound3.waveformRam[address - 0xff30] = value;
+      return;
+    }
+
     if (this.isAccessingExternalRegisters(address)) {
       switch (address) {
-        case 0xff00: input.setInputToCheck(value); break;
+        // Input
+        case 0xff00: input.setInputToCheck(value); return;
 
-        case 0xff40: this.gpu.lcdControl.value = value; break;
-        case 0xff41: this.gpu.lcdStatus.value = value; break;
-        case 0xff42: this.gpu.scrollY.value = value; break;
-        case 0xff43: this.gpu.scrollX.value = value; break;
-        case 0xff44: this.gpu.lineY.value = value; break;
-        case 0xff45: this.gpu.lineYCompare.value = value; break;
-        case 0xff46: this.dmaTransfer(value); break;
-        case 0xff47: this.gpu.backgroundPalette.value = value; break;
-        case 0xff48: this.gpu.objectPalettes[0].value = value; break;
-        case 0xff49: this.gpu.objectPalettes[1].value = value; break;
-        case 0xff4a: this.gpu.windowY.value = value; break;
-        case 0xff4b: this.gpu.windowX.value = value; break;
+        // APU
+        case 0xff10: this.apu.sound1.nr10SweepControl.value = value; return;
+        case 0xff11: this.apu.sound1.nr11LengthAndDutyCycle.value = value; return;
+        case 0xff12: this.apu.sound1.nr12EnvelopeControl.value = value; return;
+        case 0xff13: this.apu.sound1.nr13LowOrderFrequency.value = value; return;
+        case 0xff14: this.apu.sound1.nr14HighOrderFrequency.value = value; return;
 
-        case 0xff0f: this.interruptController.value = value; break;
+        case 0xff16: this.apu.sound2.nr21LengthAndDutyCycle.value = value; return;
+        case 0xff17: this.apu.sound2.nr22EnvelopeControl.value = value; return;
+        case 0xff18: this.apu.sound2.nr23LowOrderFrequency.value = value; return;
+        case 0xff19: this.apu.sound2.nr24HighOrderFrequency.value = value; return;
+
+        case 0xff1a: this.apu.sound3.nr30SoundOff.value = value; return;
+        case 0xff1b: this.apu.sound3.nr31Length.value = value; return;
+        case 0xff1c: this.apu.sound3.nr32OutputLevel.value = value; return;
+        case 0xff1d: this.apu.sound3.nr33LowOrderFrequency.value = value; return;
+        case 0xff1e: this.apu.sound3.nr34HighOrderFrequency.value = value; return;
+
+        case 0xff20: this.apu.sound4.nr41Length.value = value; return;
+        case 0xff21: this.apu.sound4.nr42EnvelopeControl.value = value; return;
+        case 0xff22: this.apu.sound4.nr43Polynomial.value = value; return;
+        case 0xff23: this.apu.sound4.nr44ContinuousSelection.value = value; return;
+
+        case 0xff26: this.apu.nr52SoundEndFlag.value = value; return;
+
+        // GPU
+        case 0xff40: this.gpu.lcdControl.value = value; return;
+        case 0xff41: this.gpu.lcdStatus.value = value; return;
+        case 0xff42: this.gpu.scrollY.value = value; return;
+        case 0xff43: this.gpu.scrollX.value = value; return;
+        case 0xff44: this.gpu.lineY.value = value; return;
+        case 0xff45: this.gpu.lineYCompare.value = value; return;
+        case 0xff46: this.dmaTransfer(value); return;
+        case 0xff47: this.gpu.backgroundPalette.value = value; return;
+        case 0xff48: this.gpu.objectPalettes[0].value = value; return;
+        case 0xff49: this.gpu.objectPalettes[1].value = value; return;
+        case 0xff4a: this.gpu.windowY.value = value; return;
+        case 0xff4b: this.gpu.windowX.value = value; return;
+
+        // Interrupt
+        case 0xff0f: this.interruptController.value = value; return;
       }
     }
 
@@ -153,6 +219,10 @@ export class Memory {
     return address >= 0xff00 && address <= 0xff7f;
   }
 
+  private isAccessingWaveRam(address: number) {
+    return address >= 0xff30 && address <= 0xff3f;
+  }
+
   private lastDmaValue = 0;
   private dmaTransfer(value: number) {
     this.lastDmaValue = value;
@@ -165,5 +235,3 @@ export class Memory {
     }
   }
 }
-
-// export const memory = new Memory();
