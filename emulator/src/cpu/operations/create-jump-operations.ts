@@ -1,8 +1,7 @@
-import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
 export function createJumpOperations(this: CPU) {
-  const { registers } = this;
+  const { registers, memory } = this;
 
   this.addOperation({
     get instruction() {

@@ -1,15 +1,7 @@
-import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 
 
-export class SweepControlRegister implements SingleByteMemoryRegister {
-  offset = 0xff11;
-  name = 'NR11';
-
-  get value() {
-    return memory.readByte(this.offset)
-  }
-
+export class SweepControlRegister extends SimpleByteRegister {
   get sweepTime() {
     return (this.value >> 4) & 0b111;
   }
@@ -26,5 +18,3 @@ export class SweepControlRegister implements SingleByteMemoryRegister {
     return this.value & 0b111;
   }
 }
-
-export const sweepControlRegister = new SweepControlRegister();

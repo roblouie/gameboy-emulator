@@ -1,9 +1,8 @@
 import { CPU } from "@/cpu/cpu";
 import { clearBit } from "@/helpers/binary-helpers";
-import { memory } from "@/memory/memory";
 
 export function getResSubOperations(cpu: CPU) {
-  const { registers } = cpu;
+  const { registers, memory } = cpu;
 
   // ****************
   // * Res b, A

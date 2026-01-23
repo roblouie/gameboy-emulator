@@ -471,16 +471,19 @@ gameboy.run();
 
 ### Mooneye Test Suite
 * acceptance/instr daa - Passed
-* acceptance/timer tim10 - Failed `D: 04! E: OK`
-* acceptance/timer tim01 - Failed `D: 08! E: OK`
-* acceptance/timer tima_reload - Failed `B: OK C: OK D: FF! E: 00! H: FF! L 00!`
-* acceptance/timer tim10_div_trigger - Failed `D: OK E: 06!`
-* acceptance/timer rapid_toggle - Failed `B: FF! C: D9!`
-* acceptance/timer tim11 - Failed `D: 04! E: OK`
-* acceptance/timer tima_write_reloading - Failed `D: 80! C: FE! E: 7F! L: OK`
-* acceptance/timer tim01_div_trigger - Failed `D: 0A! E: 0B!`
+* acceptance/bits reg_f - Passed
+* acceptance/bits unused_hwio-GS - Failed
+* acceptance/bits mem_oam - Passed
+* acceptance/timer tim10 - Passed
+* acceptance/timer tim01 - Passed
+* acceptance/timer tima_reload - Passed
+* acceptance/timer tim10_div_trigger - Passed
+* acceptance/timer rapid_toggle - Failed `B: OK C: D9!`
+* acceptance/timer tim11 - Passed
+* acceptance/timer tima_write_reloading - Failed `C: FE! D: 80! E: OK L: OK`
+* acceptance/timer tim01_div_trigger - Passed
 * acceptance/timer tim11_div_trigger - Passed
-* acceptance/timer div_write - Failed `FAIL: INTR`
-* acceptance/timer tma_write_reloading - Failed `D: 7F! C: FE! E: 7F! L: OK`
-* acceptance/timer tim00 - Failed `D: 04! E: OK`
+* acceptance/timer div_write - Passed
+* acceptance/timer tma_write_reloading - Failed `C: OK D: 7F! E: 7F! L: OK`
+* acceptance/timer tim00 - Passed
 * acceptance/timer tim00_div_trigger - Passed

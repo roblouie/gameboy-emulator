@@ -1,18 +1,8 @@
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
-import { memory } from "@/memory/memory";
 import { getBit } from "@/helpers/binary-helpers";
+import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 
-class LcdControlRegister implements SingleByteMemoryRegister {
+export class LcdControlRegister extends SimpleByteRegister {
   offset = 0xff40;
-  name = 'LCDC';
-
-  get value() {
-    return memory.readByte(this.offset);
-  }
-
-  set value(byte: number) {
-    memory.writeByte(this.offset, byte);
-  }
 
   get isBackgroundDisplayOn() {
     return getBit(this.value, 0) === 1;
@@ -48,20 +38,18 @@ class LcdControlRegister implements SingleByteMemoryRegister {
   }
 
   get windowTileMapStartAddress() {
-    return this.windowCodeArea === 0 ? 0x9800 : 0x9c00;
+    return this.windowCodeArea === 0 ? 0x1800 : 0x1C00;
   }
 
   get backgroundTileMapStartAddress() {
-    return this.backgroundCodeArea === 0 ? 0x9800 : 0x9c00;
+    return this.backgroundCodeArea === 0 ? 0x1800 : 0x1C00;
   }
 
   get backgroundCharacterDataStartAddress() {
-    return this.backgroundCharacterData === 0 ? 0x8800 : 0x8000;
+    return this.backgroundCharacterData === 0 ? 0x0800 : 0x0000;
   }
 
   get isLCDControllerOperating() {
     return getBit(this.value, 7) === 1;
   }
 }
-
-export const lcdControlRegister = new LcdControlRegister();

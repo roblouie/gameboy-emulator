@@ -4,7 +4,7 @@ import { Sound2 } from "@/apu/sound-2";
 import { Sound4 } from "@/apu/sound-4";
 import { Sound3 } from "@/apu/sound-3";
 import workletUrl from '@/apu/simple-audio-queue.worklet.js?worker&url';
-import { soundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
+import { SoundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
 
 export class APU {
   private static FrameSequencerHertz = 512;
@@ -17,10 +17,12 @@ export class APU {
   private cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
   private sampleCycleCounter = 0;
 
-  private sound1: Sound1;
-  private sound2: Sound2;
-  private sound3: Sound3;
-  private sound4: Sound4;
+  readonly nr52SoundEndFlag = new SoundsOnRegister(0xff26);
+
+  readonly sound1: Sound1;
+  readonly sound2: Sound2;
+  readonly sound3: Sound3;
+  readonly sound4: Sound4;
 
   private _isAudioEnabled = false;
 
@@ -91,7 +93,7 @@ export class APU {
   }
 
   private sampleChannels() {
-    const isSoundOn = soundsOnRegister.isAllSoundOn;
+    const isSoundOn = this.nr52SoundEndFlag.isAllSoundOn;
     if (!isSoundOn) {
       this.frameSequencerCycleCounter = 0;
     }

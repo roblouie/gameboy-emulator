@@ -1,8 +1,7 @@
-import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
 export function createInputOutputOperations(this: CPU) {
-  const { registers } = this;
+  const { registers, memory } = this;
 
   function getLoadRHLByteDefinition(rCode: number) {
     return (1 << 6) + (rCode << 3) + 0b110;

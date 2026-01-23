@@ -1,4 +1,3 @@
-import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
 enum FlagCondition {
@@ -12,7 +11,7 @@ enum FlagCondition {
 // * Call nn
 // ****************
 export function createCallAndReturnOperations(this: CPU) {
-  const { registers } = this;
+  const { registers, memory } = this;
   const cpu = this;
 
   this.addOperation({

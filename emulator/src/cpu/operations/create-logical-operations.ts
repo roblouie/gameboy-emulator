@@ -1,8 +1,7 @@
-import { memory } from "@/memory/memory";
 import { CPU } from "@/cpu/cpu";
 
 export function createLogicalOperations(this: CPU) {
-  const { registers } = this;
+  const { registers, memory } = this;
 
   function andAndSetFlags(accumulatorVal: number, toAnd: number) {
     const newValue = (accumulatorVal & toAnd) & 0xff;

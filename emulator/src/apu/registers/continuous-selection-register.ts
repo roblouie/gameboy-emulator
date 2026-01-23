@@ -1,7 +1,8 @@
 import { setBit } from "@/helpers/binary-helpers";
-import {SimpleByteRegister} from "@/helpers/simple-byte-register";
+import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 
-export class HighOrderFrequencyRegister extends SimpleByteRegister {
+
+export class ContinuousSelectionRegister extends SimpleByteRegister {
   get isInitialize() {
     return this.value >> 7 === 1;
   }
@@ -12,9 +13,5 @@ export class HighOrderFrequencyRegister extends SimpleByteRegister {
 
   get isContinuousSelection() {
     return ((this.value >> 6) & 0b1) === 0;
-  }
-
-  get highOrderFrequencyData() {
-    return this.value & 0b111;
   }
 }

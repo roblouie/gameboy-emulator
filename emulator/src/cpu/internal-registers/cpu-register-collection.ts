@@ -1,5 +1,5 @@
 /*
-Gameboy cpu registers are as follows:
+Gameboy cpu timers are as follows:
 
 7    0 7    0
 +-----+-----+

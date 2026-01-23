@@ -1,23 +1,12 @@
-import { memory } from "@/memory/memory";
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import {asUint8, clearBit, convertUint8ToInt8, getBit} from "@/helpers/binary-helpers";
 
-import { LcdStatusMode } from "@/gpu/registers/lcd-status-mode.enum";
-import { windowYRegister } from "@/gpu/registers/window-y-register";
-import { windowXRegister } from "@/gpu/registers/window-x-register";
-import { lcdStatusRegister } from "@/gpu/registers/lcd-status-register";
-import { lineYRegister } from "@/gpu/registers/line-y-register";
-import { lineYCompareRegister } from "@/gpu/registers/line-y-compare-register";
-import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
-import { backgroundPaletteRegister } from "@/gpu/registers/background-palette-register";
-import { scrollYRegister } from "@/gpu/registers/scroll-y-register";
-import { scrollXRegister } from "@/gpu/registers/scroll-x-register";
-import {
-  ObjectAttributeMemoryRegister,
-  objectAttributeMemoryRegisters
-} from "@/gpu/registers/object-attribute-memory-registers";
-import { objectPaletteRegisters } from "@/gpu/registers/object-palette-registers";
-import { interruptRequestRegister } from "@/cpu/registers/interrupt-request-register";
+import { LcdStatusMode } from "@/gpu/lcd-status-mode.enum";
+import {LcdStatusRegister} from "@/gpu/lcd-status-register";
+import {LcdControlRegister} from "@/gpu/lcd-control-register";
+import { InterruptController } from "@/cpu/interrupt-request-register";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
+import {Sprite} from "@/gpu/sprite";
 
 export class GPU {
   static ScreenWidth = 160;
@@ -34,7 +23,25 @@ export class GPU {
   private cycleCounter = 0;
 
   private windowLinesDrawn = 0;
-  private prioritizedSprites: ObjectAttributeMemoryRegister[] = [];
+
+  private sprites: Sprite[] = [];
+  private prioritizedSprites: Sprite[] = [];
+
+  readonly vram = new Uint8Array(0x2000);
+  readonly oam = new Uint8Array(0xa0);
+
+  backgroundPalette = new SimpleByteRegister(0xff47);
+  lcdControl = new LcdControlRegister(0xff40);
+  lcdStatus = new LcdStatusRegister(0xff41);
+  lineY = new SimpleByteRegister(0xff44);
+  lineYCompare = new SimpleByteRegister(0xff45);
+  objectPalettes = [new SimpleByteRegister(0xff48), new SimpleByteRegister(0xff49)];
+  scrollX = new SimpleByteRegister(0xff43);
+  scrollY = new SimpleByteRegister(0xff42);
+  windowX = new SimpleByteRegister(0xff4b);
+  windowY = new SimpleByteRegister(0xff4a);
+
+  interruptController: InterruptController;
 
   colors = [
     { red: 255, green: 255, blue: 255 },
@@ -43,15 +50,23 @@ export class GPU {
     { red: 0, green: 0, blue: 0 },
   ];
 
+  constructor(interruptController: InterruptController) {
+    this.interruptController = interruptController;
+
+    for (let spriteNumber = 0; spriteNumber < 40; spriteNumber++) {
+      this.sprites.push(new Sprite(this.oam, spriteNumber));
+    }
+  }
+
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
-    switch (lcdStatusRegister.mode) {
+    switch (this.lcdStatus.mode) {
       case LcdStatusMode.SearchingOAM:
         if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
           this.populatePrioritizedSprites()
           this.cycleCounter -= GPU.CyclesPerScanlineOam;
-          lcdStatusRegister.mode = LcdStatusMode.TransferringDataToLCD;
+          this.lcdStatus.mode = LcdStatusMode.TransferringDataToLCD;
         }
         break;
 
@@ -59,16 +74,16 @@ export class GPU {
         if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
           this.cycleCounter -= GPU.CyclesPerScanlineVram;
 
-          if (lcdStatusRegister.isHBlankInterruptSelected) {
-            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          if (this.lcdStatus.isHBlankInterruptSelected) {
+            this.interruptController.triggerLcdStatusInterruptRequest();
           }
 
-          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
-          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
-            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
+          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
+            this.interruptController.triggerLcdStatusInterruptRequest();
           }
 
-          lcdStatusRegister.mode = LcdStatusMode.InHBlank;
+          this.lcdStatus.mode = LcdStatusMode.InHBlank;
         }
         break;
 
@@ -78,16 +93,16 @@ export class GPU {
 
           this.cycleCounter -= GPU.CyclesPerHBlank;
 
-          lineYRegister.value++;
+          this.lineY.value++;
 
-          if (lineYRegister.value === GPU.ScreenHeight) {
-            lcdStatusRegister.mode = LcdStatusMode.InVBlank;
-            interruptRequestRegister.triggerVBlankInterruptRequest();
+          if (this.lineY.value === GPU.ScreenHeight) {
+            this.lcdStatus.mode = LcdStatusMode.InVBlank;
+            this.interruptController.triggerVBlankInterruptRequest();
             const tmp = this.displayImageData;
             this.displayImageData = this.drawImageData;
             this.drawImageData = tmp;
           } else {
-            lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
+            this.lcdStatus.mode = LcdStatusMode.SearchingOAM;
           }
         }
         break;
@@ -99,18 +114,18 @@ export class GPU {
           // it definitely fires at 144 on transition to vblank so lines 0-144 at the very least must be checked.
           // Putting it here as well as on transfer to vblank to account for that. Should be cleaned up with own
           // function maybe?
-          lcdStatusRegister.isLineYCompareMatching = lineYRegister.value === lineYCompareRegister.value;
-          if (lcdStatusRegister.isLineYMatchingInterruptSelected && lcdStatusRegister.isLineYCompareMatching) {
-            interruptRequestRegister.triggerLcdStatusInterruptRequest();
+          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
+          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
+            this.interruptController.triggerLcdStatusInterruptRequest();
           }
 
-          lineYRegister.value++;
+          this.lineY.value++;
 
           this.cycleCounter -= GPU.CyclesPerScanline;
 
-          if (lineYRegister.value === GPU.HeightIncludingOffscreen) {
-            lcdStatusRegister.mode = LcdStatusMode.SearchingOAM;
-            lineYRegister.value = 0;
+          if (this.lineY.value === GPU.HeightIncludingOffscreen) {
+            this.lcdStatus.mode = LcdStatusMode.SearchingOAM;
+            this.lineY.value = 0;
             this.windowLinesDrawn = 0;
           }
         }
@@ -119,21 +134,21 @@ export class GPU {
   }
 
   drawScanline() {
-    if (!lcdControlRegister.isLCDControllerOperating) {
+    if (!this.lcdControl.isLCDControllerOperating) {
       return;
     }
 
     let backgroundLineValues: number[] = [];
-    if (lcdControlRegister.isBackgroundDisplayOn) {
+    if (this.lcdControl.isBackgroundDisplayOn) {
       backgroundLineValues = this.drawBackgroundLine();
-    }
+    } // TODO: Even if background is off, correct behavior is to draw a full scanline of whatever color is in background palette 0.
 
     let windowLineValues: number[] = [];
-    if (lcdControlRegister.isWindowingOn) {
+    if (this.lcdControl.isWindowingOn) {
       windowLineValues = this.drawWindowLine();
     }
 
-    if (lcdControlRegister.isObjOn) {
+    if (this.lcdControl.isObjOn) {
       this.drawSpriteLine(backgroundLineValues, windowLineValues);
     }
   }
@@ -141,20 +156,20 @@ export class GPU {
   drawBackgroundLine() {
     const backgroundLineValues = [];
     const bytesPerCharacter = 2;
-    const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
+    const characterDataStartAddress = this.lcdControl.backgroundCharacterDataStartAddress;
 
-    const palette = backgroundPaletteRegister.backgroundPalette;
+    const palette = this.getPalette(this.backgroundPalette.value);
 
-    const lineY = lineYRegister.value;
-    const scrolledY = asUint8(lineY + scrollYRegister.value);
+    const lineY = this.lineY.value;
+    const scrolledY = asUint8(lineY + this.scrollY.value);
     const tileRowY = scrolledY >> 3;
     const yPosInTile = scrolledY & 7;
     const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
-    const scrollXRegisterValue = scrollXRegister.value;
+    const scrollXRegisterValue = this.scrollX.value;
 
-    const startingBackgroundAddress = lcdControlRegister.backgroundTileMapStartAddress;
-    const isBackgroundCharacterData = lcdControlRegister.backgroundCharacterData === 0;
+    const startingBackgroundAddress = this.lcdControl.backgroundTileMapStartAddress;
+    const isBackgroundCharacterData = this.lcdControl.backgroundCharacterData === 0;
 
     let lastTileMapIndex = -1;
     let lowerByte = 0;
@@ -169,13 +184,13 @@ export class GPU {
       if (tileMapIndex !== lastTileMapIndex) {
         lastTileMapIndex = tileMapIndex;
         const address = startingBackgroundAddress + tileMapIndex;
-        const tileData = memory.readByte(address);
+        const tileData = this.vram[address];
         const tileCharIndex = isBackgroundCharacterData ? (convertUint8ToInt8(tileData) + 128) : tileData;
         const tileCharBytePosition = tileCharIndex * 16; // 16 bytes per tile
 
         const currentTileLineBytePosition = characterDataStartAddress + tileCharBytePosition + bytePositionInTile;
-        lowerByte = memory.readByte(currentTileLineBytePosition);
-        higherByte = memory.readByte(currentTileLineBytePosition + 1);
+        lowerByte = this.vram[currentTileLineBytePosition];
+        higherByte = this.vram[currentTileLineBytePosition + 1];
       }
 
       const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
@@ -191,9 +206,9 @@ export class GPU {
   }
 
   private drawWindowLine() {
-    const lineY = lineYRegister.value;
-    const windowY = windowYRegister.value;
-    const windowX = windowXRegister.value;
+    const lineY = this.lineY.value;
+    const windowY = this.windowY.value;
+    const windowX = this.windowX.value;
 
     if (lineY < windowY) return [];
 
@@ -201,18 +216,18 @@ export class GPU {
     if (correctedWindowX >= 160) return [];
 
     const windowLineValues = [];
-    const palette = backgroundPaletteRegister.backgroundPalette;
+    const palette = this.getPalette(this.backgroundPalette.value);
 
-    const tileMapStart = lcdControlRegister.windowTileMapStartAddress;
-    const windowTileMap = memory.memoryBytes.subarray(tileMapStart, tileMapStart + 0x400);
+    const tileMapStart = this.lcdControl.windowTileMapStartAddress;
+    const windowTileMap = this.vram.subarray(tileMapStart, tileMapStart + 0x400);
 
-    const characterDataStartAddress = lcdControlRegister.backgroundCharacterDataStartAddress;
+    const characterDataStartAddress = this.lcdControl.backgroundCharacterDataStartAddress;
 
     const yInWindow = this.windowLinesDrawn;
     const tileRowY = yInWindow >> 3;
     const yPosInTile = yInWindow & 7;
     const bytePosInTile = yPosInTile * 2;
-    const isBackgroundCharacterData0 = lcdControlRegister.backgroundCharacterData === 0;
+    const isBackgroundCharacterData0 = this.lcdControl.backgroundCharacterData === 0;
 
     let lastTileMapIndex = -1;
     let lowerByte = 0;
@@ -238,8 +253,8 @@ export class GPU {
         const tileCharIndex = isBackgroundCharacterData0 ? (convertUint8ToInt8(tileId) + 128) : tileId;
 
         const lineAddr = characterDataStartAddress + (tileCharIndex * 16) + bytePosInTile;
-        lowerByte = memory.readByte(lineAddr);
-        higherByte = memory.readByte(lineAddr + 1);
+        lowerByte = this.vram[lineAddr];
+        higherByte = this.vram[lineAddr + 1];
       }
 
       const paletteIndex = this.getPixelInTileLine(xPosInTile, lowerByte, higherByte, false);
@@ -258,17 +273,18 @@ export class GPU {
     const spriteOffsetY = -16;
     const maxObjectsPerLine = 10;
 
-    const intersectingSprites = objectAttributeMemoryRegisters.filter(oamRegister => {
-      const { xPosition, yPosition } = oamRegister;
+    // TODO: change loop type and break out of loop when the length is 10, which saves the slice later.
+    const intersectingSprites = this.sprites.filter(sprite => {
+      const { x, y } = sprite;
 
-      if (xPosition === 0 || yPosition == 0 || xPosition >= 168 || yPosition >= 160) {
+      if (x === 0 || y == 0 || x >= 168 || y >= 160) {
         return false;
       }
 
-      const spriteY = yPosition + spriteOffsetY;
+      const spriteY = y + spriteOffsetY;
 
-      let scanlineIntersectsYAt = lineYRegister.value - spriteY;
-      const lastLineOfSprite = lcdControlRegister.objectHeight - 1;
+      let scanlineIntersectsYAt = this.lineY.value - spriteY;
+      const lastLineOfSprite = this.lcdControl.objectHeight - 1;
 
       return scanlineIntersectsYAt >= 0 && scanlineIntersectsYAt <= lastLineOfSprite;
     });
@@ -276,41 +292,47 @@ export class GPU {
     this.prioritizedSprites = intersectingSprites
         .slice(0, maxObjectsPerLine)
         .sort((oamRegisterA, oamRegisterB) => {
-          return (oamRegisterB.xPosition - oamRegisterA.xPosition) || (oamRegisterB.index - oamRegisterA.index);
+          return (oamRegisterB.x - oamRegisterA.x) || (oamRegisterB.index - oamRegisterA.index);
         })
   }
 
   drawSpriteLine(backgroundLineValues: number[], windowLineValues: number[]) {
     const spriteOffsetX = -8;
     const spriteOffsetY = -16;
-    const characterDataStart = 0x8000;
     const bytesPerLine = 2;
     const linesPerTileIndex = 8;
     const bytesPerTile = bytesPerLine * linesPerTileIndex;
-    const lineY = lineYRegister.value;
+    const lineY = this.lineY.value;
 
-    this.prioritizedSprites.forEach(oamRegister => {
-      const { xPosition, yPosition, characterCode, paletteNumber } = oamRegister;
+    this.prioritizedSprites.forEach(sprite => {
+      const { x, y, tile } = sprite;
 
-      const spriteX = xPosition + spriteOffsetX;
-      const spriteY = yPosition + spriteOffsetY;
+      const spriteX = x + spriteOffsetX;
+      const spriteY = y + spriteOffsetY;
 
       let scanlineIntersectsYAt = lineY - spriteY;
-      const lastLineOfSprite = lcdControlRegister.objectHeight - 1;
+      const lastLineOfSprite = this.lcdControl.objectHeight - 1;
 
-      if (oamRegister.isFlippedVertical) {
+      const oamFlags = sprite.flags;
+      const paletteNumber = getBit(oamFlags, 4);
+      const isFlippedHorizontal = getBit(oamFlags, 5);
+      const isFlippedVertical = getBit(oamFlags, 6);
+      const isBehindBackground = getBit(oamFlags, 7);
+
+
+      if (isFlippedVertical) {
         scanlineIntersectsYAt = lastLineOfSprite - scanlineIntersectsYAt;
       }
 
       // For 8 x 16 sprites, the lowest bit must not be used, so it is cleared out here for 8x16
-      const tileIndex = lcdControlRegister.objectHeight === 16 ? clearBit(characterCode, 0) : characterCode;
+      const tileIndex = this.lcdControl.objectHeight === 16 ? clearBit(tile, 0) : tile;
 
       const bytePositionInTile = scanlineIntersectsYAt * bytesPerLine;
       const tileCharBytePosition = tileIndex * bytesPerTile;
-      const currentTileLineBytePosition = characterDataStart + tileCharBytePosition + bytePositionInTile;
+      const currentTileLineBytePosition = tileCharBytePosition + bytePositionInTile;
 
-      const lowerByte = memory.readByte(currentTileLineBytePosition);
-      const higherByte = memory.readByte(currentTileLineBytePosition + 1);
+      const lowerByte = this.vram[currentTileLineBytePosition];
+      const higherByte = this.vram[currentTileLineBytePosition + 1];
 
       for (let xPixelInTile = 0; xPixelInTile < 8; xPixelInTile++) {
         const screenX = spriteX + xPixelInTile;
@@ -321,21 +343,21 @@ export class GPU {
 
         const isBackgroundSolid = backgroundLineValues[screenX] !== 0;
         const isWindowSolid = windowLineValues[screenX] !== undefined && windowLineValues[screenX] !== 0;
-        const isPixelBehindBackground = oamRegister.isBehindBackground && (isBackgroundSolid || isWindowSolid);
+        const isPixelBehindBackground = isBehindBackground && (isBackgroundSolid || isWindowSolid);
 
         // if the pixel is behind the background, we can stop here
         if (isPixelBehindBackground) {
           continue;
         }
 
-        const paletteIndex = this.getPixelInTileLine(xPixelInTile, lowerByte, higherByte, oamRegister.isFlippedHorizontal);
+        const paletteIndex = this.getPixelInTileLine(xPixelInTile, lowerByte, higherByte, isFlippedHorizontal);
 
         // palette 0 is transparent, so we can stop here
         if (paletteIndex === 0) {
           continue;
         }
 
-        const palette = objectPaletteRegisters[paletteNumber].palette;
+        const palette = this.getPalette(this.objectPalettes[paletteNumber].value);
         const paletteColor = palette[paletteIndex];
         const color = this.colors[paletteColor];
 
@@ -344,7 +366,7 @@ export class GPU {
     });
   }
 
-  private getPixelInTileLine(xPosition: number, lowerByte: number, higherByte: number, isFlippedX: boolean) {
+  private getPixelInTileLine(xPosition: number, lowerByte: number, higherByte: number, isFlippedX: boolean | number) {
     // the pixel at position 0 in a byte is the rightmost pixel, but when drawing on canvas, we
     // go from left to right, so 0 is the leftmost pixel. By subtracting 7 (the last index in the byte)
     // we can effectively swap the order.
@@ -353,5 +375,14 @@ export class GPU {
     const shadeHigher = getBit(higherByte, xPixelInTile) << 1;
 
     return shadeLower + shadeHigher;
+  }
+
+  getPalette(paletteByte: number) {
+    const color0 = paletteByte & 0b11;
+    const color1 = (paletteByte >> 2) & 0b11;
+    const color2 = (paletteByte >> 4) & 0b11;
+    const color3 = (paletteByte >> 6) & 0b11;
+
+    return [color0, color1, color2, color3];
   }
 }
