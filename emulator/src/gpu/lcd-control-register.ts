@@ -53,5 +53,3 @@ export class LcdControlRegister extends SimpleByteRegister {
     return getBit(this.value, 7) === 1;
   }
 }
-
-export const lcdControlRegister = new LcdControlRegister();

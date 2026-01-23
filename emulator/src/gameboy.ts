@@ -3,7 +3,6 @@ import { CPU } from "@/cpu/cpu";
 import { Memory } from "@/memory/memory";
 import { input } from "@/input/input";
 import { APU } from "@/apu/apu";
-import { lcdControlRegister } from "@/gpu/registers/lcd-control-register";
 import { controllerManager} from "@/input/controller-manager";
 import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
@@ -30,7 +29,6 @@ export class Gameboy {
   run() {
     this.cpu.initialize();
     this.bus.reset();
-    lcdControlRegister.value = 0x83; // initial value from official guide
 
     requestAnimationFrame(diff => this.runFrame(diff));
   }

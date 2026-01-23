@@ -1,9 +1,9 @@
 import { EnhancedImageData } from "@/helpers/enhanced-image-data";
 import {asUint8, clearBit, convertUint8ToInt8, getBit} from "@/helpers/binary-helpers";
 
-import { LcdStatusMode } from "@/gpu/registers/lcd-status-mode.enum";
-import {LcdStatusRegister} from "@/gpu/registers/lcd-status-register";
-import {LcdControlRegister} from "@/gpu/registers/lcd-control-register";
+import { LcdStatusMode } from "@/gpu/lcd-status-mode.enum";
+import {LcdStatusRegister} from "@/gpu/lcd-status-register";
+import {LcdControlRegister} from "@/gpu/lcd-control-register";
 import { InterruptController } from "@/cpu/registers/interrupt-request-register";
 import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 import {Sprite} from "@/gpu/sprite";

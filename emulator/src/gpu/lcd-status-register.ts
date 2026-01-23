@@ -1,5 +1,5 @@
 import { getBit, setBit } from "@/helpers/binary-helpers";
-import { LcdStatusMode } from "@/gpu/registers/lcd-status-mode.enum";
+import { LcdStatusMode } from "@/gpu/lcd-status-mode.enum";
 import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 
 export class LcdStatusRegister extends SimpleByteRegister {
