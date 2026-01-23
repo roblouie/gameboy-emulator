@@ -11,12 +11,8 @@ import { createCbSubOperations } from "@/cpu/operations/cb-operations/cb-operati
 import { createLogicalOperations } from '@/cpu/operations/create-logical-operations';
 import { createArithmeticOperations } from '@/cpu/operations/create-arithmetic-operations';
 import { createInputOutputOperations } from '@/cpu/operations/create-input-output-operations';
-import { asUint16, getMostSignificantByte } from '@/helpers/binary-helpers';
-// import { dividerRegister } from '@/cpu/timers/divider-register';
-// import { timerControllerRegister } from '@/cpu/timers/timer-controller-register';
-// import { timaRegister } from '@/cpu/timers/tima-register';
-// import { tmaRegister } from '@/cpu/timers/tma-register';
-import {InterruptController} from "@/cpu/interrupt-request-register";
+import { InterruptController } from "@/cpu/interrupt-request-register";
+import { TimerController } from "@/cpu/timer-controller";
 
 export class CPU {
   static OperatingHertz = 4_194_304;
@@ -45,17 +41,17 @@ export class CPU {
   createInterruptOperations = createInterruptOperations;
   createCbSubOperations = createCbSubOperations;
 
-  private timerCycles = 0;
-  private frequencyCounter = 0;
   private isHalted = false;
   private isStopped = false;
 
   memory: Memory;
   interruptController: InterruptController;
+  timerController: TimerController;
 
-  constructor(bus: Memory, interruptController: InterruptController) {
+  constructor(bus: Memory, interruptController: InterruptController, timerController: TimerController) {
     this.memory = bus;
     this.interruptController = interruptController;
+    this.timerController = timerController;
     this.registers = new CpuRegisterCollection();
     this.createInputOutputOperations();
     this.createArithmeticOperations();
@@ -83,15 +79,14 @@ export class CPU {
     this.handleInterrupts();
 
     if (this.isHalted) {
-      this.updateTimers(4);
+      this.timerController.updateTimers(4);
       return 4;
     }
 
     const operation = this.getOperation();
-
     operation.execute();
 
-    this.updateTimers(operation.cycleTime);
+    this.timerController.updateTimers(operation.cycleTime);
 
     return operation.cycleTime;
   }
@@ -106,6 +101,7 @@ export class CPU {
 
   stop() {
     this.isStopped = true;
+    this.timerController.writeDiv();
   }
 
   pushToStack(word: number) {
@@ -179,30 +175,6 @@ export class CPU {
     }
 
     this.isInterruptMasterEnable = false;
-  }
-
-  updateTimers(cycles: number) {
-    // this.frequencyCounter = asUint16(this.frequencyCounter + cycles);
-    // dividerRegister.setValueFromCpuDivider(getMostSignificantByte(this.frequencyCounter));
-    //
-    // if (!timerControllerRegister.isTimerOn) {
-    //   return;
-    // }
-    //
-    // this.timerCycles += cycles;
-    //
-    // const threshold = timerControllerRegister.cyclesForTimerUpdate;
-    //
-    // while (this.timerCycles >= threshold) {
-    //   this.timerCycles -= threshold;
-    //
-    //   if (timaRegister.value === 0xff) {
-    //     timaRegister.value = tmaRegister.value;
-    //     this.interruptController.triggerTimerInterruptRequest();
-    //   } else {
-    //     timaRegister.value++;
-    //   }
-    // }
   }
 
   addOperation(operation: Operation) {

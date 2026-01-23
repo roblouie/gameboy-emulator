@@ -3,6 +3,7 @@ import { input } from "@/input/input";
 import { GPU } from "@/gpu/gpu";
 import { APU } from "@/apu/apu";
 import {InterruptController} from "@/cpu/interrupt-request-register";
+import {TimerController} from "@/cpu/timer-controller";
 
 
 export class Memory {
@@ -10,16 +11,18 @@ export class Memory {
   gpu: GPU;
   apu: APU;
   interruptController: InterruptController;
+  timerController: TimerController;
 
   private readonly memoryBuffer: ArrayBuffer;
   memoryBytes: Uint8Array;
 
-  constructor(gpu: GPU, apu: APU, interruptController: InterruptController) {
+  constructor(gpu: GPU, apu: APU, interruptController: InterruptController, timerController: TimerController) {
     this.memoryBuffer = new ArrayBuffer(0x10000);
     this.memoryBytes = new Uint8Array(this.memoryBuffer);
     this.gpu = gpu;
     this.apu = apu;
     this.interruptController = interruptController;
+    this.timerController = timerController;
   }
 
   insertCartridge(cartridge: Cartridge) {
@@ -51,6 +54,12 @@ export class Memory {
       switch (address) {
         // Input
         case 0xff00: return input.reportInput();
+
+        // Timers
+        case 0xff04: return this.timerController.readDiv();
+        case 0xff05: return this.timerController.tima.value;
+        case 0xff06: return this.timerController.tma.value;
+        case 0xff07: return this.timerController.tac.value;
 
         // APU
         case 0xff10: return this.apu.sound1.nr10SweepControl.value;
@@ -146,6 +155,12 @@ export class Memory {
       switch (address) {
         // Input
         case 0xff00: input.setInputToCheck(value); return;
+
+        // Timers
+        case 0xff04: this.timerController.writeDiv(); return;
+        case 0xff05: this.timerController.writeTima(value); return;
+        case 0xff06: this.timerController.tma.value = value; return;
+        case 0xff07: this.timerController.writeTac(value); return;
 
         // APU
         case 0xff10: this.apu.sound1.nr10SweepControl.value = value; return;

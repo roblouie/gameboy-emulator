@@ -8,16 +8,18 @@ import { CartridgeType } from "@/cartridge/cartridge-type.enum";
 import { Mbc1Cartridge } from "@/cartridge/mbc1-cartridge";
 import { CartridgeLoader } from "@/cartridge/cartridge-loader";
 import { keyboardManager } from "@/input/keyboard-manager";
-import {InterruptController} from "@/cpu/interrupt-request-register";
+import { InterruptController } from "@/cpu/interrupt-request-register";
+import {TimerController} from "@/cpu/timer-controller";
 
 export class Gameboy {
   interruptController = new InterruptController();
+  timerController = new TimerController(this.interruptController);
 
   gpu = new GPU(this.interruptController);
   apu = new APU();
 
-  bus = new Memory(this.gpu, this.apu, this.interruptController);
-  cpu = new CPU(this.bus, this.interruptController);
+  bus = new Memory(this.gpu, this.apu, this.interruptController, this.timerController);
+  cpu = new CPU(this.bus, this.interruptController, this.timerController);
 
   private frameFinishedCallback?: Function;
   input = input;
