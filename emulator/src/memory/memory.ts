@@ -4,7 +4,7 @@ import { GPU } from "@/gpu/gpu";
 import { APU } from "@/apu/apu";
 import {InterruptController} from "@/cpu/interrupt-request-register";
 import {TimerController} from "@/cpu/timer-controller";
-
+import { convertUint8ToInt8 } from "@/helpers/binary-helpers";
 
 export class Memory {
   cartridge: Cartridge = new Cartridge(new DataView(new ArrayBuffer(0)));
@@ -116,7 +116,7 @@ export class Memory {
       return this.cartridge.readSignedByte(address);
     } else {
       const value = this.readByte(address);
-      return (value % 0x80) ? value - 0x100 : value;
+      return convertUint8ToInt8(value);
     }
   }
 

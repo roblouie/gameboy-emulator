@@ -24,6 +24,7 @@ export function asUint16(value: number) {
 }
 
 export function convertUint8ToInt8(value: number) {
+  // seems `value < 0x80 ? value : value - 0x100;` also works
   return (value << 24) >> 24;
 }
 
