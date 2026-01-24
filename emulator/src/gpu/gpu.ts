@@ -58,6 +58,14 @@ export class GPU {
     }
   }
 
+  writeLyc(value: number) {
+    this.lineYCompare.value = value;
+    this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
+    if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
+      this.interruptController.triggerLcdStatusInterruptRequest();
+    }
+  }
+
   tick(cycles: number) {
     this.cycleCounter += cycles;
 
@@ -78,11 +86,6 @@ export class GPU {
             this.interruptController.triggerLcdStatusInterruptRequest();
           }
 
-          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
-          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
-            this.interruptController.triggerLcdStatusInterruptRequest();
-          }
-
           this.lcdStatus.mode = LcdStatusMode.InHBlank;
         }
         break;
@@ -94,6 +97,10 @@ export class GPU {
           this.cycleCounter -= GPU.CyclesPerHBlank;
 
           this.lineY.value++;
+          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
+          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
+            this.interruptController.triggerLcdStatusInterruptRequest();
+          }
 
           if (this.lineY.value === GPU.ScreenHeight) {
             this.lcdStatus.mode = LcdStatusMode.InVBlank;
@@ -110,23 +117,19 @@ export class GPU {
       case LcdStatusMode.InVBlank:
         if (this.cycleCounter >= GPU.CyclesPerScanline) {
 
-          // Line Y compare can still fire while in vblank, as the line still increases, at the very least
-          // it definitely fires at 144 on transition to vblank so lines 0-144 at the very least must be checked.
-          // Putting it here as well as on transfer to vblank to account for that. Should be cleaned up with own
-          // function maybe?
-          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
-          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
-            this.interruptController.triggerLcdStatusInterruptRequest();
-          }
+          this.cycleCounter -= GPU.CyclesPerScanline;
 
           this.lineY.value++;
-
-          this.cycleCounter -= GPU.CyclesPerScanline;
 
           if (this.lineY.value === GPU.HeightIncludingOffscreen) {
             this.lcdStatus.mode = LcdStatusMode.SearchingOAM;
             this.lineY.value = 0;
             this.windowLinesDrawn = 0;
+          }
+
+          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
+          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
+            this.interruptController.triggerLcdStatusInterruptRequest();
           }
         }
         break;
