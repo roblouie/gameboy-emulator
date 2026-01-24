@@ -27,19 +27,17 @@ export class Gameboy {
   keyboardManager = keyboardManager;
 
   private previousTime = 0;
-
   run() {
     this.cpu.initialize();
     this.bus.reset();
 
+    this.previousTime = performance.now();
     requestAnimationFrame(diff => this.runFrame(diff));
   }
 
   private cycleRemainder = 0;
 
   private runFrame(currentTime: number) {
-    if (!this.previousTime) this.previousTime = currentTime;
-
     const deltaMs = currentTime - this.previousTime;
     this.previousTime = currentTime;
 

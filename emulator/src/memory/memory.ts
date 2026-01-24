@@ -192,8 +192,8 @@ export class Memory {
         case 0xff41: this.gpu.lcdStatus.value = value; return;
         case 0xff42: this.gpu.scrollY.value = value; return;
         case 0xff43: this.gpu.scrollX.value = value; return;
-        case 0xff44: this.gpu.lineY.value = value; return;
-        case 0xff45: this.gpu.lineYCompare.value = value; return;
+        case 0xff44: return; // line y readonly
+        case 0xff45: this.gpu.writeLyc(value); return;
         case 0xff46: this.dmaTransfer(value); return;
         case 0xff47: this.gpu.backgroundPalette.value = value; return;
         case 0xff48: this.gpu.objectPalettes[0].value = value; return;
