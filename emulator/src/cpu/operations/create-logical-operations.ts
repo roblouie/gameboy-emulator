@@ -2,6 +2,7 @@ import { CPU } from "@/cpu/cpu";
 
 export function createLogicalOperations(this: CPU) {
   const { registers, memory } = this;
+  const cpu = this;
 
   function andAndSetFlags(accumulatorVal: number, toAnd: number) {
     const newValue = (accumulatorVal & toAnd) & 0xff;
@@ -40,6 +41,7 @@ export function createLogicalOperations(this: CPU) {
       return `AND 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = andAndSetFlags(registers.A.value, value);
@@ -54,6 +56,7 @@ export function createLogicalOperations(this: CPU) {
       return `AND 0x${memory.readByte(registers.HL.value).toString(16)}`;
     },
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = andAndSetFlags(registers.A.value, value);
     }
@@ -95,6 +98,7 @@ export function createLogicalOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       compareAndSetFlags(registers.A.value, value);
@@ -107,6 +111,7 @@ export function createLogicalOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       compareAndSetFlags(registers.A.value, value);
     }
@@ -150,6 +155,7 @@ export function createLogicalOperations(this: CPU) {
       return `OR 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = orAndSetFlags(registers.A.value, value);
@@ -162,6 +168,7 @@ export function createLogicalOperations(this: CPU) {
     byteLength: 1,
     instruction: 'OR (HL)',
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = orAndSetFlags(registers.A.value, value);
     }
@@ -205,6 +212,7 @@ export function createLogicalOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = xorAndSetFlags(registers.A.value, value)
@@ -217,6 +225,7 @@ export function createLogicalOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = xorAndSetFlags(registers.A.value, value);
     }

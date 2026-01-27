@@ -13,6 +13,7 @@ export function createCbSubOperations(this: CPU) {
     cycleTime: 0,
     byteLength: 0,
     execute() {
+      cpu.clockCallback(4);
       const cbOperationIndex = cpu.memory.readByte(cpu.registers.programCounter.value);
       cpu.registers.programCounter.value++;
       const subOperation = cpu.cbSubOperationMap[cbOperationIndex];

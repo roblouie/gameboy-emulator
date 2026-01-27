@@ -47,6 +47,7 @@ export function getBitSubOperations(cpu: CPU) {
       cycleTime: 12,
       byteLength: 2,
       execute() {
+        cpu.clockCallback(4);
         const value = memory.readByte(registers.HL.value);
         getBitAndSetFlags(value, bitPosition);
       }

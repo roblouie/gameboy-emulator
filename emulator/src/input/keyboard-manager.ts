@@ -13,6 +13,10 @@ export class KeyboardManager {
   select = 'ControlRight';
 
   constructor() {
+    // Ignore this setup if running in node
+    if (!globalThis.window?.document) {
+      return;
+    }
     document.addEventListener('keydown', event => this.handleKeyEvent(event.code, true));
     document.addEventListener('keyup', event => this.handleKeyEvent(event.code, false));
   }

@@ -19,7 +19,11 @@ export class Gameboy {
   apu = new APU();
 
   bus = new Memory(this.gpu, this.apu, this.interruptController, this.timerController);
-  cpu = new CPU(this.bus, this.interruptController, this.timerController);
+  cpu = new CPU(this.bus, this.interruptController, this.timerController, (tCycles) => {
+    this.timerController.updateTimers(tCycles);
+    this.gpu.tick(tCycles);
+    this.apu.tick(tCycles);
+  });
 
   private frameFinishedCallback?: Function;
   input = input;
@@ -48,8 +52,8 @@ export class Gameboy {
     let ran = 0;
     while (ran < cyclesToRun) {
       const cycles = this.cpu.tick();
-      this.gpu.tick(cycles);
-      this.apu.tick(cycles);
+      // this.gpu.tick(cycles);
+      // this.apu.tick(cycles);
       ran += cycles;
     }
 
@@ -60,6 +64,10 @@ export class Gameboy {
     }
 
     requestAnimationFrame(t => this.runFrame(t));
+  }
+
+  stepEmulator() {
+    this.cpu.tick();
   }
 
   onFrameFinished(callback: Function) {

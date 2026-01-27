@@ -1,10 +1,10 @@
-import { EnhancedImageData } from "@/helpers/enhanced-image-data";
+import {EnhancedImageData} from "@/helpers/enhanced-image-data";
 import {asUint8, clearBit, convertUint8ToInt8, getBit} from "@/helpers/binary-helpers";
 
-import { LcdStatusMode } from "@/gpu/lcd-status-mode.enum";
+import {LcdStatusMode} from "@/gpu/lcd-status-mode.enum";
 import {LcdStatusRegister} from "@/gpu/lcd-status-register";
 import {LcdControlRegister} from "@/gpu/lcd-control-register";
-import { InterruptController } from "@/cpu/interrupt-request-register";
+import {InterruptController} from "@/cpu/interrupt-request-register";
 import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 import {Sprite} from "@/gpu/sprite";
 
@@ -50,71 +50,97 @@ export class GPU {
     { red: 0, green: 0, blue: 0 },
   ];
 
+  private statCounter = 0;
+
   constructor(interruptController: InterruptController) {
     this.interruptController = interruptController;
 
     for (let spriteNumber = 0; spriteNumber < 40; spriteNumber++) {
       this.sprites.push(new Sprite(this.oam, spriteNumber));
     }
+
+    this.lcdControl.value = 0x91;
+    this.lcdStatus.value = 0x85;
+    this.lcdStatus.mode = LcdStatusMode.Mode2SearchingOAM; // TODO: look into cleaning this up to a single initial value
+    this.backgroundPalette.value = 0xfc;
   }
 
   writeLyc(value: number) {
     this.lineYCompare.value = value;
-    this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
-    if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
-      this.interruptController.triggerLcdStatusInterruptRequest();
-    }
+    this.handleStat();
+  }
+
+  writeStat(value: number) {
+    this.lcdStatus.value  = (this.lcdStatus.value  & ~0x78) | (value & 0x78);
+
+    console.log(
+      "STAT write",
+      value.toString(16),
+      "stored",
+      this.lcdStatus.value.toString(16),
+      "en0", this.lcdStatus.isHBlankInterruptSelected,
+      "en1", this.lcdStatus.isVBlankInterruptSelected,
+      "en2", this.lcdStatus.isSearchingOamInterruptSelected,
+      "enLYC", this.lcdStatus.isLineYMatchingInterruptSelected,
+    );
+
+
+    this.handleStat();
   }
 
   tick(cycles: number) {
+    // if (this.lineY.value === this.lineYCompare.value) {
+    //   console.log("LYC match at LY", this.lineY.value, "mode", this.lcdStatus.mode);
+    // }
+
     this.cycleCounter += cycles;
 
     switch (this.lcdStatus.mode) {
-      case LcdStatusMode.SearchingOAM:
+      case LcdStatusMode.Mode2SearchingOAM:
         if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
           this.populatePrioritizedSprites()
           this.cycleCounter -= GPU.CyclesPerScanlineOam;
-          this.lcdStatus.mode = LcdStatusMode.TransferringDataToLCD;
+          this.lcdStatus.mode = LcdStatusMode.Mode3TransferringDataToLCD;
+          this.handleStat();
         }
         break;
 
-      case LcdStatusMode.TransferringDataToLCD:
+      case LcdStatusMode.Mode3TransferringDataToLCD:
         if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
           this.cycleCounter -= GPU.CyclesPerScanlineVram;
 
-          if (this.lcdStatus.isHBlankInterruptSelected) {
-            this.interruptController.triggerLcdStatusInterruptRequest();
-          }
-
-          this.lcdStatus.mode = LcdStatusMode.InHBlank;
+          this.lcdStatus.mode = LcdStatusMode.Mode0InHBlank;
+          this.handleStat();
         }
         break;
 
-      case LcdStatusMode.InHBlank:
+      case LcdStatusMode.Mode0InHBlank:
         if (this.cycleCounter >= GPU.CyclesPerHBlank) {
           this.drawScanline();
 
           this.cycleCounter -= GPU.CyclesPerHBlank;
 
           this.lineY.value++;
-          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
-          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
-            this.interruptController.triggerLcdStatusInterruptRequest();
-          }
+          let isTransitioningToVBlank = false;
 
           if (this.lineY.value === GPU.ScreenHeight) {
-            this.lcdStatus.mode = LcdStatusMode.InVBlank;
+            this.lcdStatus.mode = LcdStatusMode.Mode1InVBlank;
+            isTransitioningToVBlank = true;
             this.interruptController.triggerVBlankInterruptRequest();
             const tmp = this.displayImageData;
             this.displayImageData = this.drawImageData;
             this.drawImageData = tmp;
           } else {
-            this.lcdStatus.mode = LcdStatusMode.SearchingOAM;
+            this.lcdStatus.mode = LcdStatusMode.Mode2SearchingOAM;
           }
+
+          // TODO: Refactor this
+          this.handleStat(isTransitioningToVBlank);
+
         }
         break;
 
-      case LcdStatusMode.InVBlank:
+      case LcdStatusMode.Mode1InVBlank:
         if (this.cycleCounter >= GPU.CyclesPerScanline) {
 
           this.cycleCounter -= GPU.CyclesPerScanline;
@@ -122,15 +148,14 @@ export class GPU {
           this.lineY.value++;
 
           if (this.lineY.value === GPU.HeightIncludingOffscreen) {
-            this.lcdStatus.mode = LcdStatusMode.SearchingOAM;
+            this.lcdStatus.mode = LcdStatusMode.Mode2SearchingOAM;
+
             this.lineY.value = 0;
+
             this.windowLinesDrawn = 0;
           }
+          this.handleStat();
 
-          this.lcdStatus.isLineYCompareMatching = this.lineY.value === this.lineYCompare.value;
-          if (this.lcdStatus.isLineYMatchingInterruptSelected && this.lcdStatus.isLineYCompareMatching) {
-            this.interruptController.triggerLcdStatusInterruptRequest();
-          }
         }
         break;
     }
@@ -144,7 +169,16 @@ export class GPU {
     let backgroundLineValues: number[] = [];
     if (this.lcdControl.isBackgroundDisplayOn) {
       backgroundLineValues = this.drawBackgroundLine();
-    } // TODO: Even if background is off, correct behavior is to draw a full scanline of whatever color is in background palette 0.
+    } else {
+      const lineY = this.lineY.value;
+      const palette = this.getPalette(this.backgroundPalette.value);
+      for (let screenX = 0; screenX < GPU.ScreenWidth; screenX++) {
+        const paletteColor = palette[0];
+        const color = this.colors[paletteColor];
+
+        this.drawImageData.setPixel(screenX, lineY, color.red, color.green, color.blue);
+      }
+    }
 
     let windowLineValues: number[] = [];
     if (this.lcdControl.isWindowingOn) {
@@ -170,6 +204,7 @@ export class GPU {
     const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
     const scrollXRegisterValue = this.scrollX.value;
+    // console.log(scrollXRegisterValue);
 
     const startingBackgroundAddress = this.lcdControl.backgroundTileMapStartAddress;
     const isBackgroundCharacterData = this.lcdControl.backgroundCharacterData === 0;
@@ -387,5 +422,30 @@ export class GPU {
     const color3 = (paletteByte >> 6) & 0b11;
 
     return [color0, color1, color2, color3];
+  }
+
+  private prevStatLine = false;
+  private trueCount = 0;
+  private falseCount = 0;
+
+  private handleStat(isTransitioningToVBlank = false) {
+    const mode = this.lcdStatus.mode;
+
+    const lycMatch = (this.lineY.value === this.lineYCompare.value);
+    this.lcdStatus.isLineYCompareMatching = lycMatch;
+
+    const statLine = (mode === LcdStatusMode.Mode0InHBlank && this.lcdStatus.isHBlankInterruptSelected)
+                  || (mode === LcdStatusMode.Mode1InVBlank && this.lcdStatus.isVBlankInterruptSelected)
+                  || ((mode === LcdStatusMode.Mode2SearchingOAM || isTransitioningToVBlank) && this.lcdStatus.isSearchingOamInterruptSelected)
+                  || (lycMatch && this.lcdStatus.isLineYMatchingInterruptSelected);
+
+    if (statLine) this.trueCount++; else this.falseCount++;
+
+    if (statLine && !this.prevStatLine) {
+      this.statCounter++;
+      this.interruptController.triggerLcdStatusInterruptRequest();
+    }
+
+    this.prevStatLine = statLine;
   }
 }

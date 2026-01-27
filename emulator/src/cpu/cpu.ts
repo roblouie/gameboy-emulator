@@ -13,6 +13,7 @@ import { createArithmeticOperations } from '@/cpu/operations/create-arithmetic-o
 import { createInputOutputOperations } from '@/cpu/operations/create-input-output-operations';
 import { InterruptController } from "@/cpu/interrupt-request-register";
 import { TimerController } from "@/cpu/timer-controller";
+import {combineBytes} from "@/helpers/binary-helpers";
 
 export class CPU {
   static OperatingHertz = 4_194_304;
@@ -23,11 +24,14 @@ export class CPU {
   private static SerialTransferCompletionInterruptAddress = 0x0058;
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
+  isImeScheduled = false;
   isInterruptMasterEnable = true;
   registers: CpuRegisterCollection;
 
   operations: Array<Operation> = [];
   cbSubOperationMap: Array<Operation> = [];
+
+  clockCallback: (tCycles: number) => void;
 
   // To keep the cpu file focused on operation and to organize the operations by type, separate methods have
   // been created in the /operations folder and are attached here.
@@ -48,7 +52,8 @@ export class CPU {
   interruptController: InterruptController;
   timerController: TimerController;
 
-  constructor(bus: Memory, interruptController: InterruptController, timerController: TimerController) {
+  constructor(bus: Memory, interruptController: InterruptController, timerController: TimerController, clockCallback: (tCycles: number) => void) {
+    this.clockCallback = clockCallback
     this.memory = bus;
     this.interruptController = interruptController;
     this.timerController = timerController;
@@ -76,17 +81,31 @@ export class CPU {
   }
 
   tick(): number {
-    this.handleInterrupts();
+    if (this.registers.programCounter.value >= 0x2b7 && this.registers.programCounter.value <= 0x02c8) {
+      console.log(`${this.registers.programCounter.value.toString(16)}: ` + this.timerController.readDiv());
+    }
+
+    const interruptTime = this.handleInterrupts();
+
+    if (interruptTime) {
+      this.clockCallback(interruptTime);
+      return interruptTime;
+    }
 
     if (this.isHalted) {
-      this.timerController.updateTimers(4);
+      this.clockCallback(4);
       return 4;
     }
 
     const operation = this.getOperation();
     operation.execute();
 
-    this.timerController.updateTimers(operation.cycleTime);
+    if (this.isImeScheduled) {
+      this.isInterruptMasterEnable = true;
+      this.isImeScheduled = false;
+    }
+
+    // this.clockCallback(operation.cycleTime);
 
     return operation.cycleTime;
   }
@@ -117,24 +136,25 @@ export class CPU {
   }
 
   private getOperation() {
+    this.clockCallback(4);
     const operationIndex = this.memory.readByte(this.registers.programCounter.value);
     this.registers.programCounter.value++;
     const operation = this.operations[operationIndex];
 
     if (!operation) {
       const opCode = operationIndex.toString(16);
-      const address = this.registers.programCounter.value.toString(16);
+      const address = (this.registers.programCounter.value - 1).toString(16);
       throw new Error(`Operation ${opCode} at location ${address} not found.`);
     }
 
     return operation;
   }
 
-  private getInterruptEnableRegisterValue() {
+  getInterruptEnableRegisterValue() {
     return this.memory.readByte(0xffff);
   }
 
-  private handleInterrupts() {
+  private handleInterrupts(): number {
     const firedInterrupts = this.interruptController.value & this.getInterruptEnableRegisterValue();
 
     if (firedInterrupts > 0) {
@@ -142,7 +162,7 @@ export class CPU {
     }
 
     if (!this.isInterruptMasterEnable || firedInterrupts === 0) {
-      return;
+      return 0;
     }
 
     this.pushToStack(this.registers.programCounter.value);
@@ -175,6 +195,7 @@ export class CPU {
     }
 
     this.isInterruptMasterEnable = false;
+    return 20;
   }
 
   addOperation(operation: Operation) {
@@ -191,5 +212,13 @@ export class CPU {
     }
 
     this.cbSubOperationMap[operation.byteDefinition] = operation;
+  }
+
+  read16BitAndClock(startAddress: number) {
+    this.clockCallback(4);
+    const low = this.memory.readByte(startAddress);
+    this.clockCallback(4);
+    const high = this.memory.readByte(startAddress + 1);
+    return combineBytes(low, high);
   }
 }

@@ -2,6 +2,7 @@ import { CPU } from "@/cpu/cpu";
 
 export function createInputOutputOperations(this: CPU) {
   const { registers, memory } = this;
+  const cpu = this;
 
   function getLoadRHLByteDefinition(rCode: number) {
     return (1 << 6) + (rCode << 3) + 0b110;
@@ -17,6 +18,7 @@ export function createInputOutputOperations(this: CPU) {
       cycleTime: 8,
       byteLength: 1,
       execute() {
+        cpu.clockCallback(4);
         register.value = memory.readByte(registers.HL.value);
       }
     })
@@ -31,6 +33,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.BC.value);
     }
   });
@@ -41,6 +44,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.DE.value);
     }
   });
@@ -51,6 +55,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(0xff00 + registers.C.value);
     }
   });
@@ -67,8 +72,10 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 12,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const baseAddress = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(0xff00 + baseAddress);
     }
   });
@@ -86,8 +93,9 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 16,
     byteLength: 3,
     execute() {
-      const memoryAddress = memory.readWord(registers.programCounter.value);
+      const memoryAddress = cpu.read16BitAndClock(registers.programCounter.value);
       registers.programCounter.value += 2;
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(memoryAddress);
     }
   });
@@ -102,6 +110,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.HL.value);
       registers.HL.value++;
     }
@@ -116,6 +125,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.HL.value);
       registers.HL.value--;
     }
@@ -136,6 +146,7 @@ export function createInputOutputOperations(this: CPU) {
       cycleTime: 8,
       byteLength: 1,
       execute() {
+        cpu.clockCallback(4);
         memory.writeByte(registers.HL.value, register.value);
       }
     })
@@ -150,6 +161,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       memory.writeByte(0xff00 + registers.C.value, registers.A.value);
     }
   });
@@ -167,8 +179,10 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 12,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const baseAddress = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
+      cpu.clockCallback(4);
       memory.writeByte(0xff00 + baseAddress, registers.A.value);
     }
   });
@@ -186,8 +200,9 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 16,
     byteLength: 3,
     execute() {
-      const memoryAddress = memory.readWord(registers.programCounter.value);
+      const memoryAddress = cpu.read16BitAndClock(registers.programCounter.value);
       registers.programCounter.value += 2;
+      cpu.clockCallback(4);
       memory.writeByte(memoryAddress, registers.A.value);
     }
   });
@@ -202,6 +217,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       memory.writeByte(registers.BC.value, registers.A.value);
     }
   });
@@ -212,6 +228,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       memory.writeByte(registers.DE.value, registers.A.value);
     }
   });
@@ -226,6 +243,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, registers.A.value);
       registers.HL.value = registers.HL.value + 1;
     }
@@ -241,6 +259,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, registers.A.value);
       registers.HL.value = registers.HL.value - 1;
     }
@@ -262,6 +281,7 @@ export function createInputOutputOperations(this: CPU) {
         byteLength: 1,
         cycleTime: 8,
         execute() {
+          cpu.clockCallback(4);
           firstRegister.value = secondRegister.value;
         },
       })
@@ -277,8 +297,10 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 12,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, value);
     }
   });
@@ -300,6 +322,7 @@ export function createInputOutputOperations(this: CPU) {
       cycleTime: 8,
       byteLength: 2,
       execute() {
+        cpu.clockCallback(4);
         register.value = memory.readByte(registers.programCounter.value);
         registers.programCounter.value++;
       }
@@ -317,7 +340,8 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 20,
     byteLength: 3,
     execute() {
-      const address = memory.readWord(registers.programCounter.value);
+      const address = cpu.read16BitAndClock(registers.programCounter.value);
+      cpu.clockCallback(8);
       memory.writeWord(address, registers.stackPointer.value);
       registers.programCounter.value += 2;
     }
@@ -341,7 +365,7 @@ export function createInputOutputOperations(this: CPU) {
         cycleTime: 12,
         byteLength: 3,
         execute() {
-          registerPair.value = memory.readWord(registers.programCounter.value);
+          registerPair.value = cpu.read16BitAndClock(registers.programCounter.value);
           registers.programCounter.value += 2;
         }
       });
@@ -357,6 +381,7 @@ export function createInputOutputOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       registers.stackPointer.value = registers.HL.value;
     }
   });
@@ -378,6 +403,7 @@ export function createInputOutputOperations(this: CPU) {
         byteLength: 1,
         cycleTime: 16,
         execute: () => {
+          cpu.clockCallback(12);
           this.pushToStack(registerPair.value);
         }
       });
@@ -400,6 +426,7 @@ export function createInputOutputOperations(this: CPU) {
         byteLength: 1,
         cycleTime: 12,
         execute: () => {
+          cpu.clockCallback(8);
           registerPair.value = this.popFromStack();
         }
       });
@@ -411,6 +438,7 @@ export function createInputOutputOperations(this: CPU) {
     byteLength: 1,
     cycleTime: 12,
     execute: () => {
+      cpu.clockCallback(8);
       registers.AF.value = this.popFromStack() & 0xFFF0;
     }
   })
@@ -432,6 +460,7 @@ export function createInputOutputOperations(this: CPU) {
     byteLength: 2,
     cycleTime: 12,
     execute() {
+      cpu.clockCallback(4);
       const toAdd = memory.readSignedByte(registers.programCounter.value);
       registers.programCounter.value++;
 
@@ -444,6 +473,7 @@ export function createInputOutputOperations(this: CPU) {
       registers.F.isSubtraction = false;
 
       registers.HL.value = registers.stackPointer.value + toAdd;
+      cpu.clockCallback(4);
     }
   });
 }

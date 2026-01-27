@@ -23,13 +23,13 @@ export function createCallAndReturnOperations(this: CPU) {
     byteLength: 3,
     cycleTime: 24,
     execute() {
-      const callToAddress = memory.readWord(registers.programCounter.value);
+      const callToAddress = cpu.read16BitAndClock(registers.programCounter.value);
       registers.programCounter.value += 2;
 
-      const returnToAddress = registers.programCounter.value;
-      cpu.pushToStack(returnToAddress);
+      cpu.pushToStack(registers.programCounter.value);
 
       registers.programCounter.value = callToAddress;
+      cpu.clockCallback(12);
     }
   });
 
@@ -53,15 +53,14 @@ export function createCallAndReturnOperations(this: CPU) {
     },
     execute() {
       if (!registers.F.isResultZero) {
-        const toAddress = memory.readWord(registers.programCounter.value);
+        const toAddress = cpu.read16BitAndClock(cpu.registers.programCounter.value);
         registers.programCounter.value += 2;
-
-        const returnToAddress = registers.programCounter.value;
-        cpu.pushToStack(returnToAddress);
-
+        cpu.pushToStack(registers.programCounter.value);
         registers.programCounter.value = toAddress;
+        cpu.clockCallback(12);
       } else {
-        registers.programCounter.value += 2; // Skip to next operation after the word value following this one
+        registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -74,19 +73,21 @@ export function createCallAndReturnOperations(this: CPU) {
     byteDefinition: getCallConditionByteDefinition(FlagCondition.Z),
     byteLength: 12,
     get cycleTime() {
-      return registers.F.isResultZero ? 6 : 3;
+      return registers.F.isResultZero ? 24 : 12;
     },
     execute() {
       if (registers.F.isResultZero) {
-        const toAddress = memory.readWord(registers.programCounter.value);
+        const toAddress = cpu.read16BitAndClock(registers.programCounter.value);
         registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
         cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
+        cpu.clockCallback(12);
       } else {
-        registers.programCounter.value += 2; // Skip to next operation after the word value following this one
+        registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -103,15 +104,17 @@ export function createCallAndReturnOperations(this: CPU) {
     },
     execute() {
       if (!registers.F.isCarry) {
-        const toAddress = memory.readWord(registers.programCounter.value);
+        const toAddress = cpu.read16BitAndClock(registers.programCounter.value);
         registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
         cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
+        cpu.clockCallback(12);
       } else {
         registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -128,15 +131,17 @@ export function createCallAndReturnOperations(this: CPU) {
     },
     execute() {
       if (registers.F.isCarry) {
-        const toAddress = memory.readWord(registers.programCounter.value);
+        const toAddress = cpu.read16BitAndClock(registers.programCounter.value);
         registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
         cpu.pushToStack(returnToAddress);
 
         registers.programCounter.value = toAddress;
+        cpu.clockCallback(12);
       } else {
         registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -152,6 +157,7 @@ export function createCallAndReturnOperations(this: CPU) {
     cycleTime: 16,
     execute() {
       registers.programCounter.value = cpu.popFromStack();
+      cpu.clockCallback(12);
     }
   });
 
@@ -163,6 +169,7 @@ export function createCallAndReturnOperations(this: CPU) {
     execute() {
       registers.programCounter.value = cpu.popFromStack();
       cpu.isInterruptMasterEnable = true;
+      cpu.clockCallback(12);
     }
   });
 
@@ -182,8 +189,10 @@ export function createCallAndReturnOperations(this: CPU) {
       return !registers.F.isResultZero ? 20 : 8;
     },
     execute() {
+      cpu.clockCallback(8);
       if (!registers.F.isResultZero) {
         registers.programCounter.value = cpu.popFromStack();
+        cpu.clockCallback(12);
       }
     }
   });
@@ -196,8 +205,10 @@ export function createCallAndReturnOperations(this: CPU) {
       return registers.F.isResultZero ? 20 : 8;
     },
     execute() {
+      cpu.clockCallback(8);
       if (registers.F.isResultZero) {
         registers.programCounter.value = cpu.popFromStack();
+        cpu.clockCallback(12);
       }
     }
   });
@@ -210,8 +221,10 @@ export function createCallAndReturnOperations(this: CPU) {
       return !registers.F.isCarry ? 20 : 8;
     },
     execute() {
+      cpu.clockCallback(8);
       if (!registers.F.isCarry) {
         registers.programCounter.value = cpu.popFromStack();
+        cpu.clockCallback(12);
       }
     }
   });
@@ -224,8 +237,10 @@ export function createCallAndReturnOperations(this: CPU) {
       return registers.F.isCarry ? 20 : 8;
     },
     execute() {
+      cpu.clockCallback(8);
       if (registers.F.isCarry) {
         registers.programCounter.value = cpu.popFromStack();
+        cpu.clockCallback(12);
       }
     }
   });
@@ -256,8 +271,10 @@ export function createCallAndReturnOperations(this: CPU) {
       byteLength: 1,
       cycleTime: 16,
       execute() {
+        cpu.clockCallback(8);
         cpu.pushToStack(registers.programCounter.value);
         registers.programCounter.value = operandToAddress[operand];
+        cpu.clockCallback(4);
       }
     });
   }

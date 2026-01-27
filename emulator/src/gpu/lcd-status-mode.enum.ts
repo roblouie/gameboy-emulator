@@ -1,6 +1,6 @@
 export enum LcdStatusMode {
-  InHBlank,
-  InVBlank,
-  SearchingOAM,
-  TransferringDataToLCD
+  Mode0InHBlank,
+  Mode1InVBlank,
+  Mode2SearchingOAM,
+  Mode3TransferringDataToLCD
 }

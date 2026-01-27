@@ -2,7 +2,7 @@ import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 import { InterruptController } from "@/cpu/interrupt-request-register";
 
 export class TimerController {
-  private div = 0;
+  private div = 0xab00;
   readonly tima = new SimpleByteRegister(0xff05);
   readonly tma = new SimpleByteRegister(0xff06);
   readonly tac = new SimpleByteRegister(0xff07);
@@ -14,6 +14,7 @@ export class TimerController {
 
   constructor(interruptController: InterruptController) {
     this.interruptController = interruptController;
+    this.tac.value = 0xf8;
   }
 
   writeDiv() {

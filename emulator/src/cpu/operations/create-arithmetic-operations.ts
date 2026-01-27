@@ -2,6 +2,7 @@ import { CPU } from "@/cpu/cpu";
 
 export function createArithmeticOperations(this: CPU) {
   const { registers, memory } = this;
+  const cpu = this;
 
   function addAndSetFlags(accumulatorVal: number, toAdd: number) {
     const newValue = (accumulatorVal + toAdd);
@@ -46,6 +47,7 @@ export function createArithmeticOperations(this: CPU) {
       return `ADD A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     execute() {
+      cpu.clockCallback(4);
       const valueToAdd = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = addAndSetFlags(registers.A.value, valueToAdd);
@@ -62,6 +64,7 @@ export function createArithmeticOperations(this: CPU) {
     byteLength: 1,
     instruction: 'ADD A, (HL)',
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = addAndSetFlags(registers.A.value, value);
     }
@@ -105,6 +108,7 @@ export function createArithmeticOperations(this: CPU) {
       return `ADC A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.F.CY);
@@ -117,6 +121,7 @@ export function createArithmeticOperations(this: CPU) {
     byteLength: 1,
     instruction: 'ADC A, (HL)',
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = addCarryAndSetFlags(registers.A.value, value, registers.F.CY);
     }
@@ -148,6 +153,7 @@ export function createArithmeticOperations(this: CPU) {
         cycleTime: 8,
         byteLength: 1,
         execute() {
+          cpu.clockCallback(4);
           registers.HL.value = add16BitAndSetFlags(registers.HL.value, registerPair.value);
         }
       });
@@ -170,6 +176,7 @@ export function createArithmeticOperations(this: CPU) {
       }
     },
     execute() {
+      cpu.clockCallback(4);
       const toAdd = memory.readSignedByte(registers.programCounter.value);
       registers.programCounter.value++;
 
@@ -182,6 +189,7 @@ export function createArithmeticOperations(this: CPU) {
       registers.F.isSubtraction = false;
 
       registers.stackPointer.value = registers.stackPointer.value + toAdd;
+      cpu.clockCallback(8);
     }
   });
 
@@ -225,8 +233,10 @@ export function createArithmeticOperations(this: CPU) {
     cycleTime: 12,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const incremented = decrementAndSetFlags(value);
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, incremented);
     }
   });
@@ -249,6 +259,7 @@ export function createArithmeticOperations(this: CPU) {
         byteLength: 1,
         execute() {
           registerPair.value--;
+          cpu.clockCallback(4);
         }
       });
     });
@@ -292,8 +303,10 @@ export function createArithmeticOperations(this: CPU) {
     byteLength: 1,
     instruction: 'INC (HL)',
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const incremented = incrementAndSetFlags(value);
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, incremented);
     }
   });
@@ -316,6 +329,7 @@ export function createArithmeticOperations(this: CPU) {
         instruction: `INC ${registerPair.name}`,
         execute() {
           registerPair.value++;
+          cpu.clockCallback(4);
         }
       });
     });
@@ -358,6 +372,7 @@ export function createArithmeticOperations(this: CPU) {
       return `SUB 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = subtractAndSetFlags(registers.A.value, value);
@@ -370,6 +385,7 @@ export function createArithmeticOperations(this: CPU) {
     byteLength: 1,
     instruction: 'SUB (HL)',
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = subtractAndSetFlags(registers.A.value, value);
     }
@@ -412,6 +428,7 @@ export function createArithmeticOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.F.CY);
@@ -424,6 +441,7 @@ export function createArithmeticOperations(this: CPU) {
     cycleTime: 8,
     byteLength: 1,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = subtractCarryAndSetFlags(registers.A.value, value, registers.F.CY);
     }

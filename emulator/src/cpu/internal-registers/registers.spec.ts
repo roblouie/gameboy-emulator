@@ -1,4 +1,5 @@
 import { CpuRegisterCollection } from "./cpu-register-collection";
+import { describe, it, expect, beforeEach } from "vitest";
 
 const registers = new CpuRegisterCollection();
 

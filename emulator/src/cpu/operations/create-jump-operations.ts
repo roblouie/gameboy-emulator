@@ -1,7 +1,9 @@
 import { CPU } from "@/cpu/cpu";
+import {combineBytes} from "@/helpers/binary-helpers";
 
 export function createJumpOperations(this: CPU) {
   const { registers, memory } = this;
+  const cpu = this;
 
   this.addOperation({
     get instruction() {
@@ -11,7 +13,8 @@ export function createJumpOperations(this: CPU) {
     cycleTime: 16,
     byteLength: 3,
     execute() {
-      registers.programCounter.value = memory.readWord(registers.programCounter.value);
+      registers.programCounter.value = cpu.read16BitAndClock(registers.programCounter.value);
+      cpu.clockCallback(4);
     }
   });
 
@@ -26,9 +29,11 @@ export function createJumpOperations(this: CPU) {
     byteLength: 3,
     execute() {
       if (!registers.F.isResultZero) {
-        registers.programCounter.value = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value = cpu.read16BitAndClock(registers.programCounter.value);
+        cpu.clockCallback(4);
       } else {
         registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -44,9 +49,11 @@ export function createJumpOperations(this: CPU) {
     byteLength: 3,
     execute() {
       if (registers.F.isResultZero) {
-        registers.programCounter.value = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value = cpu.read16BitAndClock(registers.programCounter.value);
+        cpu.clockCallback(4);
       } else {
         registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -62,9 +69,11 @@ export function createJumpOperations(this: CPU) {
     byteLength: 3,
     execute() {
       if (!registers.F.isCarry) {
-        registers.programCounter.value = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value = cpu.read16BitAndClock(registers.programCounter.value);
+        cpu.clockCallback(4);
       } else {
         registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -80,9 +89,11 @@ export function createJumpOperations(this: CPU) {
     byteLength: 3,
     execute() {
       if (registers.F.isCarry) {
-        registers.programCounter.value = memory.readWord(registers.programCounter.value);
+        registers.programCounter.value = cpu.read16BitAndClock(registers.programCounter.value);
+        cpu.clockCallback(4);
       } else {
         registers.programCounter.value += 2;
+        cpu.clockCallback(8);
       }
     }
   });
@@ -100,9 +111,11 @@ export function createJumpOperations(this: CPU) {
     cycleTime: 12,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const jumpDistance = memory.readSignedByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.programCounter.value = registers.programCounter.value + jumpDistance;
+      cpu.clockCallback(4);
     }
   });
 
@@ -120,12 +133,14 @@ export function createJumpOperations(this: CPU) {
     byteLength: 2,
     execute() {
       if (!registers.F.isResultZero) {
+        cpu.clockCallback(4);
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
       } else {
         registers.programCounter.value++;
       }
+      cpu.clockCallback(4);
     }
   });
 
@@ -143,12 +158,14 @@ export function createJumpOperations(this: CPU) {
     byteLength: 2,
     execute() {
       if (registers.F.isResultZero) {
+        cpu.clockCallback(4);
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
       } else {
         registers.programCounter.value++;
       }
+      cpu.clockCallback(4);
     }
   });
 
@@ -166,12 +183,14 @@ export function createJumpOperations(this: CPU) {
     byteLength: 2,
     execute() {
       if (!registers.F.isCarry) {
+        cpu.clockCallback(4);
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
       } else {
         registers.programCounter.value++;
       }
+      cpu.clockCallback(4);
     }
   });
 
@@ -189,12 +208,14 @@ export function createJumpOperations(this: CPU) {
     byteLength: 2,
     execute() {
       if (registers.F.isCarry) {
+        cpu.clockCallback(4);
         const jumpDistance = memory.readSignedByte(registers.programCounter.value);
         registers.programCounter.value++;
         registers.programCounter.value = registers.programCounter.value + jumpDistance;
       } else {
         registers.programCounter.value++;
       }
+      cpu.clockCallback(4);
     }
   });
 

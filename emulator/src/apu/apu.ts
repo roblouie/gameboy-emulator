@@ -10,11 +10,11 @@ export class APU {
   private static FrameSequencerHertz = 512;
   private readonly FrameSequencerInterval = CPU.OperatingHertz / APU.FrameSequencerHertz;
 
-  private audioContext = new AudioContext({ latencyHint: "interactive" });
+  private audioContext: AudioContext;
 
   private frameSequencerCycleCounter = 0;
 
-  private cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
+  private cyclesPerSample: number;
   private sampleCycleCounter = 0;
 
   readonly nr52SoundEndFlag = new SoundsOnRegister(0xff26);
@@ -29,6 +29,17 @@ export class APU {
   private workletNode: AudioWorkletNode;
 
   constructor() {
+    this.sound1 = new Sound1();
+    this.sound2 = new Sound2();
+    this.sound3 = new Sound3();
+    this.sound4 = new Sound4();
+
+    if (!globalThis.window?.AudioContext) {
+      return;
+    }
+
+    this.audioContext = new AudioContext({ latencyHint: "interactive" });
+    this.cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
     this.audioContext.suspend();
 
     this.audioContext.audioWorklet.addModule(workletUrl).then(() => {
@@ -37,11 +48,6 @@ export class APU {
     }).catch(error => {
       console.error('Unable to load audio Queue', error);
     });
-
-    this.sound1 = new Sound1();
-    this.sound2 = new Sound2();
-    this.sound3 = new Sound3();
-    this.sound4 = new Sound4();
   }
 
   get isAudioEnabled() {

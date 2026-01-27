@@ -4,7 +4,7 @@ import { GPU } from "@/gpu/gpu";
 import { APU } from "@/apu/apu";
 import {InterruptController} from "@/cpu/interrupt-request-register";
 import {TimerController} from "@/cpu/timer-controller";
-import { convertUint8ToInt8 } from "@/helpers/binary-helpers";
+import {combineBytes, convertUint8ToInt8} from "@/helpers/binary-helpers";
 
 export class Memory {
   cartridge: Cartridge = new Cartridge(new DataView(new ArrayBuffer(0)));
@@ -126,11 +126,16 @@ export class Memory {
     } else {
       const lo = this.readByte(address);
       const hi = this.readByte((address + 1) & 0xFFFF);
-      return lo | (hi << 8);
+      return combineBytes(lo, hi);
     }
   }
 
   writeByte(address: number, value: number) {
+    if (address === 0xffff) {
+      console.log('we are writing: ' + value.toString(16))
+      debugger;
+    }
+
     if (this.isAccessingCartridge(address)) {
       this.cartridge.writeByte(address, value);
       return;
@@ -189,7 +194,7 @@ export class Memory {
 
         // GPU
         case 0xff40: this.gpu.lcdControl.value = value; return;
-        case 0xff41: this.gpu.lcdStatus.value = value; return;
+        case 0xff41: this.gpu.writeStat(value); return;
         case 0xff42: this.gpu.scrollY.value = value; return;
         case 0xff43: this.gpu.scrollX.value = value; return;
         case 0xff44: return; // line y readonly

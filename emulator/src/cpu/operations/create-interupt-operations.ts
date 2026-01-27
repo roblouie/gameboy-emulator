@@ -1,8 +1,5 @@
 import { CPU } from "@/cpu/cpu";
 
-// TODO: Interrupt disable / enable doesn't change the master interrupt flag until
-// after the instruction following EI/DI executes. Currently they just change the flag
-// immediately.
 export function createInterruptOperations(this: CPU) {
   const cpu = this;
   this.addOperation({
@@ -11,7 +8,7 @@ export function createInterruptOperations(this: CPU) {
     byteLength: 1,
     cycleTime: 4,
     execute() {
-      cpu.isInterruptMasterEnable = true;
+      cpu.isImeScheduled = true;
     }
   });
 
@@ -21,6 +18,7 @@ export function createInterruptOperations(this: CPU) {
     byteLength: 1,
     cycleTime: 4,
     execute() {
+      cpu.isImeScheduled = false;
       cpu.isInterruptMasterEnable = false;
     }
   })

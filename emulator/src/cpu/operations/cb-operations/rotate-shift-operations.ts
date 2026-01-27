@@ -43,7 +43,9 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, swapAndSetFlags(value));
     }
   });
@@ -80,10 +82,12 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const bit7 = value >> 7;
       const rotated = ((value << 1) & 0xff) + bit7;
       const result = rotated & 0xff;
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
 
       registers.F.CY = bit7;
@@ -127,6 +131,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const bit7 = value >> 7;
       const rotated = ((value << 1) & 0xff) + registers.F.CY;
@@ -136,6 +141,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.N = 0;
       registers.F.isResultZero = result === 0;
 
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
     }
   });
@@ -172,6 +178,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const bit0 = value & 0b1;
       const result = ((value >> 1) & 0xff) + (bit0 << 7);
@@ -180,6 +187,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.isResultZero = result === 0;
       registers.F.N = 0;
 
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
     }
   });
@@ -217,6 +225,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const bit0 = value & 0b1;
       const result = ((value >> 1) & 0xff) + (registers.F.CY << 7);
@@ -225,6 +234,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.H = 0;
       registers.F.N = 0;
 
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
     }
   });
@@ -262,6 +272,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const bit7 = value >> 7;
       const result = (value << 1) & 0xff;
@@ -270,6 +281,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.H = 0;
       registers.F.N = 0;
 
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
     }
   });
@@ -309,6 +321,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const toCarry = value &0b1;
       const topBit = value >> 7;
@@ -319,6 +332,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.H = 0;
       registers.F.N = 0;
 
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
     }
   });
@@ -356,6 +370,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cycleTime: 16,
     byteLength: 2,
     execute() {
+      cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       const toCarry = value & 0b1;
       const result = (value >> 1) & 0xff;
@@ -364,6 +379,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.H = 0;
       registers.F.N = 0;
 
+      cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
     }
   });

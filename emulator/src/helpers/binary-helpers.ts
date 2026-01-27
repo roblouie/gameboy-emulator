@@ -43,3 +43,7 @@ export function getLowerNibble(byte: number) {
 export function getUpperNibble(byte: number) {
   return (byte >> 4) & 0b1111;
 }
+
+export function combineBytes(low: number, high: number) {
+  return low | (high << 8);
+}

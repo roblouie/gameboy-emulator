@@ -25,8 +25,16 @@ export class LcdStatusRegister extends SimpleByteRegister {
     return getBit(this.value, 3);
   }
 
+  get isVBlankInterruptSelected() {
+    return getBit(this.value, 4);
+  }
+
+  get isSearchingOamInterruptSelected() {
+    return getBit(this.value, 5);
+  }
 
   get isLineYMatchingInterruptSelected() {
     return getBit(this.value, 6);
   }
+
 }
