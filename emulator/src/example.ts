@@ -1,10 +1,12 @@
 import { Gameboy } from '@/gameboy';
 import {EnhancedImageData} from "@/helpers/enhanced-image-data";
 import {getBit} from "@/helpers/binary-helpers";
+import {SaveManager} from "@/save-manager";
 
 
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
+
 
 // const vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
 // const vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
@@ -34,6 +36,16 @@ async function onFileChange() {
     gameboy.onFrameFinished((imageData: ImageData) => {
       context.putImageData(imageData, 0, 0);
     });
+
+    const saveManager = new SaveManager();
+    await saveManager.initialize();
+
+    gameboy.setOnWriteToCartridgeRam(() => {
+      saveManager.setSave(gameboy.bus.cartridge.title, gameboy.getCartridgeSaveRam())
+    });
+
+    const saveData = await saveManager.getSave(gameboy.bus.cartridge.title);
+    gameboy.setCartridgeSaveRam(saveData);
 
     gameboy.run(); // Run the game
   }

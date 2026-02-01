@@ -29,10 +29,9 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       cpu.addCbOperation({
         byteDefinition: getSwapRByteDefinition(register.code),
         instruction: `SWAP ${register.name}`,
-        cycleTime: 8,
-        byteLength: 2,
         execute() {
           register.value = swapAndSetFlags(register.value);
+          return 8;
         }
       })
     });
@@ -40,13 +39,12 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     byteDefinition: 0b00_110_110,
     instruction: 'SWAP (HL)',
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, swapAndSetFlags(value));
+      return 16;
     }
   });
 
@@ -62,8 +60,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       byteDefinition: getRLCMByteDefinition(register.code),
       instruction: `RLC ${register.name}`,
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const bit7 = register.value >> 7;
         register.value = (register.value << 1) + bit7;
@@ -72,6 +68,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.isHalfCarry = false;
         registers.F.isResultZero = register.value === 0;
         registers.F.isSubtraction = false;
+        return 8;
       }
     });
   });
@@ -79,8 +76,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     byteDefinition: 0b00_000_110,
     instruction: 'RLC (HL)',
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -94,6 +89,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
       registers.F.isHalfCarry = false;
       registers.F.isResultZero = result === 0;
       registers.F.isSubtraction = false;
+      return 16;
     }
   });
 
@@ -109,8 +105,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       instruction: `RL ${register.name}`,
       byteDefinition: getRLMByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const bit7 = register.value >> 7;
         const rotated = ((register.value << 1) & 0xff) + registers.F.CY;
@@ -121,6 +115,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.N = 0;
 
         register.value = result;
+        return 8;
       }
     });
   });
@@ -128,8 +123,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     instruction: 'RL (HL)',
     byteDefinition: 0b00_010_110,
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -143,6 +136,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
 
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
+      return 16;
     }
   });
 
@@ -157,8 +151,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       instruction: `RRC ${register.name}`,
       byteDefinition: getRRCMByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const bit0 = register.value & 0b1;
         const result = ((register.value >> 1) & 0xff) + (bit0 << 7);
@@ -168,6 +160,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.N = 0;
 
         register.value = result;
+        return 8;
       }
     });
   });
@@ -175,8 +168,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     instruction: 'RRC (HL)',
     byteDefinition: 0b00_001_110,
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -189,6 +180,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
 
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
+      return 16;
     }
   });
 
@@ -204,8 +196,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       instruction: `RR ${register.name}`,
       byteDefinition: getRRMByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const bit0 = register.value & 0b1;
         const result = ((register.value >> 1) & 0xff) + (registers.F.CY << 7);
@@ -215,6 +205,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.N = 0;
 
         register.value = result;
+        return 8;
       }
     });
   });
@@ -222,8 +213,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     instruction: 'RR (HL)',
     byteDefinition: 0b00_011_110,
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -236,6 +225,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
 
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
+      return 16;
     }
   });
 
@@ -251,8 +241,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       instruction: `SLA ${register.name}`,
       byteDefinition: getSLAMByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const bit7 = register.value >> 7;
         const result = (register.value << 1) & 0xff;
@@ -262,6 +250,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.N = 0;
 
         register.value = result;
+        return 8;
       }
     });
   });
@@ -269,8 +258,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     instruction: 'SLA (HL)',
     byteDefinition: 0b00_100_110,
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -283,6 +270,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
 
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
+      return 16;
     }
   });
 
@@ -298,8 +286,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       instruction: `SRA ${register.name}`,
       byteDefinition: getSRAMByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const toCarry = register.value &0b1;
         const topBit = register.value >> 7;
@@ -311,6 +297,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.N = 0;
 
         register.value = result;
+        return 8;
       }
     });
   });
@@ -318,8 +305,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     instruction: 'SRA (HL)',
     byteDefinition: 0b00_101_110,
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -334,6 +319,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
 
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
+      return 16;
     }
   });
 
@@ -349,8 +335,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       instruction: `SRL ${register.name}`,
       byteDefinition: getSRLMByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         const toCarry = register.value & 0b1;
         const result = (register.value >> 1) & 0xff;
@@ -360,6 +344,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
         registers.F.N = 0;
 
         register.value = result;
+        return 8;
       }
     });
   });
@@ -367,8 +352,6 @@ export function getRotateShiftSubOperations(cpu: CPU) {
   cpu.addCbOperation({
     instruction: 'SRL (HL)',
     byteDefinition: 0b00_111_110,
-    cycleTime: 16,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
@@ -381,6 +364,7 @@ export function getRotateShiftSubOperations(cpu: CPU) {
 
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, result);
+      return 16;
     }
   });
 }

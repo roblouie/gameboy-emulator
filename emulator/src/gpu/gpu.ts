@@ -30,11 +30,11 @@ export class GPU {
   readonly vram = new Uint8Array(0x2000);
   readonly oam = new Uint8Array(0xa0);
 
-  backgroundPalette = new SimpleByteRegister(0xff47);
   lcdControl = new LcdControlRegister(0xff40);
   lcdStatus = new LcdStatusRegister(0xff41);
   lineY = new SimpleByteRegister(0xff44);
   lineYCompare = new SimpleByteRegister(0xff45);
+  backgroundPalette = new SimpleByteRegister(0xff47);
   objectPalettes = [new SimpleByteRegister(0xff48), new SimpleByteRegister(0xff49)];
   scrollX = new SimpleByteRegister(0xff43);
   scrollY = new SimpleByteRegister(0xff42);
@@ -50,8 +50,6 @@ export class GPU {
     { red: 0, green: 0, blue: 0 },
   ];
 
-  private statCounter = 0;
-
   constructor(interruptController: InterruptController) {
     this.interruptController = interruptController;
 
@@ -61,13 +59,66 @@ export class GPU {
 
     this.lcdControl.value = 0x91;
     this.lcdStatus.value = 0x85;
-    this.lcdStatus.mode = LcdStatusMode.Mode2SearchingOAM; // TODO: look into cleaning this up to a single initial value
     this.backgroundPalette.value = 0xfc;
+  }
+
+  readVram(address: number): number {
+    return this.canAccessVram() ? this.vram[address] : 0xff;
+  }
+
+  writeVram(address: number, value: number): void {
+    if (this.canAccessVram()) {
+      this.vram[address] = value;
+    }
+  }
+
+  readOam(address: number): number {
+    return this.canAccessOam() ? this.oam[address] : 0xff;
+  }
+
+  writeOam(address: number, value: number): void {
+    if (this.canAccessOam()) {
+      this.oam[address] = value;
+    }
+  }
+
+  private canAccessVram(): boolean {
+    // Currently not limiting vram access as it causes bugs. This presumably means my timing is off somewhere, but unclear where.
+    // On zelda, the right edge of the screen is wrong, but can be fixed by allowing access while in mode 3 for the first 56 cycles.
+    // This seems like a big timing gap.
+    return true; //!this.lcdControl.isLCDControllerOperating || this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD
+  }
+
+  private canAccessOam(): boolean {
+    return !this.lcdControl.isLCDControllerOperating || (this.lcdStatus.mode !== LcdStatusMode.Mode2SearchingOAM && this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD);
   }
 
   writeLyc(value: number) {
     this.lineYCompare.value = value;
     this.handleStat();
+  }
+
+  writeLcdc(value: number) {
+    const old = this.lcdControl.value;
+    this.lcdControl.value = value;
+
+    const wasOn = (old & 0x80) !== 0;
+    const nowOn = (value & 0x80) !== 0;
+
+    if (wasOn && !nowOn) {
+      this.lineY.value = 0;
+      this.lcdStatus.mode = LcdStatusMode.Mode0InHBlank;
+      this.windowLinesDrawn = 0;
+      this.prevStatLine = false;
+      return;
+    }
+
+    if (!wasOn && nowOn) {
+      this.lineY.value = 0;
+      this.lcdStatus.mode = LcdStatusMode.Mode2SearchingOAM;
+      this.windowLinesDrawn = 0;
+      this.prevStatLine = false;
+    }
   }
 
   writeStat(value: number) {
@@ -89,9 +140,9 @@ export class GPU {
   }
 
   tick(cycles: number) {
-    // if (this.lineY.value === this.lineYCompare.value) {
-    //   console.log("LYC match at LY", this.lineY.value, "mode", this.lcdStatus.mode);
-    // }
+    if (!this.lcdControl.isLCDControllerOperating) {
+      return;
+    }
 
     this.cycleCounter += cycles;
 
@@ -109,6 +160,8 @@ export class GPU {
         if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
           this.cycleCounter -= GPU.CyclesPerScanlineVram;
 
+          this.drawScanline();
+
           this.lcdStatus.mode = LcdStatusMode.Mode0InHBlank;
           this.handleStat();
         }
@@ -116,7 +169,6 @@ export class GPU {
 
       case LcdStatusMode.Mode0InHBlank:
         if (this.cycleCounter >= GPU.CyclesPerHBlank) {
-          this.drawScanline();
 
           this.cycleCounter -= GPU.CyclesPerHBlank;
 
@@ -162,10 +214,6 @@ export class GPU {
   }
 
   drawScanline() {
-    if (!this.lcdControl.isLCDControllerOperating) {
-      return;
-    }
-
     let backgroundLineValues: number[] = [];
     if (this.lcdControl.isBackgroundDisplayOn) {
       backgroundLineValues = this.drawBackgroundLine();
@@ -425,8 +473,6 @@ export class GPU {
   }
 
   private prevStatLine = false;
-  private trueCount = 0;
-  private falseCount = 0;
 
   private handleStat(isTransitioningToVBlank = false) {
     const mode = this.lcdStatus.mode;
@@ -439,10 +485,7 @@ export class GPU {
                   || ((mode === LcdStatusMode.Mode2SearchingOAM || isTransitioningToVBlank) && this.lcdStatus.isSearchingOamInterruptSelected)
                   || (lycMatch && this.lcdStatus.isLineYMatchingInterruptSelected);
 
-    if (statLine) this.trueCount++; else this.falseCount++;
-
     if (statLine && !this.prevStatLine) {
-      this.statCounter++;
       this.interruptController.triggerLcdStatusInterruptRequest();
     }
 

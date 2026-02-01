@@ -6,8 +6,6 @@ export function createGeneralPurposeOperations(this: CPU) {
   this.addOperation({
     instruction: 'DAA',
     byteDefinition: 0x27,
-    cycleTime: 4,
-    byteLength: 1,
     execute() {
       const { A, F } = registers;
       const onesPlaceCorrector = F.isSubtraction ? -0x06 : 0x06;
@@ -27,74 +25,70 @@ export function createGeneralPurposeOperations(this: CPU) {
 
       F.isResultZero = A.value === 0;
       F.isHalfCarry = false;
+
+      return 4;
     }
   });
 
   this.addOperation({
     instruction: 'CPL',
     byteDefinition: 0b00_101_111,
-    cycleTime: 4,
-    byteLength: 1,
     execute() {
       registers.A.value = ~registers.A.value;
       registers.F.isHalfCarry = true;
       registers.F.isSubtraction = true;
+      return 4;
     }
   })
 
   this.addOperation({
     instruction: 'NOP',
     byteDefinition: 0b0,
-    cycleTime: 4,
-    byteLength: 1,
     execute() {
-
+      return 4;
     }
   });
 
   this.addOperation({
     instruction: 'CCF',
     byteDefinition: 0x3f,
-    cycleTime: 4,
-    byteLength: 1,
     execute() {
       registers.F.isSubtraction = false;
       registers.F.isHalfCarry = false;
 
       registers.F.isCarry = !registers.F.isCarry;
+      return 4;
     }
   });
 
   this.addOperation({
     instruction: 'SCF',
     byteDefinition: 0x37,
-    cycleTime: 4,
-    byteLength: 1,
     execute() {
       registers.F.isSubtraction = false;
       registers.F.isHalfCarry = false;
 
       registers.F.isCarry = true;
+      return 4;
     }
   });
 
   this.addOperation({
     instruction: 'HALT',
     byteDefinition: 0x76,
-    cycleTime: 4,
-    byteLength: 1,
     execute: () => {
+      // console.log('HALT CALLED')
       this.halt();
+      return 4;
     }
   });
 
   this.addOperation({
     instruction: 'STOP',
     byteDefinition: 0x10,
-    cycleTime: 4,
-    byteLength: 1,
     execute: () => {
       this.stop();
+      return 4;
     }
   });
 }

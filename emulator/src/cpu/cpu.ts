@@ -25,7 +25,7 @@ export class CPU {
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
   isImeScheduled = false;
-  isInterruptMasterEnable = true;
+  isInterruptMasterEnable = false;
   registers: CpuRegisterCollection;
 
   operations: Array<Operation> = [];
@@ -45,7 +45,7 @@ export class CPU {
   createInterruptOperations = createInterruptOperations;
   createCbSubOperations = createCbSubOperations;
 
-  private isHalted = false;
+  isHalted = false;
   private isStopped = false;
 
   memory: Memory;
@@ -81,33 +81,24 @@ export class CPU {
   }
 
   tick(): number {
-    if (this.registers.programCounter.value >= 0x2b7 && this.registers.programCounter.value <= 0x02c8) {
-      console.log(`${this.registers.programCounter.value.toString(16)}: ` + this.timerController.readDiv());
+    let cycles = 0;
+
+    if (this.isHalted) {
+      this.clockCallback(4);
+      cycles = 4;
+    } else {
+      if (this.isImeScheduled) {
+        this.isInterruptMasterEnable = true;
+        this.isImeScheduled = false;
+      }
+
+      const operation = this.getOperation();
+      cycles = operation.execute();
     }
 
     const interruptTime = this.handleInterrupts();
 
-    if (interruptTime) {
-      this.clockCallback(interruptTime);
-      return interruptTime;
-    }
-
-    if (this.isHalted) {
-      this.clockCallback(4);
-      return 4;
-    }
-
-    const operation = this.getOperation();
-    operation.execute();
-
-    if (this.isImeScheduled) {
-      this.isInterruptMasterEnable = true;
-      this.isImeScheduled = false;
-    }
-
-    // this.clockCallback(operation.cycleTime);
-
-    return operation.cycleTime;
+    return interruptTime + cycles;
   }
 
   reset() {
@@ -115,24 +106,13 @@ export class CPU {
   }
 
   halt() {
+    // console.log('halt called');
     this.isHalted = true;
   }
 
   stop() {
     this.isStopped = true;
     this.timerController.writeDiv();
-  }
-
-  pushToStack(word: number) {
-    this.registers.stackPointer.value -= 2;
-    this.memory.writeWord(this.registers.stackPointer.value, word);
-  }
-
-  popFromStack() {
-    const value = this.memory.readWord(this.registers.stackPointer.value);
-    this.registers.stackPointer.value += 2;
-
-    return value;
   }
 
   private getOperation() {
@@ -165,10 +145,11 @@ export class CPU {
       return 0;
     }
 
-    this.pushToStack(this.registers.programCounter.value);
+    this.pushToStackAndClock(this.registers.programCounter.value);
 
     const interruptFlags = this.interruptController.getInterruptFlags(firedInterrupts);
 
+    this.clockCallback(4);
     if (interruptFlags.isVerticalBlanking) {
       this.interruptController.clearVBlankInterruptRequest();
       this.registers.programCounter.value = CPU.VBlankInterruptAddress;
@@ -193,6 +174,8 @@ export class CPU {
       this.interruptController.clearP10P13NegativeEdgeInterruptRequest();
       this.registers.programCounter.value = CPU.P10P13InputSignalLowInterruptAddress;
     }
+
+    this.clockCallback(8);
 
     this.isInterruptMasterEnable = false;
     return 20;
@@ -220,5 +203,24 @@ export class CPU {
     this.clockCallback(4);
     const high = this.memory.readByte(startAddress + 1);
     return combineBytes(low, high);
+  }
+
+  popFromStackAndClock() {
+    this.clockCallback(4);
+    const low = this.memory.readByte(this.registers.stackPointer.value);
+    this.registers.stackPointer.value++
+    this.clockCallback(4);
+    const high = this.memory.readByte(this.registers.stackPointer.value);
+    this.registers.stackPointer.value++
+    return combineBytes(low, high);
+  }
+
+  pushToStackAndClock(value: number): void {
+    this.clockCallback(4);
+    this.registers.stackPointer.value--;
+    this.memory.writeByte(this.registers.stackPointer.value, value >> 8);
+    this.clockCallback(4);
+    this.registers.stackPointer.value--;
+    this.memory.writeByte(this.registers.stackPointer.value, value & 0xff);
   }
 }

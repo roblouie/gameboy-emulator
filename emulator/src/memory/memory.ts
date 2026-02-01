@@ -39,11 +39,11 @@ export class Memory {
     }
 
     if (this.isAccessingVram(address)) {
-      return this.gpu.vram[address - 0x8000];
+      return this.gpu.readVram(address - 0x8000);
     }
 
     if (this.isAccessingOam(address)) {
-      return this.gpu.oam[address - 0xfe00];
+      return this.gpu.readOam(address - 0xfe00);
     }
 
     if (this.isAccessingWaveRam(address)) {
@@ -59,7 +59,7 @@ export class Memory {
         case 0xff04: return this.timerController.readDiv();
         case 0xff05: return this.timerController.tima.value;
         case 0xff06: return this.timerController.tma.value;
-        case 0xff07: return this.timerController.tac.value;
+        case 0xff07: return this.timerController.readTac();
 
         // APU
         case 0xff10: return this.apu.sound1.nr10SweepControl.value;
@@ -131,10 +131,10 @@ export class Memory {
   }
 
   writeByte(address: number, value: number) {
-    if (address === 0xffff) {
-      console.log('we are writing: ' + value.toString(16))
-      debugger;
-    }
+    // if (address === 0xff0f) {
+    //   console.log('we are writing: ' + value.toString(2))
+    //   debugger;
+    // }
 
     if (this.isAccessingCartridge(address)) {
       this.cartridge.writeByte(address, value);
@@ -142,12 +142,12 @@ export class Memory {
     }
 
     if (this.isAccessingVram(address)) {
-      this.gpu.vram[address - 0x8000] = value;
+      this.gpu.writeVram(address - 0x8000, value);
       return;
     }
 
     if (this.isAccessingOam(address)) {
-      this.gpu.oam[address - 0xfe00] = value;
+      this.gpu.writeOam(address - 0xfe00, value);
       return;
     }
 
@@ -193,7 +193,7 @@ export class Memory {
         case 0xff26: this.apu.nr52SoundEndFlag.value = value; return;
 
         // GPU
-        case 0xff40: this.gpu.lcdControl.value = value; return;
+        case 0xff40: this.gpu.writeLcdc(value); return;
         case 0xff41: this.gpu.writeStat(value); return;
         case 0xff42: this.gpu.scrollY.value = value; return;
         case 0xff43: this.gpu.scrollX.value = value; return;

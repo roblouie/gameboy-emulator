@@ -20,16 +20,15 @@ export function createCallAndReturnOperations(this: CPU) {
       return `CALL 0x${toAddress.toString(16)}`;
     },
     byteDefinition: 0b11_001_101,
-    byteLength: 3,
-    cycleTime: 24,
     execute() {
       const callToAddress = cpu.read16BitAndClock(registers.programCounter.value);
       registers.programCounter.value += 2;
 
-      cpu.pushToStack(registers.programCounter.value);
+      cpu.pushToStackAndClock(registers.programCounter.value);
 
       registers.programCounter.value = callToAddress;
-      cpu.clockCallback(12);
+      cpu.clockCallback(4);
+      return 24;
     }
   });
 
@@ -47,20 +46,18 @@ export function createCallAndReturnOperations(this: CPU) {
       return `CALL NZ, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.NZ),
-    byteLength: 3,
-    get cycleTime() {
-      return !registers.F.isResultZero ? 24 : 12;
-    },
     execute() {
       if (!registers.F.isResultZero) {
         const toAddress = cpu.read16BitAndClock(cpu.registers.programCounter.value);
         registers.programCounter.value += 2;
-        cpu.pushToStack(registers.programCounter.value);
+        cpu.pushToStackAndClock(registers.programCounter.value);
         registers.programCounter.value = toAddress;
-        cpu.clockCallback(12);
+        cpu.clockCallback(4);
+        return 24;
       } else {
         registers.programCounter.value += 2;
         cpu.clockCallback(8);
+        return 12;
       }
     }
   });
@@ -71,23 +68,21 @@ export function createCallAndReturnOperations(this: CPU) {
       return `CALL Z, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.Z),
-    byteLength: 12,
-    get cycleTime() {
-      return registers.F.isResultZero ? 24 : 12;
-    },
     execute() {
       if (registers.F.isResultZero) {
         const toAddress = cpu.read16BitAndClock(registers.programCounter.value);
         registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
-        cpu.pushToStack(returnToAddress);
+        cpu.pushToStackAndClock(returnToAddress);
 
         registers.programCounter.value = toAddress;
-        cpu.clockCallback(12);
+        cpu.clockCallback(4);
+        return 24;
       } else {
         registers.programCounter.value += 2;
         cpu.clockCallback(8);
+        return 12;
       }
     }
   });
@@ -98,23 +93,21 @@ export function createCallAndReturnOperations(this: CPU) {
       return `CALL NC, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.NC),
-    byteLength: 3,
-    get cycleTime() {
-      return !registers.F.isCarry ? 24 : 12;
-    },
     execute() {
       if (!registers.F.isCarry) {
         const toAddress = cpu.read16BitAndClock(registers.programCounter.value);
         registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
-        cpu.pushToStack(returnToAddress);
+        cpu.pushToStackAndClock(returnToAddress);
 
         registers.programCounter.value = toAddress;
-        cpu.clockCallback(12);
+        cpu.clockCallback(4);
+        return 24;
       } else {
         registers.programCounter.value += 2;
         cpu.clockCallback(8);
+        return 12;
       }
     }
   });
@@ -125,23 +118,21 @@ export function createCallAndReturnOperations(this: CPU) {
       return `CALL C, 0x${toAddress.toString(16)}`;
     },
     byteDefinition: getCallConditionByteDefinition(FlagCondition.C),
-    byteLength: 3,
-    get cycleTime() {
-      return registers.F.isCarry ? 24 : 12;
-    },
     execute() {
       if (registers.F.isCarry) {
         const toAddress = cpu.read16BitAndClock(registers.programCounter.value);
         registers.programCounter.value += 2;
 
         const returnToAddress = registers.programCounter.value;
-        cpu.pushToStack(returnToAddress);
+        cpu.pushToStackAndClock(returnToAddress);
 
         registers.programCounter.value = toAddress;
-        cpu.clockCallback(12);
+        cpu.clockCallback(4);
+        return 24;
       } else {
         registers.programCounter.value += 2;
         cpu.clockCallback(8);
+        return 12;
       }
     }
   });
@@ -153,23 +144,21 @@ export function createCallAndReturnOperations(this: CPU) {
   this.addOperation({
     instruction: 'RET',
     byteDefinition: 0b11_001_001,
-    byteLength: 1,
-    cycleTime: 16,
     execute() {
-      registers.programCounter.value = cpu.popFromStack();
-      cpu.clockCallback(12);
+      registers.programCounter.value = cpu.popFromStackAndClock();
+      cpu.clockCallback(4);
+      return 16;
     }
   });
 
   this.addOperation({
     instruction: 'RETI',
     byteDefinition: 0b11_011_001,
-    byteLength: 1,
-    cycleTime: 16,
     execute() {
-      registers.programCounter.value = cpu.popFromStack();
+      registers.programCounter.value = cpu.popFromStackAndClock();
       cpu.isInterruptMasterEnable = true;
-      cpu.clockCallback(12);
+      cpu.clockCallback(4);
+      return 16;
     }
   });
 
@@ -184,64 +173,56 @@ export function createCallAndReturnOperations(this: CPU) {
   this.addOperation({
     instruction: 'RET NZ',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.NZ),
-    byteLength: 1,
-    get cycleTime() {
-      return !registers.F.isResultZero ? 20 : 8;
-    },
     execute() {
-      cpu.clockCallback(8);
+      cpu.clockCallback(4);
       if (!registers.F.isResultZero) {
-        registers.programCounter.value = cpu.popFromStack();
-        cpu.clockCallback(12);
+        registers.programCounter.value = cpu.popFromStackAndClock();
+        cpu.clockCallback(4);
+        return 20;
       }
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'RET Z',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.Z),
-    byteLength: 1,
-    get cycleTime() {
-      return registers.F.isResultZero ? 20 : 8;
-    },
     execute() {
-      cpu.clockCallback(8);
+      cpu.clockCallback(4);
       if (registers.F.isResultZero) {
-        registers.programCounter.value = cpu.popFromStack();
-        cpu.clockCallback(12);
+        registers.programCounter.value = cpu.popFromStackAndClock();
+        cpu.clockCallback(4);
+        return 20;
       }
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'RET NC',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.NC),
-    byteLength: 1,
-    get cycleTime() {
-      return !registers.F.isCarry ? 20 : 8;
-    },
     execute() {
-      cpu.clockCallback(8);
+      cpu.clockCallback(4);
       if (!registers.F.isCarry) {
-        registers.programCounter.value = cpu.popFromStack();
-        cpu.clockCallback(12);
+        registers.programCounter.value = cpu.popFromStackAndClock();
+        cpu.clockCallback(4);
+        return 20;
       }
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'RET C',
     byteDefinition: getRetConditionByteDefinition(FlagCondition.C),
-    byteLength: 1,
-    get cycleTime() {
-      return registers.F.isCarry ? 20 : 8;
-    },
     execute() {
-      cpu.clockCallback(8);
+      cpu.clockCallback(4);
       if (registers.F.isCarry) {
-        registers.programCounter.value = cpu.popFromStack();
-        cpu.clockCallback(12);
+        registers.programCounter.value = cpu.popFromStackAndClock();
+        cpu.clockCallback(4);
+        return 20;
       }
+      return 8;
     }
   });
 
@@ -268,13 +249,11 @@ export function createCallAndReturnOperations(this: CPU) {
     this.addOperation({
       byteDefinition: getRstConditionByteDefinition(operand),
       instruction: `RST ${operand}`,
-      byteLength: 1,
-      cycleTime: 16,
       execute() {
-        cpu.clockCallback(8);
-        cpu.pushToStack(registers.programCounter.value);
+        cpu.pushToStackAndClock(registers.programCounter.value);
         registers.programCounter.value = operandToAddress[operand];
         cpu.clockCallback(4);
+        return 16;
       }
     });
   }

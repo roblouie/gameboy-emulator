@@ -15,11 +15,10 @@ export function createInputOutputOperations(this: CPU) {
     this.addOperation({
       byteDefinition: getLoadRHLByteDefinition(register.code),
       instruction: `LD ${register.name}, (HL)`,
-      cycleTime: 8,
-      byteLength: 1,
       execute() {
         cpu.clockCallback(4);
         register.value = memory.readByte(registers.HL.value);
+        return 8;
       }
     })
   });
@@ -30,33 +29,30 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD A, (BC)',
     byteDefinition: 0b1010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.BC.value);
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'LD A, (DE)',
     byteDefinition: 0b11010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.DE.value);
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'LD A, (C)',
     byteDefinition: 0b11110010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(0xff00 + registers.C.value);
+      return 8;
     }
   });
 
@@ -69,14 +65,13 @@ export function createInputOutputOperations(this: CPU) {
       return `LD A, (0x${memory.readByte(registers.programCounter.value).toString(16)})`;
     },
     byteDefinition: 0b11_110_000,
-    cycleTime: 12,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const baseAddress = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(0xff00 + baseAddress);
+      return 12;
     }
   });
 
@@ -90,13 +85,12 @@ export function createInputOutputOperations(this: CPU) {
       return `LD A, (0x${value.toString(16)})`;
     },
     byteDefinition: 0b11111010,
-    cycleTime: 16,
-    byteLength: 3,
     execute() {
       const memoryAddress = cpu.read16BitAndClock(registers.programCounter.value);
       registers.programCounter.value += 2;
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(memoryAddress);
+      return 16;
     }
   });
 
@@ -107,12 +101,11 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD A, (HLI)',
     byteDefinition: 0b101010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.HL.value);
       registers.HL.value++;
+      return 8;
     }
   });
 
@@ -122,12 +115,11 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD A, (HLD)',
     byteDefinition: 0b111010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       registers.A.value = memory.readByte(registers.HL.value);
       registers.HL.value--;
+      return 8;
     }
   });
 
@@ -143,11 +135,10 @@ export function createInputOutputOperations(this: CPU) {
     this.addOperation({
       byteDefinition: getLoadHLRByteDefinition(register.code),
       instruction: `LD (HL), ${register.name}`,
-      cycleTime: 8,
-      byteLength: 1,
       execute() {
         cpu.clockCallback(4);
         memory.writeByte(registers.HL.value, register.value);
+        return 8;
       }
     })
   });
@@ -158,11 +149,10 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD (C), A',
     byteDefinition: 0b11100010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       memory.writeByte(0xff00 + registers.C.value, registers.A.value);
+      return 8;
     }
   });
 
@@ -176,14 +166,13 @@ export function createInputOutputOperations(this: CPU) {
       return `LD (0x${baseAddress.toString(16)}), A`;
     },
     byteDefinition: 0b11100000,
-    cycleTime: 12,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const baseAddress = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       cpu.clockCallback(4);
       memory.writeByte(0xff00 + baseAddress, registers.A.value);
+      return 12;
     }
   });
 
@@ -197,13 +186,12 @@ export function createInputOutputOperations(this: CPU) {
       return `LD (0x${memoryAddress.toString(16)}), A`;
     },
     byteDefinition: 0b11_101_010,
-    cycleTime: 16,
-    byteLength: 3,
     execute() {
       const memoryAddress = cpu.read16BitAndClock(registers.programCounter.value);
       registers.programCounter.value += 2;
       cpu.clockCallback(4);
       memory.writeByte(memoryAddress, registers.A.value);
+      return 16;
     }
   });
 
@@ -214,22 +202,20 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD (BC), A',
     byteDefinition: 0b10,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       memory.writeByte(registers.BC.value, registers.A.value);
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'LD (DE), A',
     byteDefinition: 0b10010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       memory.writeByte(registers.DE.value, registers.A.value);
+      return 8;
     }
   });
 
@@ -240,12 +226,11 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD (HLI), A',
     byteDefinition: 0b100010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, registers.A.value);
       registers.HL.value = registers.HL.value + 1;
+      return 8;
     }
   });
 
@@ -256,12 +241,11 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD (HLD), A',
     byteDefinition: 0b110010,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, registers.A.value);
       registers.HL.value = registers.HL.value - 1;
+      return 8;
     }
   });
 
@@ -278,11 +262,10 @@ export function createInputOutputOperations(this: CPU) {
       this.addOperation({
         byteDefinition: getLoadRR1ByteDefinition(firstRegister.code, secondRegister.code),
         instruction: `LD ${firstRegister.name}, ${secondRegister.name}`,
-        byteLength: 1,
-        cycleTime: 8,
         execute() {
           cpu.clockCallback(4);
           firstRegister.value = secondRegister.value;
+          return 8;
         },
       })
     })
@@ -294,14 +277,13 @@ export function createInputOutputOperations(this: CPU) {
       return `LD (HL), 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b110110,
-    cycleTime: 12,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       cpu.clockCallback(4);
       memory.writeByte(registers.HL.value, value);
+      return 12;
     }
   });
 
@@ -319,12 +301,11 @@ export function createInputOutputOperations(this: CPU) {
         return `LD ${register.name}, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
       },
       byteDefinition: getLoadRNByteDefinition(register.code),
-      cycleTime: 8,
-      byteLength: 2,
       execute() {
         cpu.clockCallback(4);
         register.value = memory.readByte(registers.programCounter.value);
         registers.programCounter.value++;
+        return 8;
       }
     });
   });
@@ -337,13 +318,12 @@ export function createInputOutputOperations(this: CPU) {
       return `LD (0x${memory.readWord(registers.programCounter.value).toString(16)}), SP`;
     },
     byteDefinition: 0b00_001_000,
-    cycleTime: 20,
-    byteLength: 3,
     execute() {
       const address = cpu.read16BitAndClock(registers.programCounter.value);
       cpu.clockCallback(8);
       memory.writeWord(address, registers.stackPointer.value);
       registers.programCounter.value += 2;
+      return 20;
     }
   });
 
@@ -362,11 +342,10 @@ export function createInputOutputOperations(this: CPU) {
           return `LD ${registerPair.name}, 0x${memory.readWord(registers.programCounter.value).toString(16)}`;
         },
         byteDefinition: getLoadDDNNByteDefinition(registerPair.code),
-        cycleTime: 12,
-        byteLength: 3,
         execute() {
           registerPair.value = cpu.read16BitAndClock(registers.programCounter.value);
           registers.programCounter.value += 2;
+          return 12;
         }
       });
     });
@@ -378,11 +357,10 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'LD SP, HL',
     byteDefinition: 0b11111001,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       registers.stackPointer.value = registers.HL.value;
+      return 8;
     }
   });
 
@@ -400,11 +378,10 @@ export function createInputOutputOperations(this: CPU) {
       this.addOperation({
         instruction: `PUSH ${registerPair.name}`,
         byteDefinition: getPushQQByteDefinition(registerPair.code),
-        byteLength: 1,
-        cycleTime: 16,
         execute: () => {
-          cpu.clockCallback(12);
-          this.pushToStack(registerPair.value);
+          this.pushToStackAndClock(registerPair.value);
+          cpu.clockCallback(4);
+          return 16;
         }
       });
     });
@@ -423,11 +400,9 @@ export function createInputOutputOperations(this: CPU) {
       this.addOperation({
         instruction: `POP ${registerPair.name}`,
         byteDefinition: getPopQQByteDefinition(registerPair.code),
-        byteLength: 1,
-        cycleTime: 12,
         execute: () => {
-          cpu.clockCallback(8);
-          registerPair.value = this.popFromStack();
+          registerPair.value = this.popFromStackAndClock();
+          return 12;
         }
       });
     });
@@ -435,11 +410,9 @@ export function createInputOutputOperations(this: CPU) {
   this.addOperation({
     instruction: 'POP AF',
     byteDefinition: getPopQQByteDefinition(registers.AF.code),
-    byteLength: 1,
-    cycleTime: 12,
     execute: () => {
-      cpu.clockCallback(8);
-      registers.AF.value = this.popFromStack() & 0xFFF0;
+      registers.AF.value = this.popFromStackAndClock() & 0xFFF0;
+      return 12;
     }
   })
 
@@ -457,8 +430,6 @@ export function createInputOutputOperations(this: CPU) {
         return `LDHL SP,  -0x${(value * -1).toString(16)}`;
       }
     },
-    byteLength: 2,
-    cycleTime: 12,
     execute() {
       cpu.clockCallback(4);
       const toAdd = memory.readSignedByte(registers.programCounter.value);
@@ -474,6 +445,7 @@ export function createInputOutputOperations(this: CPU) {
 
       registers.HL.value = registers.stackPointer.value + toAdd;
       cpu.clockCallback(4);
+      return 12;
     }
   });
 }

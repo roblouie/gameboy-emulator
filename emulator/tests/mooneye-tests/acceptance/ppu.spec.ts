@@ -12,6 +12,29 @@ describe("Mooneye acceptance/ppu tests", () => {
     gameboy.loadGame(rom);
 
     while (gameboy.cpu.registers.programCounter.value !== 0x394 && gameboy.cpu.registers.programCounter.value !== 0x3a8) {
+      if (gameboy.cpu.registers.programCounter.value === 0x17b) {
+        console.log('Passed first test');
+      }
+
+      if (gameboy.cpu.registers.programCounter.value === 0x189) {
+        console.log('Passed second test');
+      }
+
+      if (gameboy.cpu.registers.programCounter.value === 0x19a) {
+        console.log('Passed third test');
+      }
+
+      if (gameboy.cpu.registers.programCounter.value === 0x1a8) {
+        console.log('Passed fourth test');
+      }
+
+      if (gameboy.cpu.registers.programCounter.value === 0x1bc) {
+        console.log('Passed fifth test');
+      }
+
+      if (gameboy.cpu.registers.programCounter.value === 0x1c9) {
+        console.log('Passed sixth test');
+      }
       gameboy.stepEmulator();
     }
 

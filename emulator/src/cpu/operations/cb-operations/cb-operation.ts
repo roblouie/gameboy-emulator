@@ -10,14 +10,12 @@ export function createCbSubOperations(this: CPU) {
   this.addOperation({
     instruction: '',
     byteDefinition: 0xcb,
-    cycleTime: 0,
-    byteLength: 0,
     execute() {
       cpu.clockCallback(4);
       const cbOperationIndex = cpu.memory.readByte(cpu.registers.programCounter.value);
       cpu.registers.programCounter.value++;
       const subOperation = cpu.cbSubOperationMap[cbOperationIndex];
-      subOperation.execute();
+      return subOperation.execute();
     }
   })
 

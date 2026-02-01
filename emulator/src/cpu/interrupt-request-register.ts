@@ -14,6 +14,10 @@ export class InterruptController extends SimpleByteRegister {
     super(0xff0f);
   }
 
+  writeIf(value: number) {
+    this.value = value & 0x1f;
+  }
+
   triggerVBlankInterruptRequest() {
     this.value = setBit(this.value, 0, 1);
   }

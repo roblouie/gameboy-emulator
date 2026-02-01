@@ -84,7 +84,11 @@ export class Gameboy {
     console.log('ram size: ' + cartridge.ramSize);
   }
 
-  setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer) {
+  setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer | undefined) {
+    if (!sramArrayBuffer) {
+      return;
+    }
+
     if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
       const cartridge = this.bus.cartridge as Mbc1Cartridge;
       cartridge.setRam(sramArrayBuffer);

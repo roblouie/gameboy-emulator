@@ -23,10 +23,9 @@ export function getBitSubOperations(cpu: CPU) {
       cpu.addCbOperation({
         byteDefinition: getBitBAByteDefinition(bitPosition, register.code),
         instruction: `BIT ${bitPosition}, ${register.name}`,
-        cycleTime: 8,
-        byteLength: 2,
         execute() {
           getBitAndSetFlags(register.value, bitPosition);
+          return 8;
         }
       })
     }
@@ -44,12 +43,11 @@ export function getBitSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       byteDefinition: getBitHLByteDefinition(bitPosition),
       instruction: `BIT ${bitPosition}, (HL)`,
-      cycleTime: 12,
-      byteLength: 2,
       execute() {
         cpu.clockCallback(4);
         const value = memory.readByte(registers.HL.value);
         getBitAndSetFlags(value, bitPosition);
+        return 12;
       }
     })
   }

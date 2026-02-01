@@ -24,19 +24,16 @@ export function createLogicalOperations(this: CPU) {
   this.registers.baseRegisters.forEach(register => {
     this.addOperation({
       byteDefinition: getAndARByteDefinition(register.code),
-      cycleTime: 4,
-      byteLength: 1,
       instruction: `AND ${register.name}`,
       execute() {
         registers.A.value = andAndSetFlags(registers.A.value, register.value);
+        return 4;
       }
     });
   });
 
   this.addOperation({
     byteDefinition: 0b11_100_110,
-    cycleTime: 8,
-    byteLength: 2,
     get instruction() {
       return `AND 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
@@ -45,20 +42,20 @@ export function createLogicalOperations(this: CPU) {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = andAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
   this.addOperation({
     byteDefinition: 0b10_100_110,
-    cycleTime: 8,
-    byteLength: 1,
     get instruction() {
-      return `AND 0x${memory.readByte(registers.HL.value).toString(16)}`;
+      return `AND (HL)`;
     },
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = andAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
@@ -82,10 +79,9 @@ export function createLogicalOperations(this: CPU) {
     this.addOperation({
       instruction: `CP ${register.name}`,
       byteDefinition: getCpARByteDefinition(register.code),
-      cycleTime: 4,
-      byteLength: 1,
       execute() {
         compareAndSetFlags(registers.A.value, register.value);
+        return 4;
       }
     });
   });
@@ -95,25 +91,23 @@ export function createLogicalOperations(this: CPU) {
       return `CP 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_111_110,
-    cycleTime: 8,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       compareAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'CP (HL)',
     byteDefinition: 0b10_111_110,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       compareAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
@@ -138,19 +132,16 @@ export function createLogicalOperations(this: CPU) {
   this.registers.baseRegisters.forEach(register => {
     this.addOperation({
       byteDefinition: getOrARByteDefinition(register.code),
-      cycleTime: 4,
-      byteLength: 1,
       instruction: `OR ${register.name}`,
       execute() {
         registers.A.value = orAndSetFlags(registers.A.value, register.value);
+        return 4;
       }
     });
   });
 
   this.addOperation({
     byteDefinition: 0b11_110_110,
-    cycleTime: 8,
-    byteLength: 2,
     get instruction() {
       return `OR 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
@@ -159,18 +150,18 @@ export function createLogicalOperations(this: CPU) {
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
       registers.A.value = orAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
   this.addOperation({
     byteDefinition: 0b10_110_110,
-    cycleTime: 8,
-    byteLength: 1,
     instruction: 'OR (HL)',
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = orAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
@@ -196,10 +187,9 @@ export function createLogicalOperations(this: CPU) {
     this.addOperation({
       instruction: `XOR ${register.name}`,
       byteDefinition: getXorARByteDefinition(register.code),
-      cycleTime: 4,
-      byteLength: 1,
       execute() {
         registers.A.value = xorAndSetFlags(registers.A.value, register.value);
+        return 4;
       }
     });
   });
@@ -209,25 +199,23 @@ export function createLogicalOperations(this: CPU) {
       return `XOR 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_101_110,
-    cycleTime: 8,
-    byteLength: 2,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.programCounter.value);
       registers.programCounter.value++;
-      registers.A.value = xorAndSetFlags(registers.A.value, value)
+      registers.A.value = xorAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 
   this.addOperation({
     instruction: 'XOR (HL)',
     byteDefinition: 0b10_101_110,
-    cycleTime: 8,
-    byteLength: 1,
     execute() {
       cpu.clockCallback(4);
       const value = memory.readByte(registers.HL.value);
       registers.A.value = xorAndSetFlags(registers.A.value, value);
+      return 8;
     }
   });
 }

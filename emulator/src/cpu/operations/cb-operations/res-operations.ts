@@ -16,10 +16,9 @@ export function getResSubOperations(cpu: CPU) {
       cpu.addCbOperation({
         byteDefinition: getResBAByteDefinition(bitPosition, register.code),
         instruction: `RES ${bitPosition}, ${register.name}`,
-        cycleTime: 8,
-        byteLength: 2,
         execute() {
           register.value = clearBit(register.value, bitPosition);
+          return 8;
         }
       });
     }
@@ -38,13 +37,12 @@ export function getResSubOperations(cpu: CPU) {
     cpu.addCbOperation({
       byteDefinition: getResHLByteDefinition(bitPosition),
       instruction: `RES ${bitPosition}, (HL)`,
-      cycleTime: 12,
-      byteLength: 2,
       execute() {
         cpu.clockCallback(4);
         const value = memory.readByte(registers.HL.value);
         const bitSet = clearBit(value, bitPosition);
         memory.writeByte(registers.HL.value, bitSet);
+        return 12;
       }
     })
   }

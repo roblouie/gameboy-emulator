@@ -26,6 +26,10 @@ export class TimerController {
     }
   }
 
+  readTac(): number {
+    return 0xf8 | this.tac.value;
+  }
+
   writeTac(value: number) {
     const oldSignal = this.timerClockSignal(this.div, this.tac.value);
     this.tac.value = value & 0x07;
