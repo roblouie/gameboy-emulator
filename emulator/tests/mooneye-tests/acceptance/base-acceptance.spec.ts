@@ -1,8 +1,23 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, test} from "vitest";
 import {initializeEmulator} from "../../test-helpers";
 import {GPU} from "@/gpu/gpu";
 
+
 describe("Mooneye base acceptance tests", () => {
+  it('Passes boot_div-dmbABCmgb.gb', () => {
+    const gameboy = initializeEmulator('mooneye-roms/acceptance/boot_div-dmgABCmgb.gb');
+    while (gameboy.cpu.registers.programCounter.value !== 0x4a2b) {
+      gameboy.stepEmulator();
+    }
+
+    expect.soft(gameboy.cpu.registers.B.value).toBe(0xac);
+    expect.soft(gameboy.cpu.registers.C.value).toBe(0xad);
+    expect.soft(gameboy.cpu.registers.D.value).toBe(0xad);
+    expect.soft(gameboy.cpu.registers.E.value).toBe(0xae);
+    expect.soft(gameboy.cpu.registers.H.value).toBe(0xaf);
+    expect.soft(gameboy.cpu.registers.L.value).toBe(0xb0);
+  });
+
   it('Passes add_sp_e_timing.gb', () => {
     const gameboy = initializeEmulator('mooneye-roms/acceptance/add_sp_e_timing.gb');
     while (gameboy.cpu.registers.programCounter.value !== 0x4a2b) {
@@ -14,6 +29,8 @@ describe("Mooneye base acceptance tests", () => {
     expect(gameboy.cpu.registers.D.value).toBe(0x00);
     expect(gameboy.cpu.registers.E.value).toBe(0x40);
   });
+
+
 
   it('Passes intr_timing.gb', () => {
     const gameboy = initializeEmulator('mooneye-roms/acceptance/intr_timing.gb');
