@@ -260,10 +260,13 @@ export class Memory {
 
   private serialControl(value: number) {
     this.sc = value & 0xff;
+    if (!this.serialByteCallback) {
+      return;
+    }
     const start = (value & 0x80) !== 0;
     if (start) {
       const byte = this.sb;
-      this.serialByteCallback?.(byte);
+      this.serialByteCallback(byte);
       this.sc &= 0x7f;
       this.interruptController.triggerSerialInterruptRequest();
     }

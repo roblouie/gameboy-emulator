@@ -88,18 +88,20 @@ export class CPU {
       this.clockCallback(4);
       cycles = 4;
     } else {
+      if (this.isImeScheduled) {
+        this.isInterruptMasterEnable = true;
+      }
+
       const operation = this.getOperation();
       cycles = operation.execute();
 
-      if (this.isImeReady) {
-        this.isInterruptMasterEnable = true;
-        this.isImeScheduled = false;
-        this.isImeReady = false;
-      }
+      // if (this.isImeReady) {
+      //   this.isInterruptMasterEnable = true;
+      //   this.isImeScheduled = false;
+      //   this.isImeReady = false;
+      // }
 
-      if (this.isImeScheduled) {
-        this.isImeReady = true;
-      }
+
     }
 
     const interruptTime = this.handleInterrupts();

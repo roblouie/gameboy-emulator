@@ -10,7 +10,7 @@ export default defineConfig({
     },
   },
   test: {
-    setupFiles: ['./emulator/tests/setup.ts'],
+    setupFiles: ['./emulator/tests/setup.ts', './emulator/tests/test-helpers.ts'],
     environment: "node",
     globals: true, // optional; lets you keep jest-like globals (describe/it/expect)
     include: ['./emulator/src/**/*.spec.ts', './emulator/tests/**/*.spec.ts'],

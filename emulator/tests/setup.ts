@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import {Gameboy} from "@/gameboy";
 
 class ImageDataMock {
   data: Uint8ClampedArray;
@@ -21,10 +22,12 @@ class ImageDataMock {
   }
 }
 
+(globalThis as any).ImageData = ImageDataMock;
+
 export function readRom(relPath: string): ArrayBuffer {
   const abs = path.resolve(__dirname, relPath);
   const buf = fs.readFileSync(abs);
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
 
-(globalThis as any).ImageData = ImageDataMock;
+
