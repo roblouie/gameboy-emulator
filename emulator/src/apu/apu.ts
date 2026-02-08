@@ -5,6 +5,8 @@ import { Sound4 } from "@/apu/sound-4";
 import { Sound3 } from "@/apu/sound-3";
 import workletUrl from '@/apu/simple-audio-queue.worklet.js?worker&url';
 import { SoundsOnRegister } from "@/apu/registers/sound-control-registers/sounds-on-register";
+import {Nr50OutputLevelRegister} from "@/apu/registers/sound-control-registers/output-level-register";
+import {Nr51StereoSelectors} from "@/apu/registers/sound-control-registers/stereo-selectors-register";
 
 export class APU {
   private static FrameSequencerHertz = 512;
@@ -12,12 +14,16 @@ export class APU {
 
   private audioContext: AudioContext;
 
+  //TODO: probably wire these up to work?
+  nr50OutputLevel = new Nr50OutputLevelRegister(0xff24, 0x77);
+  nr51SSoundPanning = new Nr51StereoSelectors(0xff25, 0xf3);
+
   private frameSequencerCycleCounter = 0;
 
   private cyclesPerSample: number;
   private sampleCycleCounter = 0;
 
-  readonly nr52SoundEndFlag = new SoundsOnRegister(0xff26);
+  readonly nr52SoundEndFlag = new SoundsOnRegister(0xff26, 0xf1);
 
   readonly sound1: Sound1;
   readonly sound2: Sound2;

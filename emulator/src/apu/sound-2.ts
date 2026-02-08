@@ -20,10 +20,10 @@ export class Sound2 {
   private enveloper = new Enveloper();
   private volume = 0;
 
-  readonly nr21LengthAndDutyCycle = new SimpleByteRegister(0xff16);
+  readonly nr21LengthAndDutyCycle = new SimpleByteRegister(0xff16, 0x3f);
   readonly nr22EnvelopeControl = new EnvelopeControlRegister(0xff17);
-  readonly nr23LowOrderFrequency = new SimpleByteRegister(0xff18);
-  readonly nr24HighOrderFrequency = new HighOrderFrequencyRegister(0xff19);
+  readonly nr23LowOrderFrequency = new SimpleByteRegister(0xff18, 0xff);
+  readonly nr24HighOrderFrequency = new HighOrderFrequencyRegister(0xff19, 0xbf);
 
   private isActive = false;
 

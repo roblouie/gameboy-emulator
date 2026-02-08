@@ -12,11 +12,11 @@ export class Sound3 {
   readonly waveformRam = new Uint8Array(16);
   private waveTablePosition = 0;
 
-  readonly nr30SoundOff = new SimpleByteRegister(0xff1a);
-  readonly nr31Length = new SimpleByteRegister(0xff1b);
-  readonly nr32OutputLevel = new SimpleByteRegister(0xff1c);
-  readonly nr33LowOrderFrequency = new SimpleByteRegister(0xff1d);
-  readonly nr34HighOrderFrequency = new HighOrderFrequencyRegister(0xff1e);
+  readonly nr30SoundOff = new SimpleByteRegister(0xff1a, 0x7f);
+  readonly nr31Length = new SimpleByteRegister(0xff1b, 0xff);
+  readonly nr32OutputLevel = new SimpleByteRegister(0xff1c, 0x9f);
+  readonly nr33LowOrderFrequency = new SimpleByteRegister(0xff1d, 0xff);
+  readonly nr34HighOrderFrequency = new HighOrderFrequencyRegister(0xff1e, 0xbf);
 
   private isActive = false;
 

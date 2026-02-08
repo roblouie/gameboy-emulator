@@ -42,7 +42,7 @@ export function getSetSubOperations(cpu: CPU) {
         const bitSet = setBit(value, bitPosition, 1);
         cpu.clockCallback(4);
         memory.writeByte(registers.HL.value, bitSet);
-        return 12;
+        return 16;
       }
     })
   }

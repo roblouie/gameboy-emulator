@@ -25,15 +25,15 @@ export class Sound1 {
   private shadowFrequency = 0;
   private sweepTimer = 0;
 
-  readonly nr10SweepControl = new SweepControlRegister(0xff10);
-  readonly nr11LengthAndDutyCycle = new SimpleByteRegister(0xff11);
-  readonly nr12EnvelopeControl = new EnvelopeControlRegister(0xff12);
-  readonly nr13LowOrderFrequency = new SimpleByteRegister(0xff13);
-  readonly nr14HighOrderFrequency = new HighOrderFrequencyRegister(0xff14);
+  readonly nr10SweepControl = new SweepControlRegister(0xff10, 0x80);
+  readonly nr11LengthAndDutyCycle = new SimpleByteRegister(0xff11, 0xbf);
+  readonly nr12EnvelopeControl = new EnvelopeControlRegister(0xff12, 0xf3);
+  readonly nr13LowOrderFrequency = new SimpleByteRegister(0xff13, 0xff);
+  readonly nr14HighOrderFrequency = new HighOrderFrequencyRegister(0xff14, 0xbf);
 
   private isActive = false;
 
-  writeNr14(value) {
+  writeNr14(value: number) {
     this.nr14HighOrderFrequency.value = value;
 
     if ((value & 0x80) !== 0) {

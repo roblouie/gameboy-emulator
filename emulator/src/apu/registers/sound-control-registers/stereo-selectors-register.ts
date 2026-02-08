@@ -1,14 +1,8 @@
-import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 
 
-export class StereoSelectors implements SingleByteMemoryRegister {
-  offset = 0xff25
-  name = 'NR51'
-
-  get value() {
-    return memory.readByte(this.offset);
-  }
+export class Nr51StereoSelectors extends SimpleByteRegister {
+  //offset = 0xff25;
 
   get isSound4ModeOutputToSO2() {
     return this.value >> 7 === 1;

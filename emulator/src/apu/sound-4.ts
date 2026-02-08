@@ -15,10 +15,10 @@ export class Sound4 {
 
   private linearFeedbackShift = 0;
 
-  readonly nr41Length = new SimpleByteRegister(0xff20);
+  readonly nr41Length = new SimpleByteRegister(0xff20, 0xff);
   readonly nr42EnvelopeControl = new EnvelopeControlRegister(0xff21);
   readonly nr43Polynomial = new PolynomialRegister(0xff22);
-  readonly nr44ContinuousSelection = new ContinuousSelectionRegister(0xff23);
+  readonly nr44ContinuousSelection = new ContinuousSelectionRegister(0xff23, 0xbf);
 
   private isActive = false;
 

@@ -2,8 +2,8 @@ export class SimpleByteRegister {
   readonly offset: number;
   private byteValue: number;
 
-  constructor(offset: number) {
-    this.byteValue = 0;
+  constructor(offset: number, initialValue = 0) {
+    this.byteValue = initialValue;
     this.offset = offset;
   }
 

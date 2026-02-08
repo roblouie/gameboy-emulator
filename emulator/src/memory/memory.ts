@@ -88,6 +88,8 @@ export class Memory {
         case 0xff22: return this.apu.sound4.nr43Polynomial.value;
         case 0xff23: return this.apu.sound4.nr44ContinuousSelection.value;
 
+        case 0xff24: return this.apu.nr50OutputLevel.value;
+        case 0xff25: return this.apu.nr51SSoundPanning.value;
         case 0xff26: return this.apu.nr52SoundEndFlag.value;
 
 
@@ -248,7 +250,7 @@ export class Memory {
   }
 
   private sb = 0;
-  private sc = 0;
+  private sc = 0x7e;
   private serialByteCallback: (val: number) => void;
   onSerialByte(callback: (val: number) => void) {
     this.serialByteCallback = callback;

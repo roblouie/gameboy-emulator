@@ -1,14 +1,8 @@
-import { memory } from "@/memory/memory";
-import { SingleByteMemoryRegister } from "@/memory/memory-register";
+import {SimpleByteRegister} from "@/helpers/simple-byte-register";
 
 
-export class OutputLevelRegister implements SingleByteMemoryRegister {
-  offset = 0xff24;
-  name = 'NR50';
-
-  get value() {
-    return memory.readByte(this.offset);
-  }
+export class Nr50OutputLevelRegister extends SimpleByteRegister {
+  // offset = 0xff24;
 
   get isVInSynthesizingWithSO2() {
     return this.value >> 7 === 1;

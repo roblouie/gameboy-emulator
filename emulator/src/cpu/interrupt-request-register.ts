@@ -12,6 +12,7 @@ interface InterruptFlags {
 export class InterruptController extends SimpleByteRegister {
   constructor() {
     super(0xff0f);
+    this.value = 0xe1;
   }
 
   writeIf(value: number) {

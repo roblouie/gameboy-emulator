@@ -43,7 +43,7 @@ export function getResSubOperations(cpu: CPU) {
         const bitSet = clearBit(value, bitPosition);
         cpu.clockCallback(4);
         memory.writeByte(registers.HL.value, bitSet);
-        return 12;
+        return 16;
       }
     })
   }
