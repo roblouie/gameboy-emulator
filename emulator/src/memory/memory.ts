@@ -55,6 +55,10 @@ export class Memory {
         // Input
         case 0xff00: return input.reportInput();
 
+        // Serial
+        case 0xff01: return this.sb;
+        case 0xff02: return this.sc;
+
         // Timers
         case 0xff04: return this.timerController.readDiv();
         case 0xff05: return this.timerController.tima.value;
@@ -131,11 +135,6 @@ export class Memory {
   }
 
   writeByte(address: number, value: number) {
-    // if (address === 0xff0f) {
-    //   console.log('we are writing: ' + value.toString(2))
-    //   debugger;
-    // }
-
     if (this.isAccessingCartridge(address)) {
       this.cartridge.writeByte(address, value);
       return;
@@ -161,11 +160,18 @@ export class Memory {
         // Input
         case 0xff00: input.setInputToCheck(value); return;
 
+        // Serial
+        case 0xff01: this.setSerialData(value); return;
+        case 0xff02: this.serialControl(value); return;
+
         // Timers
         case 0xff04: this.timerController.writeDiv(); return;
         case 0xff05: this.timerController.writeTima(value); return;
         case 0xff06: this.timerController.tma.value = value; return;
         case 0xff07: this.timerController.writeTac(value); return;
+
+        // Interrupt
+        case 0xff0f: this.interruptController.value = value; return;
 
         // APU
         case 0xff10: this.apu.sound1.nr10SweepControl.value = value; return;
@@ -206,8 +212,6 @@ export class Memory {
         case 0xff4a: this.gpu.windowY.value = value; return;
         case 0xff4b: this.gpu.windowX.value = value; return;
 
-        // Interrupt
-        case 0xff0f: this.interruptController.value = value; return;
       }
     }
 
@@ -243,6 +247,29 @@ export class Memory {
     return address >= 0xff30 && address <= 0xff3f;
   }
 
+  private sb = 0;
+  private sc = 0;
+  private serialByteCallback: (val: number) => void;
+  onSerialByte(callback: (val: number) => void) {
+    this.serialByteCallback = callback;
+  }
+
+  private setSerialData(value: number) {
+    this.sb = value;
+  }
+
+  private serialControl(value: number) {
+    this.sc = value & 0xff;
+    const start = (value & 0x80) !== 0;
+    if (start) {
+      const byte = this.sb;
+      this.serialByteCallback?.(byte);
+      this.sc &= 0x7f;
+      this.interruptController.triggerSerialInterruptRequest();
+    }
+  }
+
+
   private lastDmaValue = 0;
   private dmaTransfer(value: number) {
     this.lastDmaValue = value;
@@ -251,7 +278,7 @@ export class Memory {
 
     for (let byteIndex = 0; byteIndex < bytesToTransfer; byteIndex++) {
       const value = this.readByte(startAddress + byteIndex);
-      this.writeByte(0xfe00 + byteIndex, value);
+      this.gpu.writeOamDma(byteIndex, value);
     }
   }
 }

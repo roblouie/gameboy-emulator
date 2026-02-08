@@ -7,6 +7,8 @@ import {TimerController} from "@/cpu/timer-controller";
 import {GPU} from "@/gpu/gpu";
 import {APU} from "@/apu/apu";
 
+const SingleCycleInstructionCount = 4;
+const TwoCycleInstructionCount = 8;
 
 describe("Operations clock cycles matching their cycle time", () => {
   let cyclesClocked = 0;
@@ -19,6 +21,13 @@ describe("Operations clock cycles matching their cycle time", () => {
 
     const cycles = cpu.tick();
     expect(cycles).toBe(cyclesClocked);
+  }
+
+  function expectCycleTimeToBe(instructionByte: number, expectedCycles: number) {
+    cpu.memory.writeByte(0x8000, instructionByte);
+
+    const cycles = cpu.tick();
+    expect(cycles).toBe(expectedCycles);
   }
 
   beforeEach(() => {
@@ -225,15 +234,17 @@ describe("Operations clock cycles matching their cycle time", () => {
   cpu.registers.baseRegisters.forEach(firstRegister => {
     cpu.registers.baseRegisters.forEach(secondRegister => {
       it(`LD ${firstRegister.name}, ${secondRegister.name}`, () => {
-        expectMatchingCycleTime((1 << 6) + (firstRegister.code << 3) + secondRegister.code);
+        expectCycleTimeToBe((1 << 6) + (firstRegister.code << 3) + secondRegister.code, SingleCycleInstructionCount);
       })
     });
   });
 
   it('LD (HL), 0xnnnn', () => expectMatchingCycleTime(0b110110));
+
   it.each(cpu.registers.baseRegisters)('LD $name, n', (register: CpuRegister) => {
-    expectMatchingCycleTime((register.code << 3) + 0b110);
+    expectCycleTimeToBe((register.code << 3) + 0b110, TwoCycleInstructionCount);
   });
+
   it('LD (nn), SP', () => expectMatchingCycleTime(0b00_001_000));
 
   // LD dd, nn

@@ -30,6 +30,10 @@ export class InterruptController extends SimpleByteRegister {
     this.value = setBit(this.value, 2, 1);
   }
 
+  triggerSerialInterruptRequest() {
+    this.value = setBit(this.value, 3, 1);
+  }
+
   clearVBlankInterruptRequest() {
     this.value = clearBit(this.value, 0);
   }

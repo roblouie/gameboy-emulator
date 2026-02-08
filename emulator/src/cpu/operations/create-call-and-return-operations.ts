@@ -55,8 +55,9 @@ export function createCallAndReturnOperations(this: CPU) {
         cpu.clockCallback(4);
         return 24;
       } else {
+        cpu.clockCallback(4);
         registers.programCounter.value += 2;
-        cpu.clockCallback(8);
+        cpu.clockCallback(4);
         return 12;
       }
     }
@@ -80,8 +81,9 @@ export function createCallAndReturnOperations(this: CPU) {
         cpu.clockCallback(4);
         return 24;
       } else {
+        cpu.clockCallback(4);
         registers.programCounter.value += 2;
-        cpu.clockCallback(8);
+        cpu.clockCallback(4);
         return 12;
       }
     }
@@ -105,8 +107,9 @@ export function createCallAndReturnOperations(this: CPU) {
         cpu.clockCallback(4);
         return 24;
       } else {
+        cpu.clockCallback(4);
         registers.programCounter.value += 2;
-        cpu.clockCallback(8);
+        cpu.clockCallback(4);
         return 12;
       }
     }
@@ -130,8 +133,9 @@ export function createCallAndReturnOperations(this: CPU) {
         cpu.clockCallback(4);
         return 24;
       } else {
+        cpu.clockCallback(4);
         registers.programCounter.value += 2;
-        cpu.clockCallback(8);
+        cpu.clockCallback(4);
         return 12;
       }
     }

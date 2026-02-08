@@ -17,6 +17,7 @@ export class GPU {
   private static CyclesPerScanlineOam = 80;
   private static CyclesPerScanlineVram = 172;
   private static CyclesPerScanline = GPU.CyclesPerHBlank + GPU.CyclesPerScanlineOam + GPU.CyclesPerScanlineVram;
+  static CyclesPerFrame = GPU.CyclesPerScanline * GPU.HeightIncludingOffscreen;
 
   private drawImageData = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
   displayImageData = new EnhancedImageData(GPU.ScreenWidth, GPU.ScreenHeight);
@@ -82,11 +83,12 @@ export class GPU {
     }
   }
 
-  private canAccessVram(): boolean {
-    // Currently not limiting vram access as it causes bugs. This presumably means my timing is off somewhere, but unclear where.
-    // On zelda, the right edge of the screen is wrong, but can be fixed by allowing access while in mode 3 for the first 56 cycles.
-    // This seems like a big timing gap.
-    return true; //!this.lcdControl.isLCDControllerOperating || this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD
+  writeOamDma(address: number, value: number): void {
+    this.oam[address] = value;
+  }
+
+  canAccessVram(): boolean {
+    return !this.lcdControl.isLCDControllerOperating || this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD;
   }
 
   private canAccessOam(): boolean {
@@ -117,6 +119,7 @@ export class GPU {
       this.lineY.value = 0;
       this.lcdStatus.mode = LcdStatusMode.Mode2SearchingOAM;
       this.windowLinesDrawn = 0;
+      this.cycleCounter = 0;
       this.prevStatLine = false;
     }
   }
@@ -148,17 +151,17 @@ export class GPU {
 
     switch (this.lcdStatus.mode) {
       case LcdStatusMode.Mode2SearchingOAM:
-        if (this.cycleCounter >= GPU.CyclesPerScanlineOam) {
-          this.populatePrioritizedSprites()
-          this.cycleCounter -= GPU.CyclesPerScanlineOam;
+        if (this.cycleCounter === GPU.CyclesPerScanlineOam) {
+          this.cycleCounter = 0;
+          this.populatePrioritizedSprites();
           this.lcdStatus.mode = LcdStatusMode.Mode3TransferringDataToLCD;
           this.handleStat();
         }
         break;
 
       case LcdStatusMode.Mode3TransferringDataToLCD:
-        if (this.cycleCounter >= GPU.CyclesPerScanlineVram) {
-          this.cycleCounter -= GPU.CyclesPerScanlineVram;
+        if (this.cycleCounter === GPU.CyclesPerScanlineVram) {
+          this.cycleCounter = 0;
 
           this.drawScanline();
 
@@ -168,9 +171,8 @@ export class GPU {
         break;
 
       case LcdStatusMode.Mode0InHBlank:
-        if (this.cycleCounter >= GPU.CyclesPerHBlank) {
-
-          this.cycleCounter -= GPU.CyclesPerHBlank;
+        if (this.cycleCounter === GPU.CyclesPerHBlank) {
+          this.cycleCounter = 0;
 
           this.lineY.value++;
           let isTransitioningToVBlank = false;
@@ -193,9 +195,9 @@ export class GPU {
         break;
 
       case LcdStatusMode.Mode1InVBlank:
-        if (this.cycleCounter >= GPU.CyclesPerScanline) {
+        if (this.cycleCounter === GPU.CyclesPerScanline) {
+          this.cycleCounter = 0;
 
-          this.cycleCounter -= GPU.CyclesPerScanline;
 
           this.lineY.value++;
 

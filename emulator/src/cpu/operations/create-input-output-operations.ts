@@ -263,9 +263,8 @@ export function createInputOutputOperations(this: CPU) {
         byteDefinition: getLoadRR1ByteDefinition(firstRegister.code, secondRegister.code),
         instruction: `LD ${firstRegister.name}, ${secondRegister.name}`,
         execute() {
-          cpu.clockCallback(4);
           firstRegister.value = secondRegister.value;
-          return 8;
+          return 4;
         },
       })
     })
@@ -302,8 +301,7 @@ export function createInputOutputOperations(this: CPU) {
       },
       byteDefinition: getLoadRNByteDefinition(register.code),
       execute() {
-        cpu.clockCallback(4);
-        register.value = memory.readByte(registers.programCounter.value);
+        register.value = cpu.read8AndClock(registers.programCounter.value);
         registers.programCounter.value++;
         return 8;
       }
@@ -320,8 +318,11 @@ export function createInputOutputOperations(this: CPU) {
     byteDefinition: 0b00_001_000,
     execute() {
       const address = cpu.read16BitAndClock(registers.programCounter.value);
-      cpu.clockCallback(8);
-      memory.writeWord(address, registers.stackPointer.value);
+      const spValue = registers.stackPointer.value;
+      cpu.clockCallback(4);
+      memory.writeByte(address, spValue & 0xFF);
+      cpu.clockCallback(4);
+      memory.writeByte((address + 1) & 0xFFFF, (spValue >> 8) & 0xFF);
       registers.programCounter.value += 2;
       return 20;
     }

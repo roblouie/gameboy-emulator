@@ -67,7 +67,7 @@ export class Gameboy {
   }
 
   stepEmulator() {
-    this.cpu.tick();
+    return this.cpu.tick();
   }
 
   onFrameFinished(callback: Function) {

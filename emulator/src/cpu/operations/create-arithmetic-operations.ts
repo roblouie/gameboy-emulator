@@ -179,8 +179,9 @@ export function createArithmeticOperations(this: CPU) {
       registers.F.isResultZero = false;
       registers.F.isSubtraction = false;
 
+      cpu.clockCallback(4);
       registers.stackPointer.value = registers.stackPointer.value + toAdd;
-      cpu.clockCallback(8);
+      cpu.clockCallback(4);
       return 16;
     }
   });

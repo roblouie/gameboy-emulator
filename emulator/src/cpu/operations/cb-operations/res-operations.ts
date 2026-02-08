@@ -41,6 +41,7 @@ export function getResSubOperations(cpu: CPU) {
         cpu.clockCallback(4);
         const value = memory.readByte(registers.HL.value);
         const bitSet = clearBit(value, bitPosition);
+        cpu.clockCallback(4);
         memory.writeByte(registers.HL.value, bitSet);
         return 12;
       }

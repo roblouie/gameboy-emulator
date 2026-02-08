@@ -25,6 +25,7 @@ export class CPU {
   private static P10P13InputSignalLowInterruptAddress = 0x0060;
 
   isImeScheduled = false;
+  private isImeReady = false;
   isInterruptMasterEnable = false;
   registers: CpuRegisterCollection;
 
@@ -87,13 +88,18 @@ export class CPU {
       this.clockCallback(4);
       cycles = 4;
     } else {
-      if (this.isImeScheduled) {
-        this.isInterruptMasterEnable = true;
-        this.isImeScheduled = false;
-      }
-
       const operation = this.getOperation();
       cycles = operation.execute();
+
+      if (this.isImeReady) {
+        this.isInterruptMasterEnable = true;
+        this.isImeScheduled = false;
+        this.isImeReady = false;
+      }
+
+      if (this.isImeScheduled) {
+        this.isImeReady = true;
+      }
     }
 
     const interruptTime = this.handleInterrupts();
@@ -145,6 +151,9 @@ export class CPU {
       return 0;
     }
 
+    this.clockCallback(4);
+    this.clockCallback(4);
+
     this.pushToStackAndClock(this.registers.programCounter.value);
 
     const interruptFlags = this.interruptController.getInterruptFlags(firedInterrupts);
@@ -175,8 +184,6 @@ export class CPU {
       this.registers.programCounter.value = CPU.P10P13InputSignalLowInterruptAddress;
     }
 
-    this.clockCallback(8);
-
     this.isInterruptMasterEnable = false;
     return 20;
   }
@@ -195,6 +202,11 @@ export class CPU {
     }
 
     this.cbSubOperationMap[operation.byteDefinition] = operation;
+  }
+
+  read8AndClock(address: number): number {
+    this.clockCallback(4);
+    return this.memory.readByte(address);
   }
 
   read16BitAndClock(startAddress: number) {
