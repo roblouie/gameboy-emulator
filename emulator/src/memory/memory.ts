@@ -200,8 +200,8 @@ export class Memory {
         case 0xff21: this.apu.sound4.nr42EnvelopeControl.value = value; return;
         case 0xff22: this.apu.sound4.nr43Polynomial.value = value; return;
         case 0xff23: this.apu.sound4.writeNr44(value); return;
-        case 0xff24: this.apu.nr50OutputLevel.value = value; return;
-        case 0xff25: this.apu.nr51SSoundPanning.value = value; return;
+        case 0xff24: this.apu.writeNr50MasterVolume(value); return;
+        case 0xff25: this.apu.writeNr51StereoRouting(value); return;
         case 0xff26: this.apu.writeNr52MasterSoundControl(value); return;
 
         // GPU

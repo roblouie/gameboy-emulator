@@ -27,7 +27,7 @@ class SimpleAudioQueue extends AudioWorkletProcessor {
           continue;
         }
 
-        // Otherwise drop a whole head buffer
+        // Drop a whole head buffer
         const dropped = this.queue.shift();
         this.queued -= dropped.length;
       }
@@ -37,20 +37,25 @@ class SimpleAudioQueue extends AudioWorkletProcessor {
   }
 
   process(inputs, outputs) {
-    const output = outputs[0][0];
+    const left = outputs[0][0];
+    const right = outputs[0][1];
 
-    for (let i = 0; i < output.length; i++) {
+    for (let i = 0; i < left.length; i++) {
       if (this.queue.length === 0) {
-        output[i] = 0;
-      } else {
-        const buf = this.queue[0];
-        output[i] = buf[this.readIndex++];
-        this.queued--;
+        left[i] = 0;
+        right[i] = 0;
+        continue;
+      }
 
-        if (this.readIndex >= buf.length) {
-          this.queue.shift();
-          this.readIndex = 0;
-        }
+      const buf = this.queue[0];
+
+      left[i] = buf[this.readIndex++];
+      right[i] = buf[this.readIndex++];
+      this.queued-= 2;
+
+      if (this.readIndex >= buf.length) {
+        this.queue.shift();
+        this.readIndex = 0;
       }
     }
 

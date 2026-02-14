@@ -55,8 +55,6 @@ export class Gameboy {
     let ran = 0;
     while (ran < cyclesToRun) {
       const cycles = this.cpu.tick();
-      // this.gpu.tick(cycles);
-      // this.apu.tick(cycles);
       ran += cycles;
     }
 

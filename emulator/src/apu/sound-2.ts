@@ -79,8 +79,8 @@ export class Sound2 {
     }
 
     const sample = this.dutyCycles[this.nr21LengthAndDutyCycle.value >> 6][this.positionInDutyCycle];
-    const volumeAdjustedSample = sample * this.volume;
-    return volumeAdjustedSample / 15; // TODO: Revisit the proper volume controls of / 7.5 -1 to get a range of 1 to -1
+    const amp = this.volume / 15;
+    return sample ? amp : -amp;
   }
 
   private getFrequencyPeriod() {

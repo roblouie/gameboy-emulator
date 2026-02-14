@@ -83,7 +83,7 @@ export class Sound3 {
     const isHighNibble = (this.waveTablePosition & 1) === 0;
     const sample = isHighNibble ? getUpperNibble(waveData) : getLowerNibble(waveData);
     const volumeAdjustedSample = sample >> this.shifts[(this.nr32OutputLevel.value >> 5) & 0b11];
-    return volumeAdjustedSample / 15;
+    return (volumeAdjustedSample / 15) * 2 - 1;
   }
 
   private getFrequencyPeriod() {

@@ -112,9 +112,9 @@ export class Sound1 {
   }
 
   private calculateNewSweepFrequency() {
-    const { sweepAmount, isSweepIncrease } = this.nr10SweepControl;
+    const { sweepAmount, isSweepDecrease } = this.nr10SweepControl;
     const shiftedFrequency = this.shadowFrequency >> sweepAmount;
-    const shiftFrequencyBy = isSweepIncrease ? -shiftedFrequency : shiftedFrequency;
+    const shiftFrequencyBy = isSweepDecrease ? -shiftedFrequency : shiftedFrequency;
 
     const newFrequency = this.shadowFrequency + shiftFrequencyBy;
 
@@ -131,8 +131,8 @@ export class Sound1 {
     }
 
     const sample = this.dutyCycles[this.nr11LengthAndDutyCycle.value >> 6][this.positionInDutyCycle];
-    const volumeAdjustedSample = sample * this.volume;
-    return volumeAdjustedSample / 15;
+    const amp = this.volume / 15;
+    return sample ? amp : -amp;
   }
 
   private getFrequencyPeriod() {

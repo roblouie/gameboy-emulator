@@ -91,8 +91,7 @@ export class Sound4 {
       return 0;
     }
     const sample = ~(this.linearFeedbackShift) & 0b1;
-
-    const volumeAdjustedSample = sample * this.volume;
-    return volumeAdjustedSample / 15;
+    const amp = this.volume / 15;
+    return sample ? amp : -amp;
   }
 }
