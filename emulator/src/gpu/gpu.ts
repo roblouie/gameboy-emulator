@@ -88,7 +88,7 @@ export class GPU {
   }
 
   canAccessVram(): boolean {
-    // Timing not good enough to us this yet. Issues in mario land
+    // Timing not good enough to use this yet. Issues in mario land
     return true;//!this.lcdControl.isLCDControllerOperating || this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD;
   }
 
@@ -127,19 +127,6 @@ export class GPU {
 
   writeStat(value: number) {
     this.lcdStatus.value  = (this.lcdStatus.value  & ~0x78) | (value & 0x78);
-
-    console.log(
-      "STAT write",
-      value.toString(16),
-      "stored",
-      this.lcdStatus.value.toString(16),
-      "en0", this.lcdStatus.isHBlankInterruptSelected,
-      "en1", this.lcdStatus.isVBlankInterruptSelected,
-      "en2", this.lcdStatus.isSearchingOamInterruptSelected,
-      "enLYC", this.lcdStatus.isLineYMatchingInterruptSelected,
-    );
-
-
     this.handleStat();
   }
 
@@ -255,7 +242,6 @@ export class GPU {
     const bytePositionInTile = yPosInTile * bytesPerCharacter;
 
     const scrollXRegisterValue = this.scrollX.value;
-    // console.log(scrollXRegisterValue);
 
     const startingBackgroundAddress = this.lcdControl.backgroundTileMapStartAddress;
     const isBackgroundCharacterData = this.lcdControl.backgroundCharacterData === 0;

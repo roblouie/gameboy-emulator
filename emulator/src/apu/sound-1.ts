@@ -4,7 +4,6 @@ import { SweepControlRegister } from "@/apu/registers/sweep-control-register";
 import { SimpleByteRegister } from "@/helpers/simple-byte-register";
 import { HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
 
-// Note: No sounds write out to the nr52 register currently. If a game checks audio enabled state, it currently won't be set
 export class Sound1 {
   private dutyCycles = [
     [0, 0, 0, 0, 0, 0, 0, 1], // 12.5 %

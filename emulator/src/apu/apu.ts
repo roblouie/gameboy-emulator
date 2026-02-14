@@ -15,7 +15,6 @@ export class APU {
 
   private audioContext: AudioContext;
 
-  //TODO: probably wire these up to work?
   nr50OutputLevel = new Nr50OutputLevelRegister(0xff24, 0x77);
   nr51SSoundPanning = new Nr51StereoSelectors(0xff25, 0xf3);
 
