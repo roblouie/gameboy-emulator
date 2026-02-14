@@ -78,7 +78,7 @@ canvas {
     background-color: #80b141;
 }
 
-@media (max-aspect-ratio: 1/2) {
+@media (max-aspect-ratio: 1/1.85) {
     canvas {
         width: 100%;
         height: auto;
@@ -86,7 +86,7 @@ canvas {
 }
 
 
-@media screen and (orientation:landscape) {
+@media (orientation:landscape) {
     body {
         grid-template:
         'file-picker screen .'
@@ -103,6 +103,13 @@ canvas {
 
     .start-select {
         align-self: end;
+    }
+}
+
+@media (orientation:landscape) and (min-aspect-ratio: 2.2/1) {
+    canvas {
+        width: auto;
+        height: 100%;
     }
 }
 
