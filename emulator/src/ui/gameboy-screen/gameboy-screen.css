@@ -12,6 +12,7 @@
     align-items: center;
     flex-direction: column;
     border-radius: 10px 10px 30px 10px;
+    /*width: 100%;*/
 }
 
 .screen-wrapper {

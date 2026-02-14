@@ -73,13 +73,6 @@ export class APU {
     this.audioContext = new AudioContext({ latencyHint: "interactive" });
     this.cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
     this.audioContext.suspend();
-
-    this.audioContext.audioWorklet.addModule(workletUrl).then(() => {
-      this.workletNode = new AudioWorkletNode(this.audioContext, 'simple-audio-queue', { outputChannelCount: [2] });
-      this.workletNode.connect(this.audioContext.destination);
-    }).catch(error => {
-      console.error('Unable to load audio Queue', error);
-    });
   }
 
   writeNr50MasterVolume(value: number) {
@@ -129,8 +122,18 @@ export class APU {
   }
 
   enableSound() {
+    if (!this.audioContext) {
+      this.audioContext = new AudioContext({ latencyHint: "interactive" });
+      this.cyclesPerSample = CPU.OperatingHertz / this.audioContext.sampleRate;
+    }
     this._isAudioEnabled = true;
     this.audioContext.resume();
+    this.audioContext.audioWorklet.addModule(workletUrl).then(() => {
+      this.workletNode = new AudioWorkletNode(this.audioContext, 'simple-audio-queue', { outputChannelCount: [2] });
+      this.workletNode.connect(this.audioContext.destination);
+    }).catch(error => {
+      console.error('Unable to load audio Queue', error);
+    });
   }
 
   disableSound() {
@@ -186,10 +189,6 @@ export class APU {
 
     this.output.left *= 0.25;
     this.output.right *= 0.25;
-
-    if (this.output.left !== this.output.right) {
-      debugger;
-    }
   }
 
   private sampleChannels() {

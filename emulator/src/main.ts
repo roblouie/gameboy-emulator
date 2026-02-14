@@ -2,7 +2,11 @@ import { Gameboy } from '@/gameboy';
 import {EnhancedImageData} from "@/helpers/enhanced-image-data";
 import {getBit} from "@/helpers/binary-helpers";
 import {SaveManager} from "@/save-manager";
-
+import "./ui/gameboy-button/gameboy-button";
+import "./ui/gameboy-d-pad/gameboy-d-pad";
+import "./ui/gameboy-speaker/gameboy-speaker";
+import "./ui/gameboy-top-menu/gameboy-top-menu";
+import "./ui/gameboy-screen/gameboy-screen";
 
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
@@ -66,39 +70,3 @@ function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
   });
 }
 
-// Test Code
-function getCharacterImageData(gameboy: Gameboy): ImageData {
-  const CharacterDataStart = 0x8000;
-  const CharacterDataEnd = 0x97ff;
-  const characterData = gameboy.memory.memoryBytes.subarray(CharacterDataStart, CharacterDataEnd);
-  const enhancedImageData = new EnhancedImageData(256, 3072);
-
-  let imageDataX = 0;
-  let imageDataY = 0;
-  let pixelIndex = 0;
-
-  // two bytes build a 8 x 1 line
-  for (let byteIndex = 0; byteIndex < characterData.length; byteIndex+= 2) {
-    const lowerByte = characterData[byteIndex];
-    const higherByte = characterData[byteIndex + 1];
-
-    // start at the left most bit so we can draw to the image data from left to right
-    for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
-      const shadeLower = getBit(lowerByte, bitPosition);
-      const shadeHigher = getBit(higherByte, bitPosition) << 1;
-
-      const color = gameboy.gpu.colors[shadeHigher + shadeLower];
-      // enhancedImageData.setPixel(imageDataX, imageDataY, color.red, color.green, color.blue);
-      enhancedImageData.data[pixelIndex] = color.red;
-      enhancedImageData.data[pixelIndex + 1] = color.green;
-      enhancedImageData.data[pixelIndex + 2] = color.blue;
-      enhancedImageData.data[pixelIndex + 3] = 0xff;
-      pixelIndex += 4;
-    }
-
-    imageDataY++
-    imageDataX = 0;
-  }
-
-  return enhancedImageData;
-}

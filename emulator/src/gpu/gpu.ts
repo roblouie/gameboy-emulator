@@ -45,10 +45,10 @@ export class GPU {
   interruptController: InterruptController;
 
   colors = [
-    { red: 255, green: 255, blue: 255 },
-    { red: 192, green: 192, blue: 192 },
-    { red: 96, green: 96, blue: 96 },
-    { red: 0, green: 0, blue: 0 },
+    { red: 216, green: 240, blue: 192 },
+    { red: 120, green: 176, blue: 96 },
+    { red: 47, green: 107, blue: 79 },
+    { red: 11, green: 31, blue: 26 },
   ];
 
   constructor(interruptController: InterruptController) {

@@ -1,5 +1,5 @@
-import roundButtonStyleText from './round-button.css';
-import ovalButtonStyleText from './oval-button.css';
+import roundButtonStyleText from './round-button.css?inline';
+import ovalButtonStyleText from './oval-button.css?inline';
 
 export class GameboyButton extends HTMLElement {
   constructor() {

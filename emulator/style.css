@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@100;300&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+html, body {
+    margin: 0;
+    body: 0;
+    overscroll-behavior: none;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+* {
+    user-select: none;
+    touch-action: none;          /* disables scroll/zoom gestures on pointer events */
+    -ms-touch-action: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none; /* iOS long-press menu */
+}
+
+html {
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    /*overflow: hidden;*/
+}
+
+/*Portrait mode default*/
+body {
+    font-family: Orbitron, sans-serif;
+    background-color: #c6c1bd;
+    color: #0b0ba7;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    /*overflow: hidden;*/
+    display: grid;
+    grid-template:
+        'file-picker file-picker'
+        'screen screen'
+        'd-pad a-b-buttons'
+        'start-select start-select';
+
+    grid-template-rows: 0.1fr 2fr 1.5fr 0.5fr;
+    grid-template-columns: 1fr 2fr;
+}
+
+gameboy-d-pad {
+    margin-top: 0.2in;
+    margin-left: 0.2in;
+}
+
+.start-select {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: space-around;
+
+    round-button {
+        display: block;
+    }
+}
+
+.screen-wrap {
+    display: grid;
+    place-items: center;
+}
+
+.button-spacer {
+    display: flex;
+    justify-self: end;
+}
+
+canvas {
+    width: auto;
+    height: 100%;
+    background-color: #80b141;
+}
+
+@media (max-aspect-ratio: 1/2) {
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+}
+
+
+@media screen and (orientation:landscape) {
+    body {
+        grid-template:
+        'file-picker screen .'
+        'd-pad screen a-b-buttons'
+        'start-select screen .';
+        grid-template-rows: 0.1fr 2fr 1fr;
+        grid-template-columns: 1fr 2fr 1fr;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    .start-select {
+        align-self: end;
+    }
+}
+

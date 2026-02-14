@@ -1,12 +1,7 @@
-import {gameboy} from "@/gameboy-instance";
-import localforage from "localforage";
-import JSZip from "jszip";
+// import {gameboy} from "@/gameboy-instance";
+// import JSZip from "jszip";
 
-import menuStyleText from "./gameboy-top-menu.css";
-import muteButtonImage from './mute-button.png';
-import loadGameImage from './load-game.png';
-import fullscreenImage from './fullscreen.png';
-import plusControlsImage from './plus-controls.png';
+import menuStyleText from "./gameboy-top-menu.css?inline";
 
 export class GameboyTopMenu extends HTMLElement {
   private fileLoadedEvent: CustomEvent;
@@ -54,31 +49,7 @@ export class GameboyTopMenu extends HTMLElement {
             <li class="controls-link">Controls</li>
           </menu>
           
-          <section class="help">
-            <div>
-              <img src="${muteButtonImage}" width="120px"/>
-              <p>Mute and unute audio by clicking the area by the speaker</p>
-            </div>
-            
-            <div>
-              <img src="${loadGameImage}" width="120px"/>
-              <p>Open ROM with the Load Game button. Supports .zip and .gb</p>
-            </div>
-            
-            <div>
-              <img src="${fullscreenImage}" width="120px"/>
-              <p>Standard fullscreen</p>
-            </div>
-            
-            <div>
-              <img src="${plusControlsImage}" width="120px"/>
-              <p>
-                Make the page, including on-screen controls, take up the full screen.
-                Useful for playing on mobile where you want the touch controls but don't want the
-                browser menu bar.
-              </p>
-            </div>
-          </section>
+       
           
           <section class="controls">
             <p>Make sure your controller is connected then press any button for it to be recognized.</p>
@@ -184,10 +155,10 @@ export class GameboyTopMenu extends HTMLElement {
     const fileInput = menuElement.querySelector<HTMLInputElement>('.file-input')!;
     const modalMenuBackdrop = menuElement.querySelector<HTMLElement>('.modal-menu-backdrop')!;
     fileInput!.addEventListener('change', event => this.onFileChange(event));
-    localforage.getItem<string>('hasUsed')
-      .then(hasUsed => modalMenuBackdrop.style.display = hasUsed ? 'none' : 'flex');
-
-    localforage.setItem('hasUsed', 'true');
+    // localforage.getItem<string>('hasUsed')
+    //   .then(hasUsed => modalMenuBackdrop.style.display = hasUsed ? 'none' : 'flex');
+    //
+    // localforage.setItem('hasUsed', 'true');
 
     menuElement.querySelector('.load-game')!.addEventListener('click', () => fileInput.click());
     menuElement.querySelector('.open-menu')!.addEventListener('click', () => {
@@ -274,52 +245,13 @@ export class GameboyTopMenu extends HTMLElement {
     function saveControls(controlType: 'controller' | 'keyboard') {
       const matchingManager = controlType === 'controller' ? gameboy.controllerManager : gameboy.keyboardManager;
 
-      localforage.setItem(controlType, JSON.stringify({
-        left: matchingManager.left,
-        right: matchingManager.right,
-        up: matchingManager.up,
-        down: matchingManager.down,
-        a: matchingManager.a,
-        b: matchingManager.b,
-        select: matchingManager.select,
-        start: matchingManager.start,
-      }));
+
     }
 
     function loadControls(controlType: 'controller' | 'keyboard') {
       const matchingManager = controlType === 'controller' ? gameboy.controllerManager : gameboy.keyboardManager;
       const matchingButtons = controlType === 'controller' ? controllerButtons : keyboardButtons;
       const prefix = controlType === 'controller' ? 'Button ' : '';
-
-      localforage.getItem<string>(controlType)
-        .then(controlsJson => {
-          if (controlsJson) {
-            const controls = JSON.parse(controlsJson);
-            matchingManager.left = controls.left;
-            matchingButtons[0].textContent = prefix + controls.left;
-
-            matchingManager.right = controls.right;
-            matchingButtons[1].textContent = prefix + controls.right;
-
-            matchingManager.up = controls.up;
-            matchingButtons[2].textContent = prefix + controls.up;
-
-            matchingManager.down = controls.down;
-            matchingButtons[3].textContent = prefix + controls.down;
-
-            matchingManager.a = controls.a;
-            matchingButtons[4].textContent = prefix + controls.a;
-
-            matchingManager.b = controls.b;
-            matchingButtons[5].textContent = prefix + controls.b;
-
-            matchingManager.select = controls.select;
-            matchingButtons[6].textContent = prefix + controls.select;
-
-            matchingManager.start = controls.start;
-            matchingButtons[7].textContent = prefix + controls.start;
-          }
-        })
     }
 
     loadControls('keyboard');
@@ -409,7 +341,7 @@ export class GameboyTopMenu extends HTMLElement {
 
     const colorSelect = menuElement.querySelector<HTMLSelectElement>('.color-select')!;
     colorSelect.addEventListener('change', () => {
-      localforage.setItem('selectedColors', colorSelect.value);
+      // localforage.setItem('selectedColors', colorSelect.value);
       const colorDivs = menuElement.querySelectorAll<HTMLElement>('.color')!;
       // @ts-ignore
       const selectedPallete = colors[colorSelect.value];
@@ -431,7 +363,7 @@ export class GameboyTopMenu extends HTMLElement {
             selectedPallete[index].green = parseInt(input.value.substring(3, 5), 16);
             selectedPallete[index].blue = parseInt(input.value.substring(5, 8), 16);
             gameboy.gpu.colors = selectedPallete;
-            localforage.setItem('customColors', JSON.stringify(selectedPallete));
+            // localforage.setItem('customColors', JSON.stringify(selectedPallete));
           });
         });
       } else {
@@ -439,19 +371,19 @@ export class GameboyTopMenu extends HTMLElement {
       }
     });
 
-    localforage.getItem<string>('customColors')
-      .then(customColorJson => {
-        if (customColorJson) {
-          colors.custom = JSON.parse(customColorJson);
-        }
-        return localforage.getItem<string>('selectedColors');
-      })
-      .then(selectedColorString => {
-        if (selectedColorString) {
-          colorSelect.value = selectedColorString;
-          colorSelect.dispatchEvent(new Event('change'));
-        }
-      });
+    // localforage.getItem<string>('customColors')
+    //   .then(customColorJson => {
+    //     if (customColorJson) {
+    //       colors.custom = JSON.parse(customColorJson);
+    //     }
+    //     return localforage.getItem<string>('selectedColors');
+    //   })
+    //   .then(selectedColorString => {
+    //     if (selectedColorString) {
+    //       colorSelect.value = selectedColorString;
+    //       colorSelect.dispatchEvent(new Event('change'));
+    //     }
+    //   });
 
 
     // END SECTIONS
@@ -480,15 +412,15 @@ export class GameboyTopMenu extends HTMLElement {
   async getRom(file: File): Promise<ArrayBuffer | void> {
     const romArrayBuffer = await this.fileToArrayBuffer(file);
 
-    if (file.name.substr(-4) === '.zip') {
-      const zipFile = await JSZip.loadAsync(romArrayBuffer);
-      const fileName = Object.keys(zipFile.files)[0];
-      const unzippedRom = await zipFile?.file(fileName)?.async('arraybuffer');
-
-      return unzippedRom;
-    } else {
+    // if (file.name.substr(-4) === '.zip') {
+    //   const zipFile = await JSZip.loadAsync(romArrayBuffer);
+    //   const fileName = Object.keys(zipFile.files)[0];
+    //   const unzippedRom = await zipFile?.file(fileName)?.async('arraybuffer');
+    //
+    //   return unzippedRom;
+    // } else {
       return romArrayBuffer;
-    }
+    // }
   }
 
   fileToArrayBuffer(file: File): Promise<ArrayBuffer> {

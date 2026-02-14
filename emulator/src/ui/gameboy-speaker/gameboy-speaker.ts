@@ -1,6 +1,6 @@
-import speakerStyleText from './gameboy-speaker.css';
-const muteIcon = require("./mute-icon.svg").default as string;
-const unmuteIcon = require("./unmute-icon.svg").default as string;
+import speakerStyleText from './gameboy-speaker.css?inline';
+import muteIcon from "./mute-icon.svg";
+import unmuteIcon from "./unmute-icon.svg";
 
 export class GameboySpeaker extends HTMLElement {
   private speakerElement: HTMLDivElement;

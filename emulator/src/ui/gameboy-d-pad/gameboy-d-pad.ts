@@ -1,4 +1,4 @@
-import dpadStyleText from './gameboy-d-pad.css';
+import dpadStyleText from './gameboy-d-pad.css?inline';
 
 export class GameboyDPad extends HTMLElement {
   private activeTouch: Touch | null = null;

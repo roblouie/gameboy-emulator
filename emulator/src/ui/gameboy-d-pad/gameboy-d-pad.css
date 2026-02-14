@@ -156,9 +156,3 @@
 .dpad.up.right .center-circle {
     box-shadow: inset -9px 9px 8px 4px #3c3c3c;
 }
-@media screen and (orientation: portrait) {
-    .dpad-touch-area {
-        margin-left: 10px;
-    }
-}
- 
