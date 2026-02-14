@@ -15,17 +15,17 @@ describe("Blargg accuracy tests", () => {
 
     const cyclesToRun = GPU.CyclesPerFrame * 60;
     let cyclesRan = 0;
-    let stringData = '';
+    let serialMessage = '';
 
-    gameboy.bus.onSerialByte((byte) => {
-      stringData += String.fromCharCode(byte);
+    gameboy.serial.onSerialByte((byte) => {
+      serialMessage += String.fromCharCode(byte);
     });
 
     while (cyclesRan < cyclesToRun) {
       cyclesRan += gameboy.stepEmulator();
     }
 
-    expect(stringData).toContain('Passed');
+    expect(serialMessage).toContain('Passed');
   });
 
   it("Passes instruction accuracy test cpu_instrs.gb", () => {
@@ -33,16 +33,16 @@ describe("Blargg accuracy tests", () => {
 
     const cyclesToRun = GPU.CyclesPerFrame * 3600;
     let cyclesRan = 0;
-    let stringData = '';
+    let serialMessage = '';
 
-    gameboy.bus.onSerialByte((byte) => {
-      stringData += String.fromCharCode(byte);
+    gameboy.serial.onSerialByte((byte) => {
+      serialMessage += String.fromCharCode(byte);
     });
 
     while (cyclesRan < cyclesToRun) {
       cyclesRan += gameboy.stepEmulator();
     }
 
-    expect(stringData).toContain('Passed');
+    expect(serialMessage).toContain('Passed');
   });
 });

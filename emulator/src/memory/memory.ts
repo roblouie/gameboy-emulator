@@ -5,24 +5,27 @@ import { APU } from "@/apu/apu";
 import {InterruptController} from "@/cpu/interrupt-request-register";
 import {TimerController} from "@/cpu/timer-controller";
 import {combineBytes, convertUint8ToInt8} from "@/helpers/binary-helpers";
+import {Serial} from "@/serial";
 
 export class Memory {
   cartridge: Cartridge = new Cartridge(new DataView(new ArrayBuffer(0)));
   gpu: GPU;
   apu: APU;
+  serial: Serial;
   interruptController: InterruptController;
   timerController: TimerController;
 
   private readonly memoryBuffer: ArrayBuffer;
   memoryBytes: Uint8Array;
 
-  constructor(gpu: GPU, apu: APU, interruptController: InterruptController, timerController: TimerController) {
+  constructor(gpu: GPU, apu: APU, interruptController: InterruptController, timerController: TimerController, serial: Serial) {
     this.memoryBuffer = new ArrayBuffer(0x10000);
     this.memoryBytes = new Uint8Array(this.memoryBuffer);
     this.gpu = gpu;
     this.apu = apu;
     this.interruptController = interruptController;
     this.timerController = timerController;
+    this.serial = serial;
   }
 
   insertCartridge(cartridge: Cartridge) {
@@ -56,8 +59,8 @@ export class Memory {
         case 0xff00: return input.reportInput();
 
         // Serial
-        case 0xff01: return this.sb;
-        case 0xff02: return this.sc;
+        case 0xff01: return this.serial.readSb();
+        case 0xff02: return this.serial.readSc();
 
         // Timers
         case 0xff04: return this.timerController.readDiv();
@@ -90,7 +93,7 @@ export class Memory {
 
         case 0xff24: return this.apu.nr50OutputLevel.value;
         case 0xff25: return this.apu.nr51SSoundPanning.value;
-        case 0xff26: return this.apu.nr52SoundEndFlag.value;
+        case 0xff26: return this.apu.nr52SoundControl.value;
 
 
         // GPU
@@ -163,8 +166,8 @@ export class Memory {
         case 0xff00: input.setInputToCheck(value); return;
 
         // Serial
-        case 0xff01: this.setSerialData(value); return;
-        case 0xff02: this.serialControl(value); return;
+        case 0xff01: this.serial.writeSb(value); return;
+        case 0xff02: this.serial.writeSc(value); return;
 
         // Timers
         case 0xff04: this.timerController.writeDiv(); return;
@@ -197,8 +200,9 @@ export class Memory {
         case 0xff21: this.apu.sound4.nr42EnvelopeControl.value = value; return;
         case 0xff22: this.apu.sound4.nr43Polynomial.value = value; return;
         case 0xff23: this.apu.sound4.writeNr44(value); return;
-
-        case 0xff26: this.apu.nr52SoundEndFlag.value = value; return;
+        case 0xff24: this.apu.nr50OutputLevel.value = value; return;
+        case 0xff25: this.apu.nr51SSoundPanning.value = value; return;
+        case 0xff26: this.apu.writeNr52MasterSoundControl(value); return;
 
         // GPU
         case 0xff40: this.gpu.writeLcdc(value); return;
@@ -248,32 +252,6 @@ export class Memory {
   private isAccessingWaveRam(address: number) {
     return address >= 0xff30 && address <= 0xff3f;
   }
-
-  private sb = 0;
-  private sc = 0x7e;
-  private serialByteCallback: (val: number) => void;
-  onSerialByte(callback: (val: number) => void) {
-    this.serialByteCallback = callback;
-  }
-
-  private setSerialData(value: number) {
-    this.sb = value;
-  }
-
-  private serialControl(value: number) {
-    this.sc = value & 0xff;
-    if (!this.serialByteCallback) {
-      return;
-    }
-    const start = (value & 0x80) !== 0;
-    if (start) {
-      const byte = this.sb;
-      this.serialByteCallback(byte);
-      this.sc &= 0x7f;
-      this.interruptController.triggerSerialInterruptRequest();
-    }
-  }
-
 
   private lastDmaValue = 0;
   private dmaTransfer(value: number) {

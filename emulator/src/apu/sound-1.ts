@@ -1,8 +1,8 @@
 import { Enveloper } from "@/apu/enveloper";
-import {EnvelopeControlRegister} from "@/apu/registers/envelope-control-registers";
-import {SweepControlRegister} from "@/apu/registers/sweep-control-register";
-import {SimpleByteRegister} from "@/helpers/simple-byte-register";
-import {HighOrderFrequencyRegister} from "@/apu/registers/high-order-frequency-registers";
+import { EnvelopeControlRegister } from "@/apu/registers/envelope-control-registers";
+import { SweepControlRegister } from "@/apu/registers/sweep-control-register";
+import { SimpleByteRegister } from "@/helpers/simple-byte-register";
+import { HighOrderFrequencyRegister } from "@/apu/registers/high-order-frequency-registers";
 
 // Note: No sounds write out to the nr52 register currently. If a game checks audio enabled state, it currently won't be set
 export class Sound1 {

@@ -23,7 +23,7 @@ export class APU {
   private cyclesPerSample: number;
   private sampleCycleCounter = 0;
 
-  readonly nr52SoundEndFlag = new SoundsOnRegister(0xff26, 0xf1);
+  readonly nr52SoundControl = new SoundsOnRegister(0xff26, 0xf1);
 
   readonly sound1: Sound1;
   readonly sound2: Sound2;
@@ -31,6 +31,7 @@ export class APU {
   readonly sound4: Sound4;
 
   private _isAudioEnabled = false;
+  private isApuPowerOn = true;
 
   private workletNode: AudioWorkletNode;
 
@@ -55,6 +56,31 @@ export class APU {
       console.error('Unable to load audio Queue', error);
     });
   }
+
+  writeNr52MasterSoundControl(value: number) {
+    const newIsOn = (value & 0x80) !== 0;
+    const oldIsOn = this.nr52SoundControl.isAllSoundOn;
+    this.nr52SoundControl.value = value;
+
+    if (oldIsOn && !newIsOn) {
+      this.powerOffApu();
+    } else {
+      this.powerOnApu();
+    }
+  }
+
+  private powerOffApu(): void {
+    this.frameSequencerCycleCounter = 0;
+    this.frameSequencerStep = 0;
+    this.isApuPowerOn = false;
+
+    this.sound1.reset();
+  }
+
+  private powerOnApu(): void {
+    this.isApuPowerOn = true;
+    this.frameSequencerCycleCounter = 0;
+    this.frameSequencerStep = 0;  }
 
   get isAudioEnabled() {
     return this._isAudioEnabled;
@@ -96,21 +122,12 @@ export class APU {
   private tempBuffer = new Float32Array(1024);
   private tempIndex = 0;
 
-  private getSample(isSoundOn: boolean) {
-    if (isSoundOn) {
-      return (this.sound1.getSample() + this.sound2.getSample() + this.sound3.getSample() + this.sound4.getSample()) / 4;
-    } else {
-      return 0;
-    }
+  private getSample() {
+    return (this.sound1.getSample() + this.sound2.getSample() + this.sound3.getSample() + this.sound4.getSample()) / 4;
   }
 
   private sampleChannels() {
-    const isSoundOn = this.nr52SoundEndFlag.isAllSoundOn;
-    if (!isSoundOn) {
-      this.frameSequencerCycleCounter = 0;
-    }
-
-    this.tempBuffer[this.tempIndex] = this.getSample(isSoundOn);
+    this.tempBuffer[this.tempIndex] = this.isApuPowerOn ? this.getSample() : 0;
     this.tempIndex++;
 
     if (this.tempIndex >= this.tempBuffer.length) {

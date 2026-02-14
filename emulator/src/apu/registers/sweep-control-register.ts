@@ -6,11 +6,7 @@ export class SweepControlRegister extends SimpleByteRegister {
     return (this.value >> 4) & 0b111;
   }
 
-  get sweepTimeInSeconds() {
-    return this.sweepTime / 1280;
-  }
-
-  get isSweepIncrease() {
+  get isSweepDecrease() {
     return ((this.value >> 3) & 0b1) === 0b1; 
   }
 

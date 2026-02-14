@@ -10,6 +10,7 @@ import { CartridgeLoader } from "@/cartridge/cartridge-loader";
 import { keyboardManager } from "@/input/keyboard-manager";
 import { InterruptController } from "@/cpu/interrupt-request-register";
 import {TimerController} from "@/cpu/timer-controller";
+import {Serial} from "@/serial";
 
 export class Gameboy {
   interruptController = new InterruptController();
@@ -17,12 +18,14 @@ export class Gameboy {
 
   gpu = new GPU(this.interruptController);
   apu = new APU();
+  serial = new Serial(this.interruptController);
 
-  bus = new Memory(this.gpu, this.apu, this.interruptController, this.timerController);
+  bus = new Memory(this.gpu, this.apu, this.interruptController, this.timerController, this.serial);
   cpu = new CPU(this.bus, this.interruptController, this.timerController, (tCycles) => {
     this.timerController.updateTimers(tCycles);
     this.gpu.tick(tCycles);
     this.apu.tick(tCycles);
+    this.serial.tick();
   });
 
   private frameFinishedCallback?: Function;
@@ -45,7 +48,7 @@ export class Gameboy {
     const deltaMs = currentTime - this.previousTime;
     this.previousTime = currentTime;
 
-    const cyclesToRunFloat = this.cycleRemainder + (deltaMs * CPU.OperatingHertz) / 1000;
+    const cyclesToRunFloat = Math.min(this.cycleRemainder + (deltaMs * CPU.OperatingHertz) / 1000, GPU.CyclesPerFrame);
     const cyclesToRun = cyclesToRunFloat | 0;
     this.cycleRemainder = cyclesToRunFloat - cyclesToRun;
 

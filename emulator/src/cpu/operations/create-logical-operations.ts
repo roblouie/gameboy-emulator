@@ -88,7 +88,7 @@ export function createLogicalOperations(this: CPU) {
 
   this.addOperation({
     get instruction() {
-      return `CP 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
+      return `CP A, 0x${memory.readByte(registers.programCounter.value).toString(16)}`;
     },
     byteDefinition: 0b11_111_110,
     execute() {

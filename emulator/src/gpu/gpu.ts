@@ -88,7 +88,8 @@ export class GPU {
   }
 
   canAccessVram(): boolean {
-    return !this.lcdControl.isLCDControllerOperating || this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD;
+    // Timing not good enough to us this yet. Issues in mario land
+    return true;//!this.lcdControl.isLCDControllerOperating || this.lcdStatus.mode !== LcdStatusMode.Mode3TransferringDataToLCD;
   }
 
   private canAccessOam(): boolean {
