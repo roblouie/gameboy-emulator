@@ -42,9 +42,9 @@ export class GameboyScreen extends HTMLElement {
 
     let hideControlsTimeoutId = -1;
 
-    this.overlayControls.addEventListener('pointerdown', () => {
-      if (!this.overlayControls.classList.contains('hidden')) {
-        this.overlayControls.classList.add('hidden');
+    this.overlayControls.addEventListener('pointerdown', (event) => {
+      if (!this.overlayControls.classList.contains('hidden') && event.target?.tagName !== 'svg') {
+        this.hideOverlayControls();
         clearTimeout(hideControlsTimeoutId);
         return;
       }
@@ -120,13 +120,19 @@ export class GameboyScreen extends HTMLElement {
     fullscreenButton.addEventListener('click', () => {
       if (document.fullscreenElement) {
         document.exitFullscreen();
-        fullscreenButton.innerHTML = fullscreenIcon;
       } else {
-        fullscreenButton.innerHTML = exitFullscreenIcon;
         this.renderingContext.imageSmoothingEnabled = false;
         document.querySelector('body')?.requestFullscreen();
       }
     });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        fullscreenButton.innerHTML = exitFullscreenIcon;
+      } else {
+        fullscreenButton.innerHTML = fullscreenIcon;
+      }
+    })
 
 
     return fullscreenButton;
