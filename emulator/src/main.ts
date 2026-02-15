@@ -1,38 +1,58 @@
 import { Gameboy } from '@/gameboy';
-import {EnhancedImageData} from "@/helpers/enhanced-image-data";
-import {getBit} from "@/helpers/binary-helpers";
 import {SaveManager} from "@/save-manager";
 import "./ui/gameboy-button/gameboy-button";
 import "./ui/gameboy-d-pad/gameboy-d-pad";
 import "./ui/gameboy-speaker/gameboy-speaker";
 import "./ui/gameboy-top-menu/gameboy-top-menu";
 import "./ui/gameboy-screen/gameboy-screen";
+import {unzipSync} from "fflate";
+
+const gameboy = new Gameboy();
 
 const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
 fileInput.addEventListener('change', onFileChange);
 
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
 
-// const vramCanvas = document.querySelector('#vram') as HTMLCanvasElement;
-// const vramContext = vramCanvas.getContext('2d') as CanvasRenderingContext2D;
-// const vramButton = document.querySelector('#draw-vram') as HTMLButtonElement;
+document.addEventListener('dpad', event => {
+  gameboy.input.isPressingLeft = event.detail.isLeftPressed;
+  gameboy.input.isPressingRight = event.detail.isRightPressed;
+  gameboy.input.isPressingUp = event.detail.isUpPressed;
+  gameboy.input.isPressingDown = event.detail.isDownPressed;
+});
 
-
+document.addEventListener('gb-button', event => {
+  switch (event.detail.id) {
+    case 'A':
+      gameboy.input.isPressingA = event.detail.isPressed;
+      break;
+    case 'B':
+      gameboy.input.isPressingB = event.detail.isPressed;
+      break;
+    case 'SELECT':
+      gameboy.input.isPressingSelect = event.detail.isPressed;
+      break;
+    case 'START':
+      gameboy.input.isPressingStart = event.detail.isPressed;
+  }
+});
 
 async function onFileChange() {
-  const gameboy = new Gameboy();
-
-  // vramButton.addEventListener('click', () => {
-  //   vramContext.putImageData(getCharacterImageData(gameboy), 0, 0);
-  //   vramContext.drawImage( vramCanvas, 0, 0, 8*vramCanvas.width, 8*vramCanvas.height );
-  // });
-
-
   if (fileInput.files && fileInput.files[0]) {
-    // Convert the selected file into an array buffer
-    const rom = await fileToArrayBuffer(fileInput.files[0]);
+    gameboy.stop();
 
-    // load game
-    gameboy.loadGame(rom);
+    const rom = await fileInput.files[0].arrayBuffer();
+
+    if (fileInput.files[0].name.toLowerCase().endsWith('.zip')) {
+      const files = unzipSync(new Uint8Array(rom), { filter: file => file.name.toLowerCase().endsWith('.gb') });
+      console.log(files);
+      const romData = Object.values(files)[0].buffer;
+      gameboy.loadGame(romData);
+    } else {
+      gameboy.loadGame(rom);
+    }
 
     gameboy.apu.enableSound();
 
@@ -52,22 +72,6 @@ async function onFileChange() {
     const saveData = await saveManager.getSave(gameboy.bus.cartridge.title);
     gameboy.setCartridgeSaveRam(saveData);
 
-    gameboy.run(); // Run the game
+    gameboy.run();
   }
 }
-
-function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
-  const fileReader = new FileReader();
-
-  return new Promise((resolve, reject) => {
-    fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
-
-    fileReader.onerror = () => {
-      fileReader.abort();
-      reject(new Error('Error parsing file'))
-    }
-
-    fileReader.readAsArrayBuffer(file);
-  });
-}
-

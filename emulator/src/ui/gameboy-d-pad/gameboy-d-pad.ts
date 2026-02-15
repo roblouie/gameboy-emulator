@@ -1,23 +1,27 @@
 import dpadStyleText from './gameboy-d-pad.css?inline';
 
 export class GameboyDPad extends HTMLElement {
-  private activeTouch: Touch | null = null;
+  private activePointerId = -1;
   private touchArea: HTMLDivElement;
   private dpadElement: HTMLDivElement;
-  private direction: string = '';
-  private directionChangeEvent: CustomEvent;
+  private horizontalDirection: 'left' | 'right' | '' = '';
+  private verticalDirection: 'up' | 'down' | '' = '';
+
+  private emit() {
+    this.dispatchEvent(new CustomEvent("dpad", {
+      detail: {
+        isUpPressed: this.verticalDirection === 'up',
+        isDownPressed: this.verticalDirection === 'down',
+        isLeftPressed: this.horizontalDirection === 'left',
+        isRightPressed: this.horizontalDirection === 'right',
+      },
+      bubbles: true,
+      composed: true,
+    }));
+  }
 
   constructor() {
     super();
-
-    this.directionChangeEvent = new CustomEvent("directionchange", {
-      bubbles: true,
-      cancelable: false,
-      composed: true,
-      detail: {
-        direction: ''
-      }
-    });
 
     const shadow = this.attachShadow({mode: 'open'});
 
@@ -40,9 +44,9 @@ export class GameboyDPad extends HTMLElement {
       </div>
     `;
 
-    this.touchArea.addEventListener('touchstart', event => this.onTouchStart(event));
-    this.touchArea.addEventListener('touchend', () => this.onTouchEnd());
-    this.touchArea.addEventListener('touchmove', event => this.onTouchMove(event));
+    this.touchArea.addEventListener('pointerdown', event => this.onTouchStart(event));
+    this.touchArea.addEventListener('pointerup', () => this.onTouchEnd());
+    this.touchArea.addEventListener('pointermove', event => this.onTouchMove(event));
 
     const style = document.createElement('style');
     style.textContent = dpadStyleText;
@@ -53,60 +57,59 @@ export class GameboyDPad extends HTMLElement {
     this.dpadElement = this.touchArea.querySelector('.dpad')!;
   }
 
-  private onTouchStart(event: TouchEvent) {
-    for (const touch of event.touches) {
-      const { top, left, width, height } = this.touchArea.getBoundingClientRect();
+  private onTouchStart(event: PointerEvent) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
 
-      const verticalCenter = top + (height / 2);
-      const horizontalCenter = left + (width / 2);
+    const { top, left, width, height } = this.touchArea.getBoundingClientRect();
 
-      const horizontalDifference = horizontalCenter - touch.clientX;
-      const verticalDifference = verticalCenter - touch.clientY;
+    const verticalCenter = top + (height / 2);
+    const horizontalCenter = left + (width / 2);
 
-      if (Math.abs(horizontalDifference) <= (width / 2) && Math.abs(verticalDifference) <= (width / 2)) {
-        this.activeTouch = touch;
-        break;
-      }
+    const horizontalDifference = horizontalCenter - event.clientX;
+    const verticalDifference = verticalCenter - event.clientY;
+
+    if (Math.abs(horizontalDifference) <= (width / 2) && Math.abs(verticalDifference) <= (width / 2)) {
+      this.activePointerId = event.pointerId;
     }
 
-    this.setDirection(event);
+    const directions = this.setDirection(event);
+    this.horizontalDirection = directions.horizontalDirection;
+    this.verticalDirection = directions.verticalDirection;
 
-    this.directionChangeEvent.detail.direction = this.direction;
-    this.dispatchEvent(this.directionChangeEvent);
+    this.emit();
   }
 
-  private onTouchMove(event: TouchEvent) {
-    this.setDirection(event);
-    if (this.direction !== this.directionChangeEvent.detail.direction) {
-      this.directionChangeEvent.detail.direction = this.direction;
-      this.dispatchEvent(this.directionChangeEvent);
+  private onTouchMove(event: PointerEvent) {
+    if (this.activePointerId === -1) {
+      return;
+    }
+
+    const directions = this.setDirection(event);
+    const haveDirectionsChanged = this.horizontalDirection !== directions.horizontalDirection
+                                        || this.verticalDirection !== directions.verticalDirection;
+    if (haveDirectionsChanged) {
+      this.verticalDirection = directions.verticalDirection;
+      this.horizontalDirection = directions.horizontalDirection;
+      this.emit();
     }
   }
 
   private onTouchEnd() {
-    this.directionChangeEvent.detail.direction = '';
-    this.dispatchEvent(this.directionChangeEvent);
+    this.activePointerId = -1;
+    this.horizontalDirection = '';
+    this.verticalDirection = '';
+    this.emit();
     this.dpadElement.setAttribute('class', 'dpad');
   }
 
-  private setDirection(event: any) {
-    for (const touch of event.touches) {
-      if (touch.identifier === this.activeTouch?.identifier) {
-        this.activeTouch = touch;
-        break;
-      }
-    }
-
-    if (!this.activeTouch) {
-      return;
-    }
-
-    const touchX = this.activeTouch.clientX;
-    const touchY = this.activeTouch.clientY;
+  private setDirection(event: PointerEvent) {
+    const touchX = event.clientX;
+    const touchY = event.clientY;
 
     const { top, left, width, height } = this.touchArea.getBoundingClientRect();
 
-    this.direction = '';
+    let horizontalDirection: 'left' | 'right' | '' = '';
+    let verticalDirection: 'up' | 'down' | '' = '';
 
     const verticalCenter = top + (height / 2);
     const horizontalCenter = left + (width / 2);
@@ -116,26 +119,36 @@ export class GameboyDPad extends HTMLElement {
 
     const angle = (Math.atan2(verticalDifference, horizontalDifference) * 180 / Math.PI + 180);
     if (angle >= 0 && angle <= 22.5) {
-      this.direction = 'right';
+      horizontalDirection = 'right';
+      verticalDirection = '';
     } else if (angle > 22.5 && angle <= 67.5) {
-      this.direction = 'down right';
+      horizontalDirection = 'right';
+      verticalDirection = 'down';
     } else if (angle > 67.5 && angle <= 112.5) {
-      this.direction = 'down';
+      horizontalDirection = '';
+      verticalDirection = 'down';
     } else if (angle > 112.5 && angle <= 157.5) {
-      this.direction = 'down left';
+      horizontalDirection = 'left';
+      verticalDirection = 'down';
     } else if (angle > 157.5 && angle <= 202.5) {
-      this.direction = 'left';
+      horizontalDirection = 'left';
+      verticalDirection = '';
     } else if (angle > 202.5 && angle <= 247.5) {
-      this.direction = 'up left';
+      horizontalDirection = 'left';
+      verticalDirection = 'up';
     } else if (angle > 247.5 && angle <= 292.5) {
-      this.direction = 'up';
+      horizontalDirection = '';
+      verticalDirection = 'up';
     } else if (angle > 292.5 && angle <= 337.5) {
-      this.direction = 'up right';
+      horizontalDirection = 'right';
+      verticalDirection = 'up';
     } else if (angle > 337.5 && angle <= 360) {
-      this.direction = 'right';
+      horizontalDirection = 'right';
+      verticalDirection = '';
     }
 
-    this.dpadElement.setAttribute('class', `dpad ${this.direction}`);
+    this.dpadElement.setAttribute('class', `dpad ${horizontalDirection} ${verticalDirection}`);
+    return { horizontalDirection, verticalDirection };
   }
 }
 

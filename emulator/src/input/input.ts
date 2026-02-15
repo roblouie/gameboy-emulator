@@ -20,6 +20,7 @@ export class Input {
     this.isPollingDirections = getBit(byte, 5) === 1;
   }
 
+  //TODO: Consider refactor to have inputs set the bits rather than redoing math on each check
   reportInput(): number {
     let inputValue = 0b1111;
 

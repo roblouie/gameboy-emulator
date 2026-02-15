@@ -2,6 +2,16 @@ import roundButtonStyleText from './round-button.css?inline';
 import ovalButtonStyleText from './oval-button.css?inline';
 
 export class GameboyButton extends HTMLElement {
+  private active = new Set<number>();
+
+  private emit(isPressed: boolean) {
+    this.dispatchEvent(new CustomEvent("gb-button", {
+      detail: { id: this.getAttribute("label") ?? "", isPressed },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
   constructor() {
     super();
 
@@ -13,11 +23,18 @@ export class GameboyButton extends HTMLElement {
     const button = document.createElement('div');
     button.setAttribute('class', 'button');
 
-    button.addEventListener('touchstart', () => {
+    button.addEventListener('pointerdown', (e) => {
+      this.onDown(e);
       button.classList.add('pressed');
     });
 
-    button.addEventListener('touchend', () => {
+    button.addEventListener('pointerup', (e) => {
+      this.onUp(e)
+      button.classList.remove('pressed');
+    });
+
+    button.addEventListener('pointercancel', (e) => {
+      this.onUp(e);
       button.classList.remove('pressed');
     });
 
@@ -54,6 +71,26 @@ export class GameboyButton extends HTMLElement {
 
     shadow.appendChild(wrapper);
   }
+
+  private onDown = (e: PointerEvent) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    this.active.add(e.pointerId);
+
+    if (this.active.size === 1) {
+      this.emit(true);
+    }
+  };
+
+  private onUp = (e: PointerEvent) => {
+    if (!this.active.delete(e.pointerId)) return;
+
+    if (this.active.size === 0) {
+      this.emit(false);
+    }
+  };
 }
 
 customElements.define('round-button', GameboyButton);

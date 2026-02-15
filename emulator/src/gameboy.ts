@@ -32,6 +32,7 @@ export class Gameboy {
   input = input;
   controllerManager = controllerManager;
   keyboardManager = keyboardManager;
+  animationFrameId = -1;
 
   private previousTime = 0;
   run() {
@@ -39,7 +40,7 @@ export class Gameboy {
     this.bus.reset();
 
     this.previousTime = performance.now();
-    requestAnimationFrame(diff => this.runFrame(diff));
+    this.animationFrameId = requestAnimationFrame(diff => this.runFrame(diff));
   }
 
   private cycleRemainder = 0;
@@ -64,7 +65,11 @@ export class Gameboy {
       this.frameFinishedCallback(this.gpu.displayImageData);
     }
 
-    requestAnimationFrame(t => this.runFrame(t));
+    this.animationFrameId = requestAnimationFrame(t => this.runFrame(t));
+  }
+
+  stop() {
+    cancelAnimationFrame(this.animationFrameId);
   }
 
   stepEmulator() {

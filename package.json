@@ -26,5 +26,8 @@
     "emulator"
   ],
   "author": "Robert Louie",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "fflate": "^0.8.2"
+  }
 }

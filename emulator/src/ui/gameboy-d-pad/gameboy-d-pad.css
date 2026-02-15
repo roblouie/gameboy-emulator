@@ -10,6 +10,11 @@
     transform-style: preserve-3d;
     transform-origin: 70px 70px -10px;
 }
+
+.dpad * {
+    box-shadow: 0 0 2px #434343;
+}
+
 .dpad-horizontal {
     background-color: #434343;
     width: 110px;
