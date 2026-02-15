@@ -1,23 +1,25 @@
-.screen {
+:host {
+    display: grid;
+    place-items: center;
+}
+
+canvas {
+    width: auto;
+    height: 100%;
     background-color: #80b141;
     image-rendering: pixelated;
 }
 
-.screen-border {
-    padding: 15px 30px 40px 30px;
-    margin: 10px;
-    background-color: #908d90;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    border-radius: 10px 10px 30px 10px;
-    /*width: 100%;*/
+.screen-wrap {
+    display: grid;
+    place-items: center;
 }
 
-.screen-wrapper {
-    display: flex;
-    justify-content: center;
+.overlay-controls {
+    position: absolute;
+    aspect-ratio: 160 / 144;
+    width: auto;
+    height: 100%;
 }
 
 .menu {
@@ -39,17 +41,22 @@
     margin-left: 5px;
 }
 
-.menu-border.left {
-    flex-grow: 2.5;
-    margin-left: 0;
-    margin-right: 5px;
+@media (max-aspect-ratio: 1/1.85) {
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+}
+@media (orientation:landscape) {
+    canvas {
+        width: 100%;
+        height: auto;
+    }
 }
 
-.fullscreen-with-controls {
-    padding-left: 15px;
-    cursor: pointer;
-}
-
-.fullscreen {
-    cursor: pointer;
+@media (orientation:landscape) and (min-aspect-ratio: 2.2/1) {
+    canvas {
+        width: auto;
+        height: 100%;
+    }
 }

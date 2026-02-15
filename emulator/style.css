@@ -2,7 +2,6 @@
 
 html, body {
     margin: 0;
-    body: 0;
     overscroll-behavior: none;
 }
 
@@ -12,17 +11,16 @@ html, body {
 
 * {
     user-select: none;
-    touch-action: none;          /* disables scroll/zoom gestures on pointer events */
+    touch-action: none;
     -ms-touch-action: none;
     -webkit-user-select: none;
-    -webkit-touch-callout: none; /* iOS long-press menu */
+    -webkit-touch-callout: none;
 }
 
 html {
     height: 100%;
     width: 100%;
     max-width: 100%;
-    /*overflow: hidden;*/
 }
 
 /*Portrait mode default*/
@@ -34,7 +32,6 @@ body {
     height: 100%;
     width: 100%;
     max-width: 100%;
-    /*overflow: hidden;*/
     display: grid;
     grid-template:
         'file-picker file-picker'
@@ -65,26 +62,14 @@ gameboy-d-pad {
 .screen-wrap {
     display: grid;
     place-items: center;
+    background-color: #908d90;
 }
 
 .button-spacer {
     display: flex;
     justify-self: end;
+    margin-top: 0.2in;
 }
-
-canvas {
-    width: auto;
-    height: 100%;
-    background-color: #80b141;
-}
-
-@media (max-aspect-ratio: 1/1.85) {
-    canvas {
-        width: 100%;
-        height: auto;
-    }
-}
-
 
 @media (orientation:landscape) {
     body {
@@ -96,20 +81,7 @@ canvas {
         grid-template-columns: 1fr 2fr 1fr;
     }
 
-    canvas {
-        width: 100%;
-        height: auto;
-    }
-
     .start-select {
         align-self: end;
     }
 }
-
-@media (orientation:landscape) and (min-aspect-ratio: 2.2/1) {
-    canvas {
-        width: auto;
-        height: 100%;
-    }
-}
-

@@ -8,30 +8,26 @@ export class GameboyScreen extends HTMLElement {
     super();
 
     const shadow = this.attachShadow({mode: 'open'});
-    const screenElement = document.createElement('div');
-    screenElement.setAttribute('class', 'screen-border');
-    screenElement.innerHTML = `
-      <div class="menu">
-        <div class="menu-border left"></div>
-        <span class="fullscreen" onClick={goFullscreen}>FULLSCREEN</span>
-        <div class="fullscreen-with-controls" onClick={goFullscreenWithControls}> + CONTROLS</div>
-        <div class="menu-border"></div>
-      </div>
-      <canvas class="screen" width="160" height="144" style="width: 100%;"></canvas>
-    `;
-    this.canvasElement = screenElement.querySelector('.screen')!;
-    // const screenSize = this.getLargestScreenSize();
-
-    // this.canvasElement!.style.width = screenSize!.width + 'px';
-    // this.canvasElement!.style.height = screenSize!.height + 'px';
+    this.canvasElement = document.createElement('canvas');
+    this.canvasElement.width = 160;
+    this.canvasElement.height = 144;
 
     this.renderingContext = this.canvasElement.getContext('2d')!;
     this.renderingContext.imageSmoothingEnabled = false;
 
-    screenElement.querySelector('.fullscreen')!.addEventListener('click', () => this.goFullscreen());
-    screenElement.querySelector('.fullscreen-with-controls')!.addEventListener('click', () => this.goFullscreenWithControls());
+    // screenElement.querySelector('.fullscreen')!.addEventListener('click', () => this.goFullscreen());
+    // screenElement.querySelector('.fullscreen-with-controls')!.addEventListener('click', () => this.goFullscreenWithControls());
 
-    shadow.appendChild(screenElement);
+    // const overlayControls = document.createElement('div');
+    // overlayControls.classList.add('overlay-controls')
+    //
+    // overlayControls.innerHTML = `
+    //   ${this.controlIcon()}
+    // `;
+    //
+    // shadow.appendChild(overlayControls);
+
+    shadow.appendChild(this.canvasElement);
 
     const style = document.createElement('style');
     style.textContent = screenStyleText;
@@ -49,48 +45,15 @@ export class GameboyScreen extends HTMLElement {
     document.querySelector('body')?.requestFullscreen();
   }
 
-  // getLargestScreenSize() {
-  //   const { clientWidth, clientHeight } = document.body;
-  //
-  //   if (!this.canvasElement) {
-  //     throw new Error('why no canvas?');
-  //   }
-  //
-  //   const aspectRatio = 10 / 9;
-  //   const borderSize = 60;
-  //   const size = { width: 160, height: 144 }; // native res
-  //
-  //   if (clientWidth < clientHeight) {
-  //     const portraitModeScreenHeight = (clientHeight / 2) - borderSize; // In portrait mode, screen can take up top half of page
-  //
-  //     if ((clientWidth / aspectRatio) <= portraitModeScreenHeight) {
-  //       size.width = clientWidth - borderSize;
-  //       size.height = size.width / aspectRatio;
-  //     } else {
-  //       size.height = portraitModeScreenHeight
-  //       size.width = size.height * aspectRatio;
-  //     }
-  //   } else {
-  //     const topMenuHeight = 80;
-  //     const landscapeModeScreenHeight = clientHeight - borderSize - topMenuHeight;
-  //     const controlsWidth = 410;
-  //     const landscapeWidth = clientWidth - borderSize - controlsWidth;
-  //
-  //     if ((landscapeWidth / aspectRatio) <= landscapeModeScreenHeight) {
-  //       size.width = landscapeWidth;
-  //       size.height = size.width / aspectRatio;
-  //     } else {
-  //       size.height = landscapeModeScreenHeight;
-  //       size.width = size.height * aspectRatio;
-  //     }
-  //
-  //   }
-  //
-  //   return size;
-  // }
-
   getCanvas() {
     return this.canvasElement;
+  }
+
+  controlIcon() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dpad" viewBox="0 0 16 16">
+        <path d="m7.788 2.34-.799 1.278A.25.25 0 0 0 7.201 4h1.598a.25.25 0 0 0 .212-.382l-.799-1.279a.25.25 0 0 0-.424 0Zm0 11.32-.799-1.277A.25.25 0 0 1 7.201 12h1.598a.25.25 0 0 1 .212.383l-.799 1.278a.25.25 0 0 1-.424 0ZM3.617 9.01 2.34 8.213a.25.25 0 0 1 0-.424l1.278-.799A.25.25 0 0 1 4 7.201V8.8a.25.25 0 0 1-.383.212Zm10.043-.798-1.277.799A.25.25 0 0 1 12 8.799V7.2a.25.25 0 0 1 .383-.212l1.278.799a.25.25 0 0 1 0 .424Z"/>
+        <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v3a.5.5 0 0 1-.5.5h-3A1.5 1.5 0 0 0 0 6.5v3A1.5 1.5 0 0 0 1.5 11h3a.5.5 0 0 1 .5.5v3A1.5 1.5 0 0 0 6.5 16h3a1.5 1.5 0 0 0 1.5-1.5v-3a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 0 16 9.5v-3A1.5 1.5 0 0 0 14.5 5h-3a.5.5 0 0 1-.5-.5v-3A1.5 1.5 0 0 0 9.5 0zM6 1.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3A1.5 1.5 0 0 0 11.5 6h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a1.5 1.5 0 0 0-1.5 1.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3A1.5 1.5 0 0 0 4.5 10h-3a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 0 6 4.5z"/>
+      </svg>`
   }
 }
 

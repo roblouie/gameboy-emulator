@@ -36,7 +36,8 @@ async function onFileChange() {
 
     gameboy.apu.enableSound();
 
-    const context = document.querySelector('canvas')!.getContext('2d')!;
+    const screen = document.querySelector('gameboy-screen')!;
+    const context = screen.getCanvas().getContext('2d')!;
     gameboy.onFrameFinished((imageData: ImageData) => {
       context.putImageData(imageData, 0, 0);
     });
