@@ -3,6 +3,9 @@
 html, body {
     margin: 0;
     overscroll-behavior: none;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
 }
 
 *, *::before, *::after {
@@ -17,17 +20,14 @@ html, body {
     -webkit-touch-callout: none;
 }
 
-html {
-    height: 100%;
-    width: 100%;
-    max-width: 100%;
-}
-
 /*Portrait mode default*/
-body {
+.gameboy-chassis {
     font-family: Orbitron, sans-serif;
     background-color: #c6c1bd;
     color: #0b0ba7;
+    box-shadow: inset 0 0 8px 0 #666;
+    border-radius: 10px;
+    border: 1px solid #898989;
     margin: 0;
     height: 100%;
     width: 100%;
@@ -76,7 +76,7 @@ gameboy-d-pad {
 }
 
 @media (orientation:landscape) {
-    body {
+    .gameboy-chassis {
         grid-template:
         'file-picker screen .'
         'd-pad screen a-b-buttons'

@@ -6,19 +6,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <gameboy-screen style="grid-area: screen"></gameboy-screen>
-    <input type="file" class="file-input" accept=".gb,.zip" style="display: block; grid-area: file-picker; min-width: 0"/>
+    <div class="gameboy-chassis">
+        <gameboy-screen style="grid-area: screen"></gameboy-screen>
+        <input type="file" class="file-input" accept=".gb,.zip" style="display: block; grid-area: file-picker; min-width: 0"/>
 
-    <gameboy-d-pad style="grid-area: d-pad; min-width: 0"></gameboy-d-pad>
+        <gameboy-d-pad style="grid-area: d-pad; min-width: 0"></gameboy-d-pad>
 
-    <div class="start-select" style="grid-area: start-select;">
-        <round-button label="SELECT" shape="oval" class="select-button"></round-button>
-        <round-button label="START" shape="oval" class="start-button"></round-button>
-    </div>
+        <div class="start-select" style="grid-area: start-select;">
+            <round-button label="SELECT" shape="oval" class="select-button"></round-button>
+            <round-button label="START" shape="oval" class="start-button"></round-button>
+        </div>
 
-    <div class="button-spacer" style="grid-area: a-b-buttons">
-        <round-button label="B" class="b-button" style="margin-right: 20px; margin-top: 40px;" ></round-button>
-        <round-button label="A" class="a-button" style="margin-right: 15px;"></round-button>
+        <div class="button-spacer" style="grid-area: a-b-buttons">
+            <round-button label="B" class="b-button" style="margin-right: 20px; margin-top: 40px;" ></round-button>
+            <round-button label="A" class="a-button" style="margin-right: 15px;"></round-button>
+        </div>
     </div>
 
 <!--    <gameboy-speaker></gameboy-speaker>-->

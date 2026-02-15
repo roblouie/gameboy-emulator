@@ -56,27 +56,9 @@ fileInput.addEventListener('change', onFileChange);
 
 async function onFileChange(event) {
   if (fileInput.files && fileInput.files[0]) {
-    // Convert the selected file into an array buffer
-    const rom = await fileToArrayBuffer(fileInput.files[0]);
-
     // load game
-    gameboy.loadGame(rom);
+    gameboy.loadGame(await fileInput.files[0].arrayBuffer());
   }
-}
-
-function fileToArrayBuffer(file) {
-  const fileReader = new FileReader();
-
-  return new Promise((resolve, reject) => {
-    fileReader.onload = () => resolve(fileReader.result);
-
-    fileReader.onerror = () => {
-      fileReader.abort();
-      reject(new Error('Error parsing file'))
-    }
-
-    fileReader.readAsArrayBuffer(file);
-  });
 }
 ```
 
@@ -134,8 +116,7 @@ fileInput.addEventListener('change', onFileChange);
 
 async function onFileChange(event) {
   if (fileInput.files && fileInput.files[0]) {
-    const rom = await fileToArrayBuffer(fileInput.files[0]);
-    gameboy.loadGame(rom);
+    gameboy.loadGame(await fileInput.files[0].arrayBuffer());
 
     gameboy.apu.enableSound();
 
@@ -144,23 +125,8 @@ async function onFileChange(event) {
       context.putImageData(imageData, 0, 0);
     });
 
-    gameboy.run(); // Run the game
+    gameboy.run();
   }
-}
-
-function fileToArrayBuffer(file) {
-  const fileReader = new FileReader();
-
-  return new Promise((resolve, reject) => {
-    fileReader.onload = () => resolve(fileReader.result);
-
-    fileReader.onerror = () => {
-      fileReader.abort();
-      reject(new Error('Error parsing file'))
-    }
-
-    fileReader.readAsArrayBuffer(file);
-  });
 }
 ```
 
@@ -466,24 +432,3 @@ const sram = await localforage.getItem(gameboy.cartridge.title);
 gameboy.setCartridgeSaveRam(sram);
 gameboy.run();
 ```
-## Accuracy Tests:
-### DMG Acid Test - Passed
-
-### Mooneye Test Suite
-* acceptance/instr daa - Passed
-* acceptance/bits reg_f - Passed
-* acceptance/bits unused_hwio-GS - Failed
-* acceptance/bits mem_oam - Passed
-* acceptance/timer tim10 - Passed
-* acceptance/timer tim01 - Passed
-* acceptance/timer tima_reload - Passed
-* acceptance/timer tim10_div_trigger - Passed
-* acceptance/timer rapid_toggle - Failed `B: OK C: D9!`
-* acceptance/timer tim11 - Passed
-* acceptance/timer tima_write_reloading - Failed `C: FE! D: 80! E: OK L: OK`
-* acceptance/timer tim01_div_trigger - Passed
-* acceptance/timer tim11_div_trigger - Passed
-* acceptance/timer div_write - Passed
-* acceptance/timer tma_write_reloading - Failed `C: OK D: 7F! E: 7F! L: OK`
-* acceptance/timer tim00 - Passed
-* acceptance/timer tim00_div_trigger - Passed
