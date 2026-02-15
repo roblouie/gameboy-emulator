@@ -43,6 +43,10 @@ body {
     grid-template-columns: 1fr 2fr;
 }
 
+body::backdrop {
+    background: #c6c1bd;
+}
+
 gameboy-d-pad {
     margin-top: 0.2in;
     margin-left: 0.2in;

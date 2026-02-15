@@ -1,25 +1,60 @@
 :host {
     display: grid;
     place-items: center;
+    --icon-size: 32px;
+    --icon-padding: 10px;
+}
+
+.screen-frame, canvas {
+    width: auto;
+    height: 100%;
+}
+
+.screen-frame {
+    position: relative;
+    aspect-ratio: auto 160 / 144;
 }
 
 canvas {
-    width: auto;
-    height: 100%;
     background-color: #80b141;
     image-rendering: pixelated;
+    display: block;
 }
 
-.screen-wrap {
-    display: grid;
-    place-items: center;
-}
 
 .overlay-controls {
+    display: grid;
     position: absolute;
-    aspect-ratio: 160 / 144;
-    width: auto;
-    height: 100%;
+    inset: 0;
+    color: white;
+    text-shadow: 1px 1px 1px black;
+    pointer-events: auto;
+    transition: opacity 300ms ease;
+    z-index: 2;
+
+    &.hidden {
+        * {
+            pointer-events: none;
+        }
+        opacity: 0;
+    }
+
+    svg {
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,1)) drop-shadow(0 1px 2px rgba(0,0,0,1));
+    }
+
+    .bottom-controls {
+        display: flex;
+        align-self: end;
+        justify-content: space-between;
+        padding: 0 var(--icon-padding);
+    }
+}
+
+.bi {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    padding: var(--icon-padding);
 }
 
 .menu {
@@ -42,20 +77,20 @@ canvas {
 }
 
 @media (max-aspect-ratio: 1/1.85) {
-    canvas {
+    canvas, .screen-frame {
         width: 100%;
         height: auto;
     }
 }
 @media (orientation:landscape) {
-    canvas {
+    canvas, .screen-frame {
         width: 100%;
         height: auto;
     }
 }
 
 @media (orientation:landscape) and (min-aspect-ratio: 2.2/1) {
-    canvas {
+    canvas, .screen-frame {
         width: auto;
         height: 100%;
     }
