@@ -10,6 +10,12 @@
     height: 100%;
 }
 
+.screen-frame.controls-hidden {
+    border: none;
+    width: 100%;
+    height: auto;
+}
+
 .screen-frame {
     position: relative;
     aspect-ratio: auto 160 / 144;
@@ -22,6 +28,15 @@ canvas {
     display: block;
     border-radius: 8px;
     border: 5px solid #908d90;
+}
+
+.screen-frame.controls-hidden  {
+    canvas, .overlay-controls {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
 }
 
 
@@ -92,6 +107,14 @@ canvas {
     canvas, .screen-frame {
         width: 100%;
         height: auto;
+    }
+}
+
+@media (min-aspect-ratio: 160/144) {
+    .screen-frame.controls-hidden {
+        border: none;
+        height: 100%;
+        width: auto;
     }
 }
 

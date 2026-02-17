@@ -9,12 +9,22 @@ import {unzipSync} from "fflate";
 
 const gameboy = new Gameboy();
 
-const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
-fileInput.addEventListener('change', onFileChange);
+const gameboyUi = document.querySelector('.gameboy-chassis');
+
+// const fileInput = document.querySelector<HTMLInputElement>('.file-input')!;
+// fileInput.addEventListener('change', onFileChange);
 
 document.addEventListener("contextmenu", (e) => {
   e.preventDefault();
 });
+
+document.addEventListener('onscreencontrols', e => {
+  if (e.detail.isScreenControlsActive) {
+    gameboyUi?.classList.remove('controls-hidden');
+  } else {
+    gameboyUi?.classList.add('controls-hidden');
+  }
+})
 
 document.addEventListener('dpad', event => {
   gameboy.input.isPressingLeft = event.detail.isLeftPressed;

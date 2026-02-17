@@ -43,6 +43,28 @@ html, body {
     grid-template-columns: 1fr 2fr;
 }
 
+.gameboy-chassis.controls-hidden {
+    background-color: black;
+    grid-template: 'screen';
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+
+    gameboy-d-pad {
+        display: none;
+    }
+
+    .start-select {
+        display: none;
+    }
+
+    .button-spacer {
+        display: none;
+    }
+}
+
 body::backdrop {
     background: #c6c1bd;
 }
@@ -83,6 +105,12 @@ gameboy-d-pad {
         'start-select screen .';
         grid-template-rows: 0.1fr 2fr 1fr;
         grid-template-columns: 1fr 2fr 1fr;
+    }
+
+    .gameboy-chassis.controls-hidden {
+        grid-template: 'screen';
+        grid-template-rows: 1fr;
+        grid-template-columns: 1fr;
     }
 
     .start-select {

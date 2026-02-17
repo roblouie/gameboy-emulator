@@ -16,7 +16,6 @@ export class Mbc3Cartridge extends Cartridge {
   private writeTimeout: any;
   onSramWrite?: Function;
 
-  //TODO: Implement debounced callback for saving
   constructor(gameDataView: DataView) {
     super(gameDataView);
     this.ramData = new ArrayBuffer(this.ramSize)
