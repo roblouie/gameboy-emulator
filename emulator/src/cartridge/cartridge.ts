@@ -21,19 +21,7 @@ export class Cartridge {
     return this.gameDataView.getUint8(address);
   }
 
-  readSignedByte(address: number) {
-    return this.gameDataView.getInt8(address);
-  }
-
-  readWord(address: number) {
-    return this.gameDataView.getUint16(address, true);
-  }
-
   writeByte(address: number, value: number) {
-    return;
-  }
-
-  writeWord(address: number, value: number) {
     return;
   }
 

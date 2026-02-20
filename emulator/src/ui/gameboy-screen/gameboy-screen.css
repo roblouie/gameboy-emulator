@@ -45,7 +45,6 @@ canvas {
     position: absolute;
     inset: 0;
     color: white;
-    text-shadow: 1px 1px 1px black;
     pointer-events: auto;
     transition: opacity 300ms ease;
     z-index: 2;
@@ -60,7 +59,7 @@ canvas {
         }
     }
 
-    svg {
+    svg, .rom-text {
         filter: drop-shadow(0 1px 1px rgba(0,0,0,1)) drop-shadow(0 1px 3px rgba(0,0,0,1));
     }
 
@@ -70,6 +69,12 @@ canvas {
         justify-content: space-between;
         padding: 0 var(--icon-padding);
     }
+}
+
+.open-rom-button {
+    display: flex;
+    align-items: center;
+    font-size: 1.5em;
 }
 
 .bi {

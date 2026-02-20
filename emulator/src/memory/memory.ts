@@ -121,22 +121,14 @@ export class Memory {
   }
 
   readSignedByte(address: number) {
-    if (this.isAccessingCartridge(address)) {
-      return this.cartridge.readSignedByte(address);
-    } else {
       const value = this.readByte(address);
       return convertUint8ToInt8(value);
-    }
   }
 
   readWord(address: number) {
-    if (this.isAccessingCartridge(address)) {
-      return this.cartridge.readWord(address);
-    } else {
       const lo = this.readByte(address);
       const hi = this.readByte((address + 1) & 0xFFFF);
       return combineBytes(lo, hi);
-    }
   }
 
   writeByte(address: number, value: number) {
@@ -225,12 +217,8 @@ export class Memory {
   }
 
   writeWord(address: number, value: number) {
-    if (this.isAccessingCartridge(address)) {
-      this.cartridge.writeWord(address, value);
-    } else {
-      this.writeByte(address, value & 0xFF);
-      this.writeByte((address + 1) & 0xFFFF, (value >> 8) & 0xFF);
-    }
+    this.writeByte(address, value & 0xFF);
+    this.writeByte((address + 1) & 0xFFFF, (value >> 8) & 0xFF);
   }
 
   private isAccessingOam(address: number): boolean {

@@ -4,14 +4,15 @@ import path from 'path';
 import fs from "node:fs";
 
 export default defineConfig({
+  base: '',
   root: path.resolve(__dirname, 'emulator'),
   server: {
     port: 3000,
     host: true,
-    https: {
-      key: fs.readFileSync('./localhost+3-key.pem'),
-      cert: fs.readFileSync('./localhost+3.pem'),
-    }
+    // https: {
+    //   key: fs.readFileSync('./localhost+3-key.pem'),
+    //   cert: fs.readFileSync('./localhost+3.pem'),
+    // }
   },
 
   plugins: [

@@ -45,33 +45,10 @@ export class Mbc3Cartridge extends Cartridge {
     this.write(address, value, sramWrite);
   }
 
-  override writeWord(address: number, value: number) {
-    const sramWrite = (address: number, value: number) => {
-      this.ramDataView.setUint16(address, value, true);
-      if (this.type === CartridgeType.MBC3_RAM_BATTERY && this.onSramWrite) {
-        clearTimeout(this.writeTimeout);
-        this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
-      }
-    }
-    this.write(address, value, sramWrite);
-  }
-
 
   override readByte(address: number): number {
     const cartridgeRead = (address: number) => this.gameDataView.getUint8(address);
     const sramRead = (address: number) => this.ramDataView.getUint8(address);
-    return this.read(address, cartridgeRead, sramRead);
-  }
-
-  override readSignedByte(address: number): number {
-    const cartridgeRead = (address: number) => this.gameDataView.getInt8(address);
-    const sramRead = (address: number) => this.ramDataView.getInt8(address);
-    return this.read(address, cartridgeRead, sramRead);
-  }
-
-  override readWord(address: number): number {
-    const cartridgeRead = (address: number) => this.gameDataView.getUint16(address, true);
-    const sramRead = (address: number) => this.ramDataView.getUint16(address, true);
     return this.read(address, cartridgeRead, sramRead);
   }
 

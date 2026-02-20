@@ -83,11 +83,11 @@ export class Gameboy {
   loadGame(arrayBuffer: ArrayBuffer) {
     const cartridge = CartridgeLoader.FromArrayBuffer(arrayBuffer);
     this.bus.insertCartridge(cartridge);
-    console.log('title: ' + cartridge.title);
-    console.log('version: ' + cartridge.versionNumber);
-    console.log('type: ' + cartridge.typeName);
-    console.log('rom size: ' + cartridge.romSize);
-    console.log('ram size: ' + cartridge.ramSize);
+    // console.log('title: ' + cartridge.title);
+    // console.log('version: ' + cartridge.versionNumber);
+    // console.log('type: ' + cartridge.typeName);
+    // console.log('rom size: ' + cartridge.romSize);
+    // console.log('ram size: ' + cartridge.ramSize);
   }
 
   setCartridgeSaveRam(sramArrayBuffer: ArrayBuffer | undefined) {

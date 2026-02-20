@@ -49,39 +49,38 @@ document.addEventListener('gb-button', event => {
   }
 });
 
-async function onFileChange() {
-  if (fileInput.files && fileInput.files[0]) {
-    gameboy.stop();
+document.addEventListener('romselected', async event => {
+  gameboy.stop();
 
-    const rom = await fileInput.files[0].arrayBuffer();
+  const file = event.detail.file;
+  const rom = await file.arrayBuffer();
 
-    if (fileInput.files[0].name.toLowerCase().endsWith('.zip')) {
-      const files = unzipSync(new Uint8Array(rom), { filter: file => file.name.toLowerCase().endsWith('.gb') });
-      console.log(files);
-      const romData = Object.values(files)[0].buffer;
-      gameboy.loadGame(romData);
-    } else {
-      gameboy.loadGame(rom);
-    }
-
-    gameboy.apu.enableSound();
-
-    const screen = document.querySelector('gameboy-screen')!;
-    const context = screen.getCanvas().getContext('2d')!;
-    gameboy.onFrameFinished((imageData: ImageData) => {
-      context.putImageData(imageData, 0, 0);
-    });
-
-    const saveManager = new SaveManager();
-    await saveManager.initialize();
-
-    gameboy.setOnWriteToCartridgeRam(() => {
-      saveManager.setSave(gameboy.bus.cartridge.title, gameboy.getCartridgeSaveRam())
-    });
-
-    const saveData = await saveManager.getSave(gameboy.bus.cartridge.title);
-    gameboy.setCartridgeSaveRam(saveData);
-
-    gameboy.run();
+  if (file.name.toLowerCase().endsWith('.zip')) {
+    const files = unzipSync(new Uint8Array(rom), { filter: file => file.name.toLowerCase().endsWith('.gb') });
+    console.log(files);
+    const romData = Object.values(files)[0].buffer;
+    gameboy.loadGame(romData);
+  } else {
+    gameboy.loadGame(rom);
   }
-}
+
+  gameboy.apu.enableSound();
+
+  const screen = document.querySelector('gameboy-screen')!;
+  const context = screen.getCanvas().getContext('2d')!;
+  gameboy.onFrameFinished((imageData: ImageData) => {
+    context.putImageData(imageData, 0, 0);
+  });
+
+  const saveManager = new SaveManager();
+  await saveManager.initialize();
+
+  gameboy.setOnWriteToCartridgeRam(() => {
+    saveManager.setSave(gameboy.bus.cartridge.title, gameboy.getCartridgeSaveRam())
+  });
+
+  const saveData = await saveManager.getSave(gameboy.bus.cartridge.title);
+  gameboy.setCartridgeSaveRam(saveData);
+
+  gameboy.run();
+})

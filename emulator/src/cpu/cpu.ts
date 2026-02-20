@@ -90,6 +90,7 @@ export class CPU {
     } else {
       if (this.isImeScheduled) {
         this.isInterruptMasterEnable = true;
+        this.isImeScheduled = false;
       }
 
       const operation = this.getOperation();
