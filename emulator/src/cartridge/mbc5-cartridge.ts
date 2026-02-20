@@ -5,10 +5,13 @@ export class Mbc5Cartridge extends Cartridge {
     ramBank = 0;
     isRamEnabled = false;
     bankCount: number;
+    private ramBytes: Uint8Array;
+
 
     constructor(gameDataView: DataView) {
         super(gameDataView);
         this.bankCount = (this.gameBytes.length / 0x4000) | 0;
+        this.ramBytes = new Uint8Array(new ArrayBuffer(this.ramSize));
     }
 
     readByte(address: number) {
@@ -16,6 +19,13 @@ export class Mbc5Cartridge extends Cartridge {
 
         const bank = this.romBank % this.bankCount;
         const offset = bank * 0x4000 + (address - 0x4000);
+
+        if (address >= 0xA000 && address < 0xC000) {
+            if (!this.isRamEnabled || this.ramBytes.length === 0) return 0xFF;
+            const ramBankCount = this.ramBytes.length / 0x2000;
+            const bank = this.ramBank % Math.max(1, ramBankCount);
+            return this.ramBytes[bank * 0x2000 + (address - 0xA000)];
+        }
 
         return this.gameBytes[offset];
     }
@@ -36,5 +46,14 @@ export class Mbc5Cartridge extends Cartridge {
         else if (address < 0x6000) {
             this.ramBank = value & 0x0F;
         }
+
+        else if (address >= 0xA000 && address < 0xC000) {
+            if (!this.isRamEnabled || this.ramBytes.length === 0) return;
+            const ramBankCount = this.ramBytes.length / 0x2000;
+            const bank = this.ramBank % Math.max(1, ramBankCount);
+            return this.ramBytes[bank * 0x2000 + (address - 0xA000)] = value;
+        }
+
+
     }
 }
