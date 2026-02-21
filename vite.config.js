@@ -5,7 +5,6 @@ import fs from "node:fs";
 
 export default defineConfig({
   base: '',
-  root: path.resolve(__dirname, 'emulator'),
   server: {
     port: 3000,
     host: true,
@@ -16,21 +15,14 @@ export default defineConfig({
   },
 
   plugins: [
-    tsconfigPaths(), // replaces Webpack path alias config
+    tsconfigPaths(),
   ],
 
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'emulator/src'),
+      '@': path.resolve(__dirname, 'src'),
     },
   },
-
-  // build: {
-  //   outDir: 'example-dist',
-  //   rollupOptions: {
-  //     input: './index.html',
-  //   }
-  // }
 });
 
 

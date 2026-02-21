@@ -45,4 +45,22 @@ describe("Blargg accuracy tests", () => {
 
     expect(serialMessage).toContain('Passed');
   });
+
+  it("Passes interrupt timing test interrupt_time.gb", () => {
+    const gameboy = initializeEmulator('blargg/interrupt_time.gb');
+
+    const cyclesToRun = GPU.CyclesPerFrame * 3600;
+    let cyclesRan = 0;
+    let serialMessage = '';
+
+    gameboy.serial.onSerialByte((byte) => {
+      serialMessage += String.fromCharCode(byte);
+    });
+
+    while (cyclesRan < cyclesToRun) {
+      cyclesRan += gameboy.stepEmulator();
+    }
+
+    expect(serialMessage).toContain('Passed');
+  });
 });

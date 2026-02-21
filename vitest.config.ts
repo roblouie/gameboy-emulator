@@ -5,16 +5,16 @@ export default defineConfig({
   assetsInclude: ["**/*.gb"],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './emulator/src'),
-      '@tests': path.resolve(__dirname, './emulator/tests'),
+      '@': path.resolve(__dirname, './src'),
+      '@tests': path.resolve(__dirname, './tests'),
     },
   },
   test: {
-    setupFiles: ['./emulator/tests/setup.ts', './emulator/tests/test-helpers.ts'],
+    setupFiles: ['./tests/setup.ts', './tests/test-helpers.ts'],
     environment: "node",
-    globals: true, // optional; lets you keep jest-like globals (describe/it/expect)
-    include: ['./emulator/src/**/*.spec.ts', './emulator/tests/**/*.spec.ts'],
-    testTimeout: 30_000, // ROM tests can be slow; adjust as needed
+    globals: true,
+    include: ['./src/**/*.spec.ts', './tests/**/*.spec.ts'],
+    testTimeout: 30_000,
     hookTimeout: 30_000,
   },
 });
