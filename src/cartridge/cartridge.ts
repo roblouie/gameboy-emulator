@@ -2,12 +2,6 @@ import { CartridgeType } from "./cartridge-type.enum";
 
 export class Cartridge {
   static EntryPointOffset = 0x100;
-  static TypesWithBatterySave = [
-    CartridgeType.ROM_RAM_BATTERY,
-    CartridgeType.MBC1_RAM_BATTERY,
-    CartridgeType.MBC2_BATTERY,
-    CartridgeType.MBC3_RAM_BATTERY,
-  ]
 
   protected gameDataView: DataView;
   protected gameBytes: Uint8Array;
@@ -80,9 +74,5 @@ export class Cartridge {
   get versionNumber() {
     const versionNumberOffset = 0x14c;
     return this.gameDataView.getUint8(versionNumberOffset);
-  }
-
-  get hasSaveableRam() {
-    return Cartridge.TypesWithBatterySave.includes(this.type);
   }
 }

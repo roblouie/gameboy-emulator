@@ -11,6 +11,7 @@ import { keyboardManager } from "@/input/keyboard-manager";
 import { InterruptController } from "@/cpu/interrupt-request-register";
 import {TimerController} from "@/cpu/timer-controller";
 import {Serial} from "@/serial";
+import {SaveManager} from "@/save-manager";
 
 export class Gameboy {
   interruptController = new InterruptController();
@@ -33,8 +34,13 @@ export class Gameboy {
   controllerManager = controllerManager;
   keyboardManager = keyboardManager;
   animationFrameId = -1;
-
   private previousTime = 0;
+  private saveManager = new SaveManager();
+
+  constructor() {
+    this.saveManager.initialize();
+  }
+
   run() {
     this.cpu.initialize();
     this.bus.reset();
@@ -80,9 +86,17 @@ export class Gameboy {
     this.frameFinishedCallback = callback;
   }
 
-  loadGame(arrayBuffer: ArrayBuffer) {
+  async loadGame(arrayBuffer: ArrayBuffer) {
     const cartridge = CartridgeLoader.FromArrayBuffer(arrayBuffer);
     this.bus.insertCartridge(cartridge);
+
+    // TODO: Better typescript here
+    if (this.bus.cartridge.onSramWrite) {
+      cartridge.onSramWrite = this.saveManager.setSave(this.bus.cartridge.title, this.getCartridgeSaveRam());
+    }
+
+    const saveData = await this.saveManager.getSave(this.bus.cartridge.title);
+    this.setCartridgeSaveRam(saveData);
     // console.log('title: ' + cartridge.title);
     // console.log('version: ' + cartridge.versionNumber);
     // console.log('type: ' + cartridge.typeName);
@@ -95,23 +109,18 @@ export class Gameboy {
       return;
     }
 
-    if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
+    // TODO: Better typescript here
+    if (this.bus.cartridge.setRam) {
       const cartridge = this.bus.cartridge as Mbc1Cartridge;
       cartridge.setRam(sramArrayBuffer);
     }
   }
 
+  // TODO: Better typescript here
   getCartridgeSaveRam() {
-    if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
+    if (this.bus.cartridge.dumpRam) {
       const cartridge = this.bus.cartridge as Mbc1Cartridge;
       return cartridge.dumpRam();
-    }
-  }
-
-  setOnWriteToCartridgeRam(onSramWrite: Function) {
-    if (this.bus.cartridge?.type === CartridgeType.MBC1_RAM_BATTERY || CartridgeType.MBC3_RAM_BATTERY) {
-      const cartridge = this.bus.cartridge as Mbc1Cartridge;
-      cartridge.onSramWrite = onSramWrite
     }
   }
 }

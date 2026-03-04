@@ -33,16 +33,35 @@ export class Mbc1Cartridge extends Cartridge {
     return this.ramDataView.buffer;
   }
 
+  private sramWrite(address: number, value: number) {
+    this.ramDataView.setUint8(address, value);
+    if (this.type === CartridgeType.MBC1_RAM_BATTERY && this.onSramWrite) {
+      clearTimeout(this.writeTimeout);
+      this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
+    }
+  }
 
   override writeByte(address: number, value: number) {
-    const sramWrite = (address: number, value: number) => {
-      this.ramDataView.setUint8(address, value);
-      if (this.type === CartridgeType.MBC1_RAM_BATTERY && this.onSramWrite) {
-        clearTimeout(this.writeTimeout);
-        this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
+    if (this.isRamGate(address)) {
+      const valueToEnableRam = 0b1010;
+      const lowerNibble = value & 0b1111;
+      this.isRamEnabled = lowerNibble === valueToEnableRam;
+    } else if (this.isBank1(address)) {
+      const masked = value & 0b11111;
+      this.bank1 = masked === 0 ? 1 : masked; // zero not allowed in bank 1
+    } else if (this.isBank2(address)) {
+      this.bank2 = value & 0b11;
+    } else if (this.isMode(address)) {
+      this.mode = value & 0b1;
+    } else if (this.isRamEnabled && this.ramBytes.length > 0 && this.isRam(address)) {
+      const maskedAddress = address & 0b1111111111111;
+      if (this.mode === 0 || this.ramSize === 0x008000) {
+        this.sramWrite(maskedAddress, value);
+      } else {
+        const bankedAddress = (this.bank2 << 13) + maskedAddress;
+        this.sramWrite(bankedAddress, value);
       }
     }
-    this.write(address, value, sramWrite);
   }
 
   override readByte(address: number): number {
@@ -81,30 +100,6 @@ export class Mbc1Cartridge extends Cartridge {
       }
     }
   }
-
-  private write(address: number, value: number, writeToSram: Function) {
-    if (this.isRamGate(address)) {
-      const valueToEnableRam = 0b1010;
-      const lowerNibble = value & 0b1111;
-      this.isRamEnabled = lowerNibble === valueToEnableRam;
-    } else if (this.isBank1(address)) {
-      const masked = value & 0b11111;
-      this.bank1 = masked === 0 ? 1 : masked; // zero not allowed in bank 1
-    } else if (this.isBank2(address)) {
-      this.bank2 = value & 0b11;
-    } else if (this.isMode(address)) {
-      this.mode = value & 0b1;
-    } else if (this.isRam(address) && this.isRamEnabled) {
-      const maskedAddress = address & 0b1111111111111;
-      if (this.mode === 0 || this.ramSize === 0x008000) {
-        writeToSram(maskedAddress, value);
-      } else {
-        const bankedAddress = (this.bank2 << 13) + maskedAddress;
-        writeToSram(bankedAddress, value);
-      }
-    }
-  }
-
 
   private isRamGate(address: number) {
     return address >= 0x0000 && address <= 0x1fff;

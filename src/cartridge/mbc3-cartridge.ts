@@ -34,34 +34,16 @@ export class Mbc3Cartridge extends Cartridge {
     return this.ramDataView.buffer;
   }
 
-  override writeByte(address: number, value: number) {
-    const sramWrite = (address: number, value: number) => {
-      this.ramDataView.setUint8(address, value);
-      if (this.type === CartridgeType.MBC3_RAM_BATTERY && this.onSramWrite) {
-        clearTimeout(this.writeTimeout);
-        this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
-      }
-    }
-    this.write(address, value, sramWrite);
-  }
-
-
-  override readByte(address: number): number {
-    const cartridgeRead = (address: number) => this.gameDataView.getUint8(address);
-    const sramRead = (address: number) => this.ramDataView.getUint8(address);
-    return this.read(address, cartridgeRead, sramRead);
-  }
-
-  private read(address: number, readFromCartridge: Function, readFromSram: Function) {
+  override readByte(address: number) {
     const maskedAddress = address & 0x3fff;
 
     if (address >= 0x0000 && address <= 0x3fff) {
-      return readFromCartridge(address);
+      return this.gameDataView.getUint8(address);
     } else if (address >= 0x4000 && address <= 0x7fff) {
       const bankNumber = this.romBank;
       const bankCorrectedAddress = (bankNumber << 14) + maskedAddress;
       const wrappedForSize = bankCorrectedAddress & (this.romSize - 1);
-      return readFromCartridge(wrappedForSize);
+      return this.gameDataView.getUint8(wrappedForSize);
     } else {
       // RAM or RTC
       if (!this.isRamAndRtcEnabled) {
@@ -71,12 +53,12 @@ export class Mbc3Cartridge extends Cartridge {
       if (this.ramBankOrRtcSelection <= 3) {
         const maskedAddress = address & 0x1fff;
         const bankedAddress = (this.ramBankOrRtcSelection << 13) + maskedAddress;
-        return readFromSram(bankedAddress);
+        return this.ramDataView.getUint8(bankedAddress);
       }
     }
   }
 
-  private write(address: number, value: number, writeToSram: Function) {
+  override writeByte(address: number, value: number) {
     if (this.isRamAndTimerGate(address)) {
       const valueToEnableRam = 0b1010;
       const lowerNibble = value & 0b1111;
@@ -93,7 +75,11 @@ export class Mbc3Cartridge extends Cartridge {
 
       if (this.ramBankOrRtcSelection <= 3) {
         const bankedAddress = (this.ramBankOrRtcSelection << 13) + maskedAddress;
-        writeToSram(bankedAddress, value);
+        this.ramDataView.setUint8(bankedAddress, value);
+        if (this.type === CartridgeType.MBC3_RAM_BATTERY && this.onSramWrite) {
+          clearTimeout(this.writeTimeout);
+          this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramData), 500);
+        }
       }
     }
   }

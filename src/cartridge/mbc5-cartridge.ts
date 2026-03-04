@@ -1,4 +1,5 @@
 import {Cartridge} from "@/cartridge/cartridge";
+import {CartridgeType} from "@/cartridge/cartridge-type.enum";
 
 export class Mbc5Cartridge extends Cartridge {
     romBank = 1;
@@ -6,7 +7,8 @@ export class Mbc5Cartridge extends Cartridge {
     isRamEnabled = false;
     bankCount: number;
     private ramBytes: Uint8Array;
-
+    private writeTimeout: any;
+    onSramWrite?: Function;
 
     constructor(gameDataView: DataView) {
         super(gameDataView);
@@ -51,7 +53,11 @@ export class Mbc5Cartridge extends Cartridge {
             if (!this.isRamEnabled || this.ramBytes.length === 0) return;
             const ramBankCount = this.ramBytes.length / 0x2000;
             const bank = this.ramBank % Math.max(1, ramBankCount);
-            return this.ramBytes[bank * 0x2000 + (address - 0xA000)] = value;
+            this.ramBytes[bank * 0x2000 + (address - 0xA000)] = value;
+            if (this.type === CartridgeType.MBC5_RAM_BATTERY || this.type === CartridgeType.MBC5_RUMBLE_RAM_BATTERY) {
+                clearTimeout(this.writeTimeout);
+                this.writeTimeout = setTimeout(() => this.onSramWrite!(this.ramBytes), 500);
+            }
         }
 
 
